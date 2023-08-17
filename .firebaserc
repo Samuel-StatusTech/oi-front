@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "oi-tickets"
+  },
+  "targets": {
+    "oi-tickets": {
+      "hosting": {
+        "oitickets": [
+          "oitickets"
+        ]
+      }
+    }
+  }
+}
