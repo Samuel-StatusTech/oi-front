@@ -245,20 +245,6 @@ const Navbar = ({ toggle, event }) => {
               </Grid>
               <Grid item style={{ color: '#fff', fontSize: 12 }}>
                 <div style={{ width: '109px' }}></div>
-                {sync && (
-                  <Grid container direction='column'>
-                    <Grid item>
-                      <Typography variant='caption' style={{ color: '#3B94FF' }}>
-                        Última Sincronização:
-                      </Typography>
-                    </Grid>
-                    <Grid item>
-                      <Typography variant='caption' style={{ color: '#3B94FF' }}>
-                        {sync === 'error' ? 'Falha aos buscar os dados' : `${formatDate(sync)} às ${formatTime(sync)}`}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                )}
               </Grid>
               <Divider
                 orientation='vertical'

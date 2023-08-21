@@ -55,15 +55,6 @@ const EaseGrid = ({
   const { toolbarConfig, paginationConfig, pageConfig, rowStyle } = config || {};
   const styles = useStyles();
 
-  if(!pageSizeOptions.find(e => e == pageSize))
-    pageSizeOptions.push(pageSize)
-  pageSizeOptions.sort((a, b) => {
-    if(a < b)
-      return -1;
-    if(a > b)
-      return 1;
-    return 0;
-  })
 
   return (
     <>
