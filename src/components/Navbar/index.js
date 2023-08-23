@@ -92,16 +92,6 @@ const Navbar = ({ toggle, event }) => {
           setSync(lastGettedSync)
         }
       })
-
-    // Api.get(`/sync/getLastSync/${event}`)
-    //   .then(({ data }) => {
-    //     if (data.success) {
-    //       setSync(data.sync);
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     setSync('error');
-    //   });
   };
 
   const formatPrice = (value) => {
