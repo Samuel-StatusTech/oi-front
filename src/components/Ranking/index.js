@@ -1,36 +1,122 @@
-import React, { memo } from 'react';
-import { Typography, Grid } from '@material-ui/core';
+import React, { memo, useEffect, useState } from 'react';
+import { Typography } from '@material-ui/core';
+import Chart from 'react-apexcharts';
+import Utils from '../../utils';
 import useStyles from '../../global/styles';
 
 export default memo(({ title, ranking }) => {
+
   const styles = useStyles();
+
+  const colors = ['#3B94FF']
+
+  const [total, setTotal] = useState(0)
+  const [seriesData, setSeriesData] = useState([])
+  const [categories, setCategories] = useState([])
+
+
+  useEffect(() => {
+    if (ranking.lenght > 0) {
+      let newInfo = {
+        series: [],
+        categories: []
+      }
+      ranking.forEach(r => {
+        if (r.value > 0) {
+          newInfo.series = [...newInfo.series, r.value]
+          newInfo.categories = [...newInfo.categories, r.label]
+        }
+      })
+
+      setTotal(newInfo.series.reduce((a, b) => a + b))
+      setSeriesData(newInfo.series)
+      setCategories(newInfo.categories)
+    }
+  }, [])
+
+  const data = {
+
+    series: [{ name: 'Valor', data: seriesData }],
+    options: {
+      chart: {
+        height: 350,
+        type: 'bar',
+      },
+      colors: colors,
+      plotOptions: {
+        bar: {
+          columnWidth: '45%',
+          distributed: true,
+          dataLabels: {
+            position: 'bottom'
+          },
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        offsetY: 10,
+        formatter: val => {
+          return ((val / total) * 100).toFixed(1) + "%";
+        },
+        dropShadow: {
+          enabled: true
+        },
+        style: {
+          fontSize: '14px',
+          fontWeight: 'bold',
+          colors: ["#FFF"],
+          textShadow: '2px 2px 2px #000',
+        }
+      },
+      legend: {
+        show: false
+      },
+      xaxis: {
+        categories,
+        labels: {
+          style: {
+            colors: colors,
+            fontSize: '12px'
+          }
+        }
+      },
+      yaxis: {
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false,
+        },
+        labels: {
+          show: false
+        }
+      },
+      tooltip: {
+        y: {
+          title: 'Valor',
+          formatter: val => Utils.prototype.currencyFormatter(val * 100)
+        },
+      },
+    },
+
+
+  }
+
+
   return (
-    <Grid container className={styles.textCenter}>
-      <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
-        <Typography className={styles.h2}>{title}</Typography>
-      </Grid>
-      <Grid item xl={6} lg={6} md={6} sm={6} xs={12}>
-        {ranking &&
-          ranking.slice(0, 5).map((item, index) => (
-            <div key={index} className={`${styles.marginT10} ${styles.flexRow}`}>
-              <div style={{ display: 'flex', borderRadius: '1em', height: '2em', minWidth: '2em', alignItems: 'center', justifyContent: 'center', background: '#3B94FF', color: '#FFF', fontSize: 15, paddingLeft: 5, paddingRight: 5 }}>
-                {item.value}
-              </div>
-              <label className={`${styles.label} ${styles.marginL}`}>
-                {item.label}
-              </label>
-            </div>
-          ))}
-      </Grid>
-      <Grid item xl={6} lg={6} md={6} sm={6} xs={12}>
-        {ranking &&
-          ranking.slice(5, 10).map((item, index) => (
-            <div key={index} className={`${styles.marginT10} ${styles.flexRow}`}>
-              <div className={styles.numberRanking}>{item.value}</div>
-              <label className={`${styles.label} ${styles.marginL}`}>{item.label}</label>
-            </div>
-          ))}
-      </Grid>
-    </Grid>
+    <>
+      <Typography className={styles.h2} style={{ textAlign: 'center', }}>
+        {title}
+      </Typography>
+      {ranking.lenght > 0 &&
+        <Chart
+          options={data.options}
+          series={data.series}
+          type='bar'
+          height={240}
+          width={'100%'}
+        />
+      }
+    </>
   );
 });

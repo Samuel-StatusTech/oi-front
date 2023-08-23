@@ -69,11 +69,7 @@ const Payments = ({ event, money = 0, debit = 0, credit = 0, pix = 0, webstore =
       xaxis: {
         categories,
         labels: {
-          show: true,
-          style: {
-            colors: ["#000"],
-            fontSize: '12px'
-          },
+          show: false,
           formatter: val => {
             return `R$ ${(val / 1000) > 0 ? (val / 1000).toFixed(3) : val}`
           }
