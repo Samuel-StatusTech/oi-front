@@ -79,12 +79,12 @@ const Event = ({ event, loading, status }) => {
                   {event.city}/{event.state}
                 </Typography>
               </Grid>
+              <Grid item className='doneWhen'>
+                <Typography className={styles.label}>{iniDate}</Typography>
+              </Grid>
             </>
           </Grid>
         </div>
-      </Grid>
-      <Grid item>
-        <Typography className={styles.label}>{iniDate}</Typography>
       </Grid>
     </Card >
   );
