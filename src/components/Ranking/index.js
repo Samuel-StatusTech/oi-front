@@ -16,22 +16,20 @@ export default memo(({ title, ranking }) => {
 
 
   useEffect(() => {
-    if (ranking.lenght > 0) {
-      let newInfo = {
-        series: [],
-        categories: []
-      }
-      ranking.forEach(r => {
-        if (r.value > 0) {
-          newInfo.series = [...newInfo.series, r.value]
-          newInfo.categories = [...newInfo.categories, r.label]
-        }
-      })
-
-      setTotal(newInfo.series.reduce((a, b) => a + b))
-      setSeriesData(newInfo.series)
-      setCategories(newInfo.categories)
+    let newInfo = {
+      series: [],
+      categories: []
     }
+    ranking.forEach(r => {
+      if (r.value > 0) {
+        newInfo.series = [...newInfo.series, r.value]
+        newInfo.categories = [...newInfo.categories, r.label]
+      }
+    })
+
+    setTotal(newInfo.series.reduce((a, b) => a + b))
+    setSeriesData(newInfo.series)
+    setCategories(newInfo.categories)
   }, [])
 
   const data = {
@@ -108,15 +106,13 @@ export default memo(({ title, ranking }) => {
       <Typography className={styles.h2} style={{ textAlign: 'center', }}>
         {title}
       </Typography>
-      {ranking.lenght > 0 &&
-        <Chart
-          options={data.options}
-          series={data.series}
-          type='bar'
-          height={240}
-          width={'100%'}
-        />
-      }
+      <Chart
+        options={data.options}
+        series={data.series}
+        type='bar'
+        height={240}
+        width={'100%'}
+      />
     </>
   );
 });
