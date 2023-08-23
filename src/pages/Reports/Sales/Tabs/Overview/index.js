@@ -384,9 +384,7 @@ export default (props) => {
               <Grid item xl={3} lg={6} md={12} sm={12} xs={12}>
                 <Card className={styles.fullHeight}>
                   <CardContent>
-                    {topList.length > 0 &&
-                      <Ranking title={'Mais Vendidos'} ranking={topList} />
-                    }
+                    <Ranking title={'Mais Vendidos'} ranking={topList} />
                   </CardContent>
                 </Card>
               </Grid>
