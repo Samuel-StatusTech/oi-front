@@ -42,6 +42,17 @@ const Home = ({ event, events }) => {
   const [operators, setOperators] = useState([]);
   const columns = [
     {
+      title: <Typography style={{ fontWeight: 'bold' }}>Status</Typography>,
+      field: 'status',
+      render: ({ status }) => <div style={{
+        width: 10,
+        height: 10,
+        borderRadius: 10,
+        background: status ? '#2FD8A0' : '#B22222',
+        justifySelf: 'center'
+      }} />
+    },
+    {
       title: <Typography style={{ fontWeight: 'bold' }}>Operador</Typography>,
       field: 'name',
     },
@@ -54,17 +65,6 @@ const Home = ({ event, events }) => {
       title: <Typography style={{ fontWeight: 'bold' }}>Última Sinc.</Typography>,
       field: 'last_sync',
       render: ({ last_sync }) => formatDatetime(last_sync)
-    },
-    {
-      title: <Typography style={{ fontWeight: 'bold' }}>Status</Typography>,
-      field: 'status',
-      render: ({ status }) => <div style={{
-        width: 10,
-        height: 10,
-        borderRadius: 10,
-        background: status ? '#2FD8A0' : '#B22222',
-        justifySelf: 'center'
-      }} />
     },
   ];
   const infos = {

@@ -13,11 +13,20 @@ const Payments = ({ event, money = 0, debit = 0, credit = 0, pix = 0, webstore =
 
   const colors = ['#2FD8A0', '#FF9774', '#31BCDC', '#54789D', '#34375A', '#CCCCCC']
   let seriesData = []
-  if (money > 0) seriesData.push(money)
-  if (debit > 0) seriesData.push(debit)
-  if (credit > 0) seriesData.push(credit)
-  if (pix > 0) seriesData.push(pix)
-  if (webstore > 0) seriesData.push(webstore)
+  let categories = []
+
+  const showInfo = (value, label) => {
+    if (value > 0) {
+      seriesData.push(value)
+      categories.push(label)
+    }
+  }
+
+  showInfo(money, 'Dinheiro')
+  showInfo(debit, 'Débito')
+  showInfo(credit, 'Crédito')
+  showInfo(pix, 'Pix')
+  showInfo(webstore, 'Loja Virtual')
 
   const mockData = {
     series: [{ name: 'Valor', data: seriesData }],
@@ -58,12 +67,7 @@ const Payments = ({ event, money = 0, debit = 0, credit = 0, pix = 0, webstore =
         show: false,
       },
       xaxis: {
-        categories: [
-          'Dinheiro',
-          'Débito',
-          'Crédito',
-          'Pix',
-        ],
+        categories,
         labels: {
           show: true,
           style: {
