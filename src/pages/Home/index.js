@@ -174,13 +174,13 @@ const Home = ({ event, events }) => {
 
   return (
     <Grid container direction='row' spacing={2}>
-      <Grid item lg={5} md={6} sm={12} xs={12}>
-        <EventCard event={eventData} loading={loading} />
+      <Grid item lg={6} md={6} sm={12} xs={12}>
+        <EventCard event={eventData} receipt={receipt} loading={loading} />
       </Grid>
-      <Grid item lg={3} md={6} sm={12} xs={12}>
+      {/* <Grid item lg={3} md={6} sm={12} xs={12}>
         <RecipeCard receipt={receipt} loading={loading} />
-      </Grid>
-      <Grid item lg={4} md={12} sm={12} xs={12}>
+      </Grid> */}
+      <Grid item lg={6} md={6} sm={12} xs={12}>
         <PaymentCard money={money} debit={debit} credit={credit} pix={pix} webstore={webstore} loading={loading} />
       </Grid>
       <Grid item lg={12} md={12} xs={12} sm={12}>

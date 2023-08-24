@@ -1,7 +1,8 @@
 import React from 'react';
 import { Grid, Typography, Chip, CardMedia } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
-import './styles/event.css'
+import './styles/event.css';
+import { format } from 'currency-formatter';
 
 import Card from './';
 
@@ -10,7 +11,7 @@ import photoDefault from '../../../assets/images/example.png';
 
 import useStyles from '../../../global/styles';
 
-const Event = ({ event, loading, status }) => {
+const Event = ({ event, receipt = 0, loading, status }) => {
   const styles = useStyles();
   const EventDate = new Date(event.date_ini);
   const EventDateEnd = new Date((event.date_end ?? '').replace("T00:00:00.000Z", "T23:59:59.000Z"));
@@ -52,13 +53,16 @@ const Event = ({ event, loading, status }) => {
 
   return (
     <Card>
-      <Grid container direction='row' alignItems='center'>
-        <Grid item xs={12} sm={12} md={4} lg={4} style={{ margin: 'auto' }}>
+      <Grid container className='eventContent'>
+        <Grid item xs={6} sm={6} md={5} lg={5} style={{ margin: 'auto' }}>
           <CardMedia
             component='img'
             image={event?.logo ?? photoDefault}
             style={{ height: 140, padding: 25, objectFit: 'contain' }}
           />
+          <Grid item className='doneWhen' >
+            <Typography className={styles.label}>{iniDate}</Typography>
+          </Grid>
         </Grid>
         <div className='eventInfoBox'>
           <Typography className={`${styles.h2} eventLabel`}>
@@ -79,8 +83,17 @@ const Event = ({ event, loading, status }) => {
                   {event.city}/{event.state}
                 </Typography>
               </Grid>
-              <Grid item className='doneWhen'>
-                <Typography className={styles.label}>{iniDate}</Typography>
+              <Grid container direction='column' >
+                <Grid item>
+                  <Typography className={styles.h2} style={{ marginTop: 10, marginBottom: -10 }}>
+                    {loading ? <Skeleton animation='wave' width='80%' /> : 'Total Receita'}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Typography className={styles.moneyLabelBlue}>
+                    {loading ? <Skeleton animation='wave' variant='rect' height={30} /> : format(receipt, { code: 'BRL' })}
+                  </Typography>
+                </Grid>
               </Grid>
             </>
           </Grid>
