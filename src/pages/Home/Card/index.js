@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent } from '@material-ui/core';
 
-const MainCard = ({ icon, title, children, style }) => {
+const MainCard = ({ icon, title, children, style, bg = '' }) => {
   return (
     <Card style={{ height: '100%' }}>
       {title && <CardHeader title={
@@ -11,9 +11,14 @@ const MainCard = ({ icon, title, children, style }) => {
             <label>{title}</label>
           </div>
         )
-        
-        } style={style} />}
-      <CardContent style={{ padding: '8px 16px' }}>{children}</CardContent>
+
+      } style={style} />}
+      <CardContent style={{
+        padding: '8px 16px',
+        backgroundColor: bg.trim() !== '' ? bg : '#FFF',
+        height: '100%'
+      }}
+      >{children}</CardContent>
     </Card>
   );
 };

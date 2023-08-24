@@ -42,19 +42,41 @@ const Home = ({ event, events }) => {
   const [operators, setOperators] = useState([]);
   const columns = [
     {
-      title: <Typography style={{ fontWeight: 'bold' }}>Status</Typography>,
-      field: 'status',
-      render: ({ status }) => <div style={{
-        width: 10,
-        height: 10,
-        borderRadius: 10,
-        background: status ? '#2FD8A0' : '#B22222',
-        justifySelf: 'center'
-      }} />
-    },
-    {
-      title: <Typography style={{ fontWeight: 'bold' }}>Operador</Typography>,
+      title: <Typography style={{ fontWeight: 'bold', marginLeft: 15 }}>Operador</Typography>,
       field: 'name',
+      render: ({ name }) => {
+
+        const { realName, status } = name
+
+        return (
+          <td class="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall" value={realName} style={{
+            color: 'inherit',
+            boxSizing: 'border-box',
+            fontSize: 'inherit',
+            fontFamily: 'inherit',
+            fontWeight: 'inherit',
+            position: 'relative',
+            transform: 'translate(23px)'
+          }}>
+            <div style={{
+              backgroundColor: 'purple',
+              position: 'absolute',
+              transform: 'translate(-8px, 5px)',
+            }}>
+              <div style={{
+                width: 10,
+                height: 10,
+                borderRadius: 10,
+                background: (status) ? '#2FD8A0' : '#B22222',
+                justifySelf: 'center',
+                position: 'absolute',
+                transform: 'translate(-15px)',
+              }} />
+            </div>
+            {realName}
+          </td>
+        )
+      }
     },
     {
       title: <Typography style={{ fontWeight: 'bold' }}>Total</Typography>,
@@ -69,6 +91,11 @@ const Home = ({ event, events }) => {
   ];
   const infos = {
     infoCards: [
+      {
+        title: 'Total Receita',
+        icon: { src: totalIconCard, alt: 'Ícone total receita' },
+        value: (money + debit + credit + pix) * 100,
+      },
       {
         title: 'Vendas Dinheiro',
         icon: { src: returnsTotalIcon, alt: 'Ícone vendas dinheiro' },
@@ -157,7 +184,10 @@ const Home = ({ event, events }) => {
               if (arrId >= 0) {
                 const newOp = {
                   ...completeOperatorsInfo[arrId],
-                  status: o.status
+                  name: {
+                    realName: completeOperatorsInfo[arrId].name,
+                    status: o.status
+                  }
                 }
                 completeOperatorsInfo[arrId] = newOp
               }
@@ -174,13 +204,13 @@ const Home = ({ event, events }) => {
 
   return (
     <Grid container direction='row' spacing={2}>
-      <Grid item lg={6} md={6} sm={12} xs={12}>
-        <EventCard event={eventData} receipt={receipt} loading={loading} />
+      <Grid item lg={5} md={6} sm={12} xs={12}>
+        <EventCard event={eventData} loading={loading} />
       </Grid>
-      {/* <Grid item lg={3} md={6} sm={12} xs={12}>
+      <Grid item lg={3} md={6} sm={12} xs={12}>
         <RecipeCard receipt={receipt} loading={loading} />
-      </Grid> */}
-      <Grid item lg={6} md={6} sm={12} xs={12}>
+      </Grid>
+      <Grid item lg={4} md={12} sm={12} xs={12}>
         <PaymentCard money={money} debit={debit} credit={credit} pix={pix} webstore={webstore} loading={loading} />
       </Grid>
       <Grid item lg={12} md={12} xs={12} sm={12}>

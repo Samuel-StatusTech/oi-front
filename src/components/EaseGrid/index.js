@@ -85,9 +85,7 @@ const EaseGrid = ({
             rowStyle: (data, index) => {
               const style = {};
 
-              if (!(index % 2)) {
-                style.backgroundColor = '#f3f5f9';
-              }
+              if (!(index % 2)) style.backgroundColor = '#f3f5f9';
               style.fontSize = '14px';
               if (rowStyle instanceof Function) {
                 return {

@@ -11,7 +11,7 @@ const Payments = ({ event, money = 0, debit = 0, credit = 0, pix = 0, webstore =
   const styles = useStyles();
   const total = money + debit + credit + pix + webstore
 
-  const colors = ['#2FD8A0', '#FF9774', '#31BCDC', '#54789D', '#34375A', '#CCCCCC']
+  const colors = ['#6AED09', '#F0B000', '#5102E0', '#F71D0A', '#0AECF7', '#CCCCCC']
   let seriesData = []
   let categories = []
 
