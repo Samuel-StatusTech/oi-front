@@ -1,0 +1,7 @@
+div:has(> div > .groupSelect) {
+  flex: 1;
+}
+
+.groupSelect {
+  width: fit-content;
+}
