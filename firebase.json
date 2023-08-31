@@ -16,7 +16,7 @@
   },
   "emulators": {
     "database": {
-      "port": 9020
+      "port": 9000
     },
     "hosting": {
       "port": 5000
@@ -25,7 +25,8 @@
       "port": 9199
     },
     "ui": {
-      "enabled": true
+      "enabled": true,
+      "port": 4004
     },
     "singleProjectMode": true
   }

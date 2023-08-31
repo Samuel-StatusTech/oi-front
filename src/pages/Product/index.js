@@ -96,7 +96,11 @@ const Product = () => {
       const { success, groups } = data;
 
       if (success) {
-        setGroupList([{ id: 'todos', name: 'Todos' }, ...groups]);
+        setGroupList([
+          { id: 'todos', name: 'Todos' },
+          { id: 'combo', name: 'Combos' },
+          ...groups
+        ]);
       } else {
         alert('Erro ao carregar os grupos');
       }
@@ -104,12 +108,12 @@ const Product = () => {
   }, []);
 
   useEffect(() => {
-    if(groupList.length == 0)
+    if (groupList.length == 0)
       return;
-      
+
     const group = localStorage.getItem('GROUP_SAVED');
-    
-    if(group) {
+
+    if (group && group !== 'combo') {
       setGroup(group);
       handleQuery({ group });
     } else {
@@ -134,9 +138,9 @@ const Product = () => {
       return false;
     }
 
-    if(window.confirm("Você tem certeza que deseja inativar todos os produtos?")) {
+    if (window.confirm("Você tem certeza que deseja inativar todos os produtos?")) {
       setLoading(true);
-      await Api.put('/product/disableAll', { products: data.map(item=>item.id) });
+      await Api.put('/product/disableAll', { products: data.map(item => item.id) });
       handleQuery({})
       setLoading(false);
     }
@@ -147,14 +151,13 @@ const Product = () => {
       const selectedGroup = props.group ? props.group : group;
       const searchText = props.search !== undefined ? props.search : search;
       const selectedStatus = props.status ? props.status : status;
-      const url = `/product/getList?type=${props.type ? props.type : type}${
-        selectedGroup !== 'todos' ? '&group=' + selectedGroup : ''
-      }&search=${searchText}${selectedStatus !== 'todos' ? `&status=${selectedStatus}` : ''}`;
+      const url = `/product/getList?type=${props.type ? props.type : type}${selectedGroup !== 'todos' ? '&group=' + selectedGroup : ''
+        }&search=${searchText}${selectedStatus !== 'todos' ? `&status=${selectedStatus}` : ''}`;
 
       const { data } = await Api.get(url);
 
       if (data.success) {
-        setData( data.products.sort((a, b) => a.status == b.status ? a.name.localeCompare(b.name) : a.status > b.status ? -1 : 1) );
+        setData(data.products.sort((a, b) => a.status == b.status ? a.name.localeCompare(b.name) : a.status > b.status ? -1 : 1));
       }
     } catch (error) {
       console.log(error);
@@ -179,9 +182,15 @@ const Product = () => {
   };
 
   const handleGroup = (e) => {
-    setGroup(e.target.value);
+    const type = e.target.value
+    setGroup(type);
     localStorage.setItem('GROUP_SAVED', e.target.value);
-    handleQuery({ group: e.target.value });
+    if (type === 'combo') {
+      const comboList = data.filter(product => product.type === 'combo')
+      setData(comboList)
+    } else {
+      handleQuery({ group: e.target.value })
+    }
   };
   const handleStatus = (e) => {
     setStatus(e.target.value);
@@ -247,21 +256,21 @@ const Product = () => {
     complement: '/product/complement',
   };
   const handleDelete = async (row) => {
-    if(window.confirm("Tem certeza que deseja excluir?")) {
-        if (loading) {
-          return false;
-        }
+    if (window.confirm("Tem certeza que deseja excluir?")) {
+      if (loading) {
+        return false;
+      }
 
-        setLoading(true);
-        const url = deleteType?.[row.type] ? `${deleteType[row.type]}/${row.id}` : `/product/simple/${row.id}`;
-        const { data } = await Api.delete(url);
+      setLoading(true);
+      const url = deleteType?.[row.type] ? `${deleteType[row.type]}/${row.id}` : `/product/simple/${row.id}`;
+      const { data } = await Api.delete(url);
 
-        if (!data) {
-          alert('O produto ja foi vendido em algum evento');
-        }
+      if (!data) {
+        alert('O produto ja foi vendido em algum evento');
+      }
 
-        await handleQuery({});
-        setLoading(false);
+      await handleQuery({});
+      setLoading(false);
     }
   };
   return (
@@ -412,11 +421,11 @@ const Product = () => {
           }}
         />
       </Grid>
-      {!isGrid && (<Grid item style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
-                <ButtonRound variant='contained' style={{height: 30, color: 'white', backgroundColor: 'red'}} onClick={disabelAll}>
-                  Inativar Produtos
-                </ButtonRound>
-              </Grid>)}
+      {!isGrid && (<Grid item style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        <ButtonRound variant='contained' style={{ height: 30, color: 'white', backgroundColor: 'red' }} onClick={disabelAll}>
+          Inativar Produtos
+        </ButtonRound>
+      </Grid>)}
     </Grid>
   );
 };
