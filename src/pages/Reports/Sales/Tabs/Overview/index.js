@@ -9,13 +9,11 @@ import { format } from 'currency-formatter';
 import { Between } from '../../../../../components/Input/DateTime';
 import Tooltip from '../../../../../components/Tooltip';
 import Ranking from '../../../../../components/Ranking';
-//import ChartPie from '../../../../../components/Chart/Pie';
-import ChartPie from './Pie';
 import ChartPieG from './PieG';
 import { formatDateTimeToDB } from '../../../../../utils/date';
 import EaseGrid from '../../../../../components/EaseGrid/index';
 import useStyles from '../../../../../global/styles';
-import Skeleton from '@material-ui/lab/Skeleton';
+
 const titles = {
   sales: {
     all: 'Vendas Bar',
@@ -168,7 +166,7 @@ export default (props) => {
         const dateURL = selected !== 1 ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}` : '';
         const groupURL = (group && group != 'all') ? `&group_id=${group}` : '';
         const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
-        
+
         cancelTokenSource.current = axios.CancelToken.source();
         const { data } = await Api.get(`/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
 
@@ -189,7 +187,7 @@ export default (props) => {
           salesItems,
         });
         setTopList(topListMap);
-        if(data.productInfo.productList)
+        if (data.productInfo.productList)
           setProducts(data.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
         setPayment(data.paymentInfo);
       }
@@ -201,13 +199,13 @@ export default (props) => {
   };
 
   useEffect(() => {
-    if(selected != 2){
+    if (selected != 2) {
       onSearch();
     }
   }, [event, productType, group, selected, courtesies]);
-  
+
   const onSearch = () => {
-    if(cancelTokenSource && cancelTokenSource.current) {
+    if (cancelTokenSource && cancelTokenSource.current) {
       cancelTokenSource.current.cancel()
       setTimeout(() => {
         handleSearch();
@@ -218,28 +216,28 @@ export default (props) => {
   }
 
   const exportPdfReport = async () => {
-    if(loadingReport)
+    if (loadingReport)
       return
     setLoadingReport(true);
     Api.post(`/reportPDF/product`, {
-      event, 
+      event,
       dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : '',
       dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : ''
     })
-    .then(({  }) => {
-      firebase.storage().ref(`reports/${event}/all.pdf`).getDownloadURL().then(function(url) {
+      .then(({ }) => {
+        firebase.storage().ref(`reports/${event}/all.pdf`).getDownloadURL().then(function (url) {
           setLoadingReport(false);
           window.open(url, '_blank')
-      });
-    })
-    .catch((error) => {
+        });
+      })
+      .catch((error) => {
         setLoadingReport(false);
-        console.log({error})
-    });
+        console.log({ error })
+      });
   };
 
   const exportPdfReportByType = async () => {
-    if(loadingReport)
+    if (loadingReport)
       return
     setLoadingReport(true);
     Api.post(`/reportPDF/product`, {
@@ -250,16 +248,16 @@ export default (props) => {
       dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : '',
       dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : ''
     })
-    .then(({  }) => {
-      firebase.storage().ref(`reports/${event}/all.pdf`).getDownloadURL().then(function(url) {
+      .then(({ }) => {
+        firebase.storage().ref(`reports/${event}/all.pdf`).getDownloadURL().then(function (url) {
           setLoadingReport(false);
           window.open(url, '_blank')
-      });
-    })
-    .catch((error) => {
+        });
+      })
+      .catch((error) => {
         setLoadingReport(false);
-        console.log({error})
-    });
+        console.log({ error })
+      });
   };
 
   return (
@@ -305,12 +303,12 @@ export default (props) => {
                   </TextField>
                 </Grid>
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
-                  <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF'}}>
+                  <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
                     {loadingReport ?
-                      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center'}}>
+                      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
                         <CircularProgress size={20} color='#0097FF' />
                       </div>
-                    :
+                      :
                       'Gerar PDF'
                     }
                   </Button>
@@ -319,12 +317,12 @@ export default (props) => {
             </Grid>
           ) : (
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF'}}>
+              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
                 {loadingReport ?
-                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center'}}>
+                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
                     <CircularProgress size={20} color='#0097FF' />
                   </div>
-                :
+                  :
                   'Gerar PDF'
                 }
               </Button>
@@ -350,39 +348,32 @@ export default (props) => {
         <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center', marginTop: 20 }}>
           <CircularProgress />
         </div>
-      :
+        :
         <Grid item container>
           <Grid container spacing={2}>
             <Grid item xl={6} lg={12} md={12} sm={12} xs={12}>
               <CardValue productType={productType} infos={cardInfo} />
             </Grid>
             <Grid item xl={productType !== 'all' ? 3 : 6} lg={6} md={12} sm={12} xs={12}>
-              <Card className={styles.gridCardContainer}>
-                <CardContent>
+              <Card>
+                <CardContent sx={12}>
                   <Grid>
                     <Grid item>
                       <Typography className={`${styles.h2} ${styles.textCenter}`}>Formas de Pagamento</Typography>
-                      {
+                      {payment &&
                         ((payment.credit / 100 > 0) || (payment.debit / 100 > 0) || (payment.money / 100 > 0) || (payment.pix / 100 > 0)) &&
-                        /*(productType === 'all' ? 
-                          <ChartPie
-                            series={[payment.credit / 100, payment.debit / 100, payment.money / 100, payment.pix / 100, 0, 0]}
-                            labels={['Crédito', 'Débito', 'Dinheiro', 'Pix', 'Crédito Online', 'Pix Online']}
-                            height={200}
-                          />
-                        :*/
-                          <ChartPieG
-                            series={[payment.credit / 100, payment.debit / 100, payment.money / 100, payment.pix / 100, 
-                            // 0, 0
+                        <ChartPieG
+                          values={{
+                            credit: payment.credit,
+                            debit: payment.debit,
+                            money: payment.money,
+                            pix: payment.pix
+                          }}
+                          series={[payment.credit / 100, payment.debit / 100, payment.money / 100, payment.pix / 100,
                           ]}
-                            labels={['Crédito', 'Débito', 'Dinheiro', 'Pix', 
-                            // 'Crédito Online', 'Pix Online'
-                          ]}
-                            height={500}
-                            width={400}
-                            showValueLegend={group == 'all'}
-                          />
-                        //)
+                          labels={['Crédito', 'Débito', 'Dinheiro', 'Pix']}
+                          showValueLegend={group == 'all'}
+                        />
                       }
                     </Grid>
                   </Grid>
@@ -398,9 +389,9 @@ export default (props) => {
                 </Card>
               </Grid>
             )}
-              <Grid item xs={12}>
-                <EaseGrid columns={columns} data={products} pageSize={10} />
-              </Grid>
+            <Grid item xs={12}>
+              <EaseGrid columns={columns} data={products} pageSize={10} />
+            </Grid>
           </Grid>
         </Grid>
       }

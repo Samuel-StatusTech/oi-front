@@ -184,12 +184,20 @@ export default makeStyles((theme) => ({
     color: colors.darkGray.color,
     ...textType.h2,
   },
+  h2white: {
+    color: '#FFF',
+    ...textType.h2,
+  },
   h2Blue: {
     ...textType.h2,
     color: colors.blue.color,
   },
   label: {
     color: colors.darkGray.color,
+    fontSize: '14px',
+  },
+  labelWhite: {
+    color: '#FFF',
     fontSize: '14px',
   },
   moneyLabel: {
@@ -199,6 +207,10 @@ export default makeStyles((theme) => ({
   moneyLabelBlue: {
     ...textType.moneyLabel,
     color: colors.blue.color,
+  },
+  moneyLabelWhite: {
+    ...textType.moneyLabel,
+    color: '#FFF',
   },
   moneyLabelRed: {
     ...textType.moneyLabel,

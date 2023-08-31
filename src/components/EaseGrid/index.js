@@ -55,15 +55,6 @@ const EaseGrid = ({
   const { toolbarConfig, paginationConfig, pageConfig, rowStyle } = config || {};
   const styles = useStyles();
 
-  if(!pageSizeOptions.find(e => e == pageSize))
-    pageSizeOptions.push(pageSize)
-  pageSizeOptions.sort((a, b) => {
-    if(a < b)
-      return -1;
-    if(a > b)
-      return 1;
-    return 0;
-  })
 
   return (
     <>
@@ -94,9 +85,7 @@ const EaseGrid = ({
             rowStyle: (data, index) => {
               const style = {};
 
-              if (!(index % 2)) {
-                style.backgroundColor = '#f3f5f9';
-              }
+              if (!(index % 2)) style.backgroundColor = '#f3f5f9';
               style.fontSize = '14px';
               if (rowStyle instanceof Function) {
                 return {

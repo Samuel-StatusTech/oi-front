@@ -59,8 +59,8 @@ const Navbar = ({ toggle, event }) => {
   useEffect(() => {
     Api.get('/getProfileData')
       .then(({ data }) => {
-        if(!localStorage.getItem('hideExpire')){
-          setExpireAt({ show: true, date: data.expireAt});
+        if (!localStorage.getItem('hideExpire')) {
+          setExpireAt({ show: true, date: data.expireAt });
         }
         setUserData(data);
       })
@@ -74,101 +74,109 @@ const Navbar = ({ toggle, event }) => {
   }, [event]);
 
   const getLastSync = (event) => {
-    setSync(null);
-    Api.get(`/sync/getLastSync/${event}`)
-      .then(({ data }) => {
+    setSync(null)
+
+    Api.get(`/statistical/resume/${event}`)
+      .then(async ({ data }) => {
         if (data.success) {
-          setSync(data.sync);
+          const { operators } = data;
+
+          let lastGettedSync = new Date(operators[0].last_sync).getTime()
+
+          operators.forEach(op => {
+            if (new Date(op.last_sync).getTime() > lastGettedSync) {
+              lastGettedSync = new Date(op.last_sync).getTime()
+            }
+          })
+
+          setSync(lastGettedSync)
         }
       })
-      .catch((error) => {
-        setSync('error');
-      });
   };
 
-    const formatPrice = (value) => {
-        let formatted = `R$ ${(value/100).toFixed(2)}`
-        return formatted.replace(".", ",")
-    }
+  const formatPrice = (value) => {
+    let formatted = `R$ ${(value / 100).toFixed(2)}`
+    return formatted.replace(".", ",")
+  }
 
   const exportGeneralReport = async () => {
     Api.get(`/report/${event}`)
-    .then(({ data }) => {
+      .then(({ data }) => {
         let fileText = "Operador ; Dinheiro ; Débito ; Crédito ; Total"
-        for(const key in data) {
-            const datas = data[key]
-            fileText += `\n${datas.username} (${datas.name}) ; ${formatPrice(datas.money)} ; ${formatPrice(datas.debit)} ; ${formatPrice(datas.credit)} ; ${formatPrice(datas.money + datas.debit + datas.credit)}`
+        for (const key in data) {
+          const datas = data[key]
+          fileText += `\n${datas.username} (${datas.name}) ; ${formatPrice(datas.money)} ; ${formatPrice(datas.debit)} ; ${formatPrice(datas.credit)} ; ${formatPrice(datas.money + datas.debit + datas.credit)}`
         }
-        
+
         var blob = new Blob([fileText], { type: "text/plain;charset=utf-8" });
         saveAs(blob, "Resumo Geral.csv");
-    })
-    .catch((error) => {
-        console.log({error})
-    });
+      })
+      .catch((error) => {
+        console.log({ error })
+      });
   };
 
   const exportProductReport = async () => {
     Api.get(`/reportProduct/${event}`)
-    .then(({ data }) => {
+      .then(({ data }) => {
         let fileText = ` ; ; ; ; `;
-        for(const key in data) {
-            const datas = data[key]
-            const { top5, groups, username, name} = datas;
-            
-            fileText += `\n ; ; ; ; `;
-            fileText += `\n ; ; ; ; `;
-            fileText += `\nOperador: ; ${username} (${name}) ; ; ; `;
-            fileText += `\nTop 05 (Mais Vendidos) ; ; ; ; `;
-            fileText += `\nProduto ; Quantidade ; Preço ; Total ; `;
+        for (const key in data) {
+          const datas = data[key]
+          const { top5, groups, username, name } = datas;
 
-            Object.keys(top5).sort((a, b) => {
-                let totalA = 0;
-                let totalB = 0
-                for(const key in top5[a]) {
-                    totalA += top5[a][key].qtd;
-                }
-                for(const key in top5[b]) {
-                    totalB += top5[b][key].qtd;
-                }
-                if(totalA > totalB)
-                    return -1;
-                if(totalA < totalB)
-                    return 1;
-                return 0;
-            }).map((productKey, idx) => {
-                if(idx > 4) return
-                const products = top5[productKey]
+          fileText += `\n ; ; ; ; `;
+          fileText += `\n ; ; ; ; `;
+          fileText += `\nOperador: ; ${username} (${name}) ; ; ; `;
+          fileText += `\nTop 05 (Mais Vendidos) ; ; ; ; `;
+          fileText += `\nProduto ; Quantidade ; Preço ; Total ; `;
 
-                Object.keys(products).sort((a,b) => (products[a].qtd > products[b].qtd ? -1 : (products[a].qtd < products[b].qtd ? 1 : 0))).map(key => {
-                    const { name, qtd, price } = products[key];
-                    fileText += `\n${name} ; ${qtd} ; ${formatPrice(price)} ; ${formatPrice(qtd*price)} ; `;
-                })
+          Object.keys(top5).sort((a, b) => {
+            let totalA = 0;
+            let totalB = 0
+            for (const key in top5[a]) {
+              totalA += top5[a][key].qtd;
+            }
+            for (const key in top5[b]) {
+              totalB += top5[b][key].qtd;
+            }
+            if (totalA > totalB)
+              return -1;
+            if (totalA < totalB)
+              return 1;
+            return 0;
+          }).map((productKey, idx) => {
+            if (idx > 4) return
+            const products = top5[productKey]
+
+            Object.keys(products).sort((a, b) => (products[a].qtd > products[b].qtd ? -1 : (products[a].qtd < products[b].qtd ? 1 : 0))).map(key => {
+              const { name, qtd, price } = products[key];
+              fileText += `\n${name} ; ${qtd} ; ${formatPrice(price)} ; ${formatPrice(qtd * price)} ; `;
             })
+          })
 
-            fileText += `\n ; ; ; ; `;
-            fileText += `\nVendas por Produto ; ; ; ; `;
-            fileText += `\nGrupo ; Produto ; Quantidade ; Preço ; Total`;
+          fileText += `\n ; ; ; ; `;
+          fileText += `\nVendas por Produto ; ; ; ; `;
+          fileText += `\nGrupo ; Produto ; Quantidade ; Preço ; Total`;
 
-            Object.keys(groups).map(groupKey => {
-                const group = groups[groupKey]
-                const { groupName } = group
-                Object.keys(group.products).map(productKey => {
-                    const products = group.products[productKey]
-                    Object.keys(products).map(key => {
-                        const { name, qtd, price } = products[key]
-                        fileText += `\n${groupName} ; ${name} ; ${qtd} ; ${formatPrice(price)} ; ${formatPrice(qtd*price)}`;
-                    })
-                })
+          Object.keys(groups).map(groupKey => {
+            const group = groups[groupKey]
+            const { groupName } = group
+            Object.keys(group.products).map(productKey => {
+              const products = group.products[productKey]
+              Object.keys(products).map(key => {
+                const { name, qtd, price } = products[key]
+                fileText += `\n${groupName} ; ${name} ; ${qtd} ; ${formatPrice(price)} ; ${formatPrice(qtd * price)}`;
+              })
             })
+          })
         }
-        
+
         var blob = new Blob([fileText], { type: "text/plain;charset=utf-8" });
         saveAs(blob, "Vendas por produto.csv");
-    })
-    .catch((error) => {
-        console.log({error})
-    });
+      })
+      .catch((error) => {
+        console.log({ error })
+      });
   };
 
   return (

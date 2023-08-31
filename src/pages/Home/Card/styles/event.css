@@ -1,0 +1,145 @@
+.eventContent {
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+div:has(> .eventInfoBox) {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+div:has(> .doneWhen) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  /* flex-grow: 0; */
+  /* max-width: unset; */
+  flex-basis: unset;
+}
+
+.eventInfoBox {
+  flex: 1;
+}
+
+.eventLabel {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.doneWhen {
+  min-width: fit-content;
+  margin: 10px auto 0;
+}
+
+@media (min-width:1640px) {
+  .eventInfoBox {
+    max-width: unset;
+    width: unset;
+    flex: 1;
+  }
+
+  .eventLabel {
+    max-width: unset;
+    overflow: unset;
+    display: unset;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+  }
+}
+
+@media (max-width:1280px) {
+  .eventInfoBox {
+    max-width: unset;
+  }
+}
+
+@media (max-width:1024px) {
+  /* .eventContent {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  div:has(> .eventInfoBox) {
+    display: flex;
+    gap: 20px;
+  } */
+
+  .eventContent {
+    flex-direction: column;
+  }
+
+  div:has(> .doneWhen) {
+    width: 100%;
+    flex-grow: 0;
+    max-width: unset;
+  }
+
+  .doneWhen {
+    min-width: fit-content;
+    margin: 10px auto 0;
+  }
+
+  .eventInfoBox {
+    width: 100%;
+  }
+}
+
+@media (max-width:960px) {
+  .eventContent {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  div:has(> .doneWhen) {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-grow: 0;
+    max-width: unset;
+    flex-basis: unset;
+  }
+
+  .doneWhen {
+    width: 100%;
+    margin-top: 0px;
+  }
+
+  .eventLabel {
+    flex: unset;
+    width: 100%;
+    max-width: unset;
+    overflow: unset;
+    display: unset;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+  }
+}
+
+@media (max-width:540px) {
+  div:has(> .doneWhen) {
+    width: 100%;
+  }
+
+  .eventContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width:460px) {
+
+  .doneWhen {
+    width: 100%;
+    margin-top: 0px;
+  }
+
+  .eventInfoBox {
+    margin-top: 10px;
+  }
+}

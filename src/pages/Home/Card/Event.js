@@ -1,6 +1,7 @@
 import React from 'react';
 import { Grid, Typography, Chip, CardMedia } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
+import './styles/event.css'
 
 import Card from './';
 
@@ -16,11 +17,11 @@ const Event = ({ event, loading, status }) => {
   const Today = new Date();
   const rest_ini = Today.getTime() - EventDate.getTime();
   const rest_end = Today.getTime() - EventDateEnd.getTime();
-  const isToday = (rest_ini >= 0 && rest_end <=0) || (Today.getUTCDate() == EventDate.getUTCDate() && Today.getUTCMonth() == EventDate.getUTCMonth() && Today.getUTCFullYear() == EventDate.getUTCFullYear())
+  const isToday = (rest_ini >= 0 && rest_end <= 0) || (Today.getUTCDate() == EventDate.getUTCDate() && Today.getUTCMonth() == EventDate.getUTCMonth() && Today.getUTCFullYear() == EventDate.getUTCFullYear())
   const iniDate =
     isToday ? (
       <Chip className={`${styles.backgroundOrange} ${styles.marginT10}`} label={'Hoje'} size='small' />
-    ) : rest_ini<0 && (rest_ini*-1) < DAY ? (
+    ) : rest_ini < 0 && (rest_ini * -1) < DAY ? (
       <Chip className={`${styles.backgroundGreen} ${styles.marginT10}`} label={'Amanhã'} size='small' />
     ) : rest_ini < 0 ? (
       <Chip className={`${styles.backgroundGreen} ${styles.marginT10}`} label={`Em ${formatDate(EventDate)}`} size='small' />
@@ -30,7 +31,7 @@ const Event = ({ event, loading, status }) => {
       />
     );
 
-  if(loading) {
+  if (loading) {
     return (
       <Card>
         <Grid container direction='row' alignItems='center'>
@@ -52,15 +53,15 @@ const Event = ({ event, loading, status }) => {
   return (
     <Card>
       <Grid container direction='row' alignItems='center'>
-        <Grid item xs={12} sm={12} md={4} lg={4}>
+        <Grid item xs={12} sm={12} md={4} lg={4} style={{ margin: 'auto' }}>
           <CardMedia
             component='img'
             image={event?.logo ?? photoDefault}
             style={{ height: 140, padding: 25, objectFit: 'contain' }}
           />
         </Grid>
-        <div>
-          <Typography className={styles.h2}>
+        <div className='eventInfoBox'>
+          <Typography className={`${styles.h2} eventLabel`}>
             {event.name}
           </Typography>
           <Grid container direction='column'>
@@ -69,7 +70,7 @@ const Event = ({ event, loading, status }) => {
                 {
                   (new Date(event.date_end)).getFullYear() > 1970 ?
                     <Typography className={styles.label}>{`De ${formatDate(event.date_ini)} até ${formatDate(event.date_end)}`}</Typography>
-                  :
+                    :
                     <Typography className={styles.label}>{formatDate(event.date_ini)}</Typography>
                 }
               </Grid>
@@ -78,14 +79,14 @@ const Event = ({ event, loading, status }) => {
                   {event.city}/{event.state}
                 </Typography>
               </Grid>
-              <Grid item>
+              <Grid item className='doneWhen'>
                 <Typography className={styles.label}>{iniDate}</Typography>
               </Grid>
             </>
           </Grid>
         </div>
       </Grid>
-    </Card>
+    </Card >
   );
 };
 

@@ -23,6 +23,7 @@ import debitTotalIcon from '../../assets/icons/ic_total-debito.svg';
 import pixTotalIcon from '../../assets/icons/ic_total-pix.svg';
 import returnsTotalIcon from '../../assets/icons/ic_total-extornos.svg';
 import virtualIcon from '../../assets/icons/ic_loja.svg';
+import { setSizeOptions } from '../../utils/tablerows';
 const Home = ({ event, events }) => {
   const styles = useStyles();
   const [eventData, setEventData] = useState({});
@@ -35,13 +36,47 @@ const Home = ({ event, events }) => {
   const [debit, setDebit] = useState(0);
   const [credit, setCredit] = useState(0);
   const [pix, setPix] = useState(0);
+  const [webstore, setWebStore] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const [operators, setOperators] = useState([]);
   const columns = [
     {
-      title: <Typography style={{ fontWeight: 'bold' }}>Operador</Typography>,
+      title: <Typography style={{ fontWeight: 'bold', marginLeft: 15 }}>Operador</Typography>,
       field: 'name',
+      render: ({ name }) => {
+
+        const { realName, status } = name
+
+        return (
+          <td class="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall" value={realName} style={{
+            color: 'inherit',
+            boxSizing: 'border-box',
+            fontSize: 'inherit',
+            fontFamily: 'inherit',
+            fontWeight: 'inherit',
+            position: 'relative',
+            transform: 'translate(23px)'
+          }}>
+            <div style={{
+              backgroundColor: 'purple',
+              position: 'absolute',
+              transform: 'translate(-8px, 5px)',
+            }}>
+              <div style={{
+                width: 10,
+                height: 10,
+                borderRadius: 10,
+                background: (status) ? '#2FD8A0' : '#B22222',
+                justifySelf: 'center',
+                position: 'absolute',
+                transform: 'translate(-15px)',
+              }} />
+            </div>
+            {realName}
+          </td>
+        )
+      }
     },
     {
       title: <Typography style={{ fontWeight: 'bold' }}>Total</Typography>,
@@ -49,7 +84,7 @@ const Home = ({ event, events }) => {
       render: ({ value }) => format(value / 100, { code: 'BRL' }),
     },
     {
-      title: <Typography style={{ fontWeight: 'bold' }}>Última Sincronização</Typography>,
+      title: <Typography style={{ fontWeight: 'bold' }}>Última Sinc.</Typography>,
       field: 'last_sync',
       render: ({ last_sync }) => formatDatetime(last_sync)
     },
@@ -88,15 +123,21 @@ const Home = ({ event, events }) => {
       },
     ],
   };
+
+  const getOperatorsData = async () => {
+    const info = await Api.get('/statistical/saleOperations/f8eb3d9a6373?type=all')
+    return info.data.list
+  }
+
   useEffect(() => {
     if (event) {
       setLoading(true);
       setEventData(events.find((item) => item.id === event));
 
       Api.get(`/statistical/resume/${event}`)
-        .then(({ data }) => {
+        .then(async ({ data }) => {
           if (data.success) {
-            const { totalReceipt, total, operators } = data;
+            const { totalReceipt, total, operators: operatorsInfo } = data;
             const money = parseInt(totalReceipt.total_money || 0, 10) / 100;
             const debit = parseInt(totalReceipt.total_debit || 0, 10) / 100;
             const credit = parseInt(totalReceipt.total_credit || 0, 10) / 100;
@@ -134,7 +175,25 @@ const Home = ({ event, events }) => {
 
             setReceipt(receipt / 100);
 
-            setOperators(operators);
+            const fullOperatorsInfo = await getOperatorsData()
+            let completeOperatorsInfo = [...operatorsInfo]
+
+            fullOperatorsInfo.forEach(o => {
+              const arrId = completeOperatorsInfo.findIndex(op => op.name === o.name)
+
+              if (arrId >= 0) {
+                const newOp = {
+                  ...completeOperatorsInfo[arrId],
+                  name: {
+                    realName: completeOperatorsInfo[arrId].name,
+                    status: o.status
+                  }
+                }
+                completeOperatorsInfo[arrId] = newOp
+              }
+            })
+
+            setOperators(completeOperatorsInfo);
           }
         })
         .finally(() => {
@@ -152,16 +211,16 @@ const Home = ({ event, events }) => {
         <RecipeCard receipt={receipt} loading={loading} />
       </Grid>
       <Grid item lg={4} md={12} sm={12} xs={12}>
-        <PaymentCard money={money} debit={debit} credit={credit} pix={pix} loading={loading} />
+        <PaymentCard money={money} debit={debit} credit={credit} pix={pix} webstore={webstore} loading={loading} />
       </Grid>
       <Grid item lg={12} md={12} xs={12} sm={12}>
-          <Grid container spacing={2}>
-              {infos.infoCards.map((item, index) => (
-                <Grid item xl={2} lg={2} md={4} sm={6} xs={12} key={index}>
-                  <CardData title={item.title} value={format(item.value / 100, { code: 'BRL' })} icon={item.icon} styles={{height: '00%'}}/>
-                </Grid>
-              ))}
-          </Grid>
+        <Grid container spacing={2}>
+          {infos.infoCards.map((item, index) => (
+            <Grid item xl={2} lg={2} md={4} sm={6} xs={12} key={index}>
+              <CardData title={item.title} value={format(item.value / 100, { code: 'BRL' })} icon={item.icon} styles={{ height: '00%' }} />
+            </Grid>
+          ))}
+        </Grid>
       </Grid>
       <Grid item lg={6} md={12} sm={12} xs={12}>
         <PanelCard
@@ -184,7 +243,8 @@ const Home = ({ event, events }) => {
           data={operators}
           columns={columns}
           loading={loading}
-          pageSize={5}
+          pageSize={operators.length}
+          pageSizeOptions={setSizeOptions(operators.length)}
           paging={true}
         />
       </Grid>

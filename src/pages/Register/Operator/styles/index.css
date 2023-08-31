@@ -1,0 +1,7 @@
+div:has(> .toolbarContent) {
+  flex: 1;
+}
+
+#groupSelect {
+  width: fit-content;
+}
