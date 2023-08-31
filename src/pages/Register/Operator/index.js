@@ -72,15 +72,6 @@ const Operator = () => {
   ];
 
   useEffect(() => {
-    Api.get(`/group/getList`).then(async ({ data }) => {
-      const { success, groups } = data;
-
-      if (success) {
-        setGroupList([{ id: 'todos', name: 'Todos' }, ...groups]);
-      } else {
-        alert('Erro ao carregar os grupos');
-      }
-    });
 
     Api.get('/operator/getList').then(({ data }) => {
       console.log(data);
@@ -95,6 +86,12 @@ const Operator = () => {
         }
         return 0;
       }));
+
+      setGroupList([
+        { id: 'todos', name: 'Todos' },
+        { id: 'waiter', name: 'Garçons' },
+        { id: 'status', name: 'Ativo' },
+      ]);
     });
   }, []);
 
@@ -127,14 +124,25 @@ const Operator = () => {
     try {
       const selectedGroup = props.group ? props.group : group;
       const searchText = props.search !== undefined ? props.search : search;
-      const selectedStatus = props.status ? props.status : status;
-      const url = `/operator/getList?type=${props.type ? props.type : type}${selectedGroup !== 'todos' ? '&group=' + selectedGroup : ''
-        }&search=${searchText}${selectedStatus !== 'todos' ? `&status=${selectedStatus}` : ''}`;
+      const url = `/operator/getList?type=${props.type ? props.type : type}&search=${searchText}`;
 
       const { data } = await Api.get(url);
 
       if (data.success) {
-        setData(data.operators.sort((a, b) => a.status == b.status ? a.name.localeCompare(b.name) : a.status > b.status ? -1 : 1));
+        let list = []
+        switch (selectedGroup) {
+          case 'waiter':
+            list = (data.operators.filter(op => op.is_waiter === 1))
+            break;
+          case 'status':
+            list = (data.operators.filter(op => op.status === 1))
+            break;
+          case 'todos':
+          default:
+            list = data.operators
+            break;
+        }
+        setData(list.sort((a, b) => a.name.localeCompare(b.name)));
       }
     } catch (error) {
       console.log(error);
@@ -175,7 +183,7 @@ const Operator = () => {
             <div style={{
               display: 'flex',
               justifyContent: 'space-between'
-            }}>
+            }} className='toolbarContent'>
               <ButtonRound
                 variant="contained"
                 color="primary"
@@ -183,7 +191,7 @@ const Operator = () => {
               >
                 Adicionar Operador
               </ButtonRound>
-              <FormControl variant='outlined' size='small' fullWidth className='groupSelect'>
+              <FormControl variant='outlined' size='small' fullWidth id='groupSelect'>
                 <InputLabel>Grupo</InputLabel>
                 <Select value={group} onChange={handleGroup} label='Grupo' variant='outlined' fullWidth>
                   {groupList.map((groupItem) => (

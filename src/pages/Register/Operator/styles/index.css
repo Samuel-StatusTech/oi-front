@@ -1,7 +1,7 @@
-div:has(> div > .groupSelect) {
+div:has(> .toolbarContent) {
   flex: 1;
 }
 
-.groupSelect {
+#groupSelect {
   width: fit-content;
 }
