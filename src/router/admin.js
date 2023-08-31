@@ -65,6 +65,9 @@ import ValidationReport from '../pages/Reports/Validation';
 import WaiterReport from '../pages/Reports/Waiters';
 import ReservationReport from '../pages/Reports/Reservations';
 import ListReport from '../pages/Reports/Lists';
+/*              EXTRATO FINANCEIRO */
+import { Icon as FinancialIcon } from '../pages/FinancialStatement/Icon';
+import FinancialStatement from '../pages/FinancialStatement';
 /*              RELATORIOS                */
 
 /*              CONFIGURAÇÕES                */
@@ -94,6 +97,33 @@ export default [
       {
         title: 'Resumo Geral',
         route: '/home',
+      },
+    ],
+  },
+  {
+    title: 'Extrato Financeiro',
+    path: '/financial',
+    icon: FinancialIcon,
+    content: <FinancialStatement />,
+    role: 'master',
+    allow: {
+      allow_only_master: true,
+    },
+    show: {
+      role: 'master',
+    },
+    paths: [
+      {
+        title: 'Resumo Geral',
+        route: '/home',
+        role: 'master',
+        show: {
+          role: 'master',
+        },
+        allow: {
+      
+          allow_only_master: true,
+        },
       },
     ],
   },
@@ -195,6 +225,7 @@ export default [
           },
         ],
       },
+   
     ],
   },
   {

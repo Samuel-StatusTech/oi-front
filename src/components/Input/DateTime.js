@@ -2,17 +2,6 @@ import React, { memo, useEffect, useState } from 'react';
 import { KeyboardDateTimePicker } from '@material-ui/pickers';
 import { Grid, Button, makeStyles } from '@material-ui/core';
 
-const useStyles = makeStyles((theme) => ({
-  todayButton: {
-    color: (props) => (props.selected === 0 ? '#fff' : '#000'),
-    backgroundColor: (props) => (props.selected === 0 ? '#0097FF' : '#fff'),
-  },
-  allButton: {
-    color: (props) => (props.selected === 1 ? '#fff' : '#000'),
-    backgroundColor: (props) => (props.selected === 1 ? '#0097FF' : '#fff'),
-  },
-}));
-
 export const Between = memo(
   ({ iniValue, onChangeIni, endValue, onChangeEnd, showToday, onSelectType, allPeriodButtonColor, onSearch, ...props }) => {
     const [selected, selectType] = useState(props.selected || 0);
@@ -27,8 +16,6 @@ export const Between = memo(
 
       onSelectType && onSelectType(0);
     };
-
-    const classes = useStyles({ ...props, selected });
 
     const onAllPeriod = () => {
       selectType(1);
@@ -71,9 +58,8 @@ export const Between = memo(
             color='default'
             onClick={onAllPeriod}
             fullWidth
-            className={classes.allButton}
-            style={{ padding: '8px', fontSize: 13 }}
-          >
+            style={{ padding: '8px', fontSize: 13,  color: selected === 1 ? '#fff' : '#000', backgroundColor: selected === 1 ? '#0097FF' : '#FFF' }}
+            >
             Todo o Período
           </Button>
         </Grid>
@@ -84,8 +70,7 @@ export const Between = memo(
               color='default'
               onClick={onToday}
               fullWidth
-              className={classes.todayButton}
-              style={{ padding: '8px', fontSize: 13 }}
+              style={{ padding: '8px', fontSize: 13,  color: selected === 0 ? '#fff' : '#000', backgroundColor: selected === 0 ? '#0097FF' : '#FFF' }}
             >
               Hoje
             </Button>

@@ -133,6 +133,10 @@ export default makeStyles((theme) => ({
     ...textType.small,
     color: colors.lightGray.color,
   },
+  labelSmallBold: {
+    ...textType.small,
+    fontWeight: 600
+  },
 
   roundedButton: {
     marginTop: '20px',
@@ -163,6 +167,13 @@ export default makeStyles((theme) => ({
     borderRight: '1px solid #ccc',
     '@media (max-width:600px)': {
       borderRight: 'none',
+    },
+  },
+  borderRightBottomCard: {
+    borderRight: '1px solid #ccc',
+    '@media (max-width:600px)': {
+      borderRight: 'none',
+      borderBottom:'1px solid #ccc'
     },
   },
   h1: {
@@ -208,6 +219,13 @@ export default makeStyles((theme) => ({
     width: '100%',
     height: '100%',
     display: 'grid',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flexCardContainer: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },

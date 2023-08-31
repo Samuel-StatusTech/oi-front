@@ -27,6 +27,7 @@ const CardData = ({ title, value = 0, icon, info = null, styleLabel = {}, smallL
               <Tooltip title={info} placement='right' />
             </Grid>
           )}
+         
         </Grid>
       </CardContent>
     </Card>

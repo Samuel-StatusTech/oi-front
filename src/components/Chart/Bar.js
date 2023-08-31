@@ -2,65 +2,57 @@ import React, { memo } from 'react';
 import Chart from 'react-apexcharts';
 
 
-const mockData = {
-  series: [
-    { name: 'Crédito', data: [30] },
-    { name: 'Débito', data: [40] },
-    { name: 'Dinheiro', data: [30] },
-  ],
+const options = {
   options: {
     chart: {
       type: 'bar',
-      stacked: true,
-      stackType: '100%',
       toolbar: {
-        show: true,
-        tools: {
-          download: false,
-        },
-      },
+        show: false
+      }
     },
-
     plotOptions: {
       bar: {
+        dataLabels:{
+          position: 'top',
+          textAnchor: 'end',
+
+        },
+        distributed: true,
+        borderRadius: 4,
         horizontal: true,
-      },
-    },
-    stroke: {
-      width: 1,
-      colors: ['#fff'],
-    },
-    xaxis: {
-      floating: true,
-      axisTicks: {
-        show: false,
-      },
-      axisBorder: {
-        show: false,
-      },
-    },
-    yaxis: {
-      show: false,
-    },
-    fill: {
-      opacity: 1,
+      }
     },
     legend: {
-      position: 'top',
-      horizontalAlign: 'center',
-      offsetX: 40,
-      fontSize: '14px',
-      fontWeight: 300,
+      show: false
     },
+    colors: ['#31BCDC', '#FF9774', '#2FD8A0', '#54789D', '#34375A', '#CCCCCC'],
   },
 };
 
-const Bar = ({ series, ...props }) => {
+const Bar = ({ series, labels, title, ...props }) => {
+  const totalSeries = series.reduce((a, b) => a + b, 0);
   return (
     <Chart
-      options={mockData.options}
-      series={series}
+      options={{...options.options, 
+        dataLabels: {
+          enabled: true,
+          formatter: function(value) {
+            if(!value)
+              return '';
+            const percent = (value / totalSeries) * 100;
+            return percent.toFixed(1).replace(/[.,]0$/, "") + '%';
+        }, 
+        style: {
+          colors: ['#333'],
+        },
+        offsetX: 30
+      },
+      xaxis:{categories:labels, labels: {show:false}}
+      }}
+      series={[{data: [...series]}]}
       type="bar"
+      width='100%'
+      height='100%'
       {...props}
     />
   );
