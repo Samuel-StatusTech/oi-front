@@ -138,6 +138,68 @@ export default makeStyles((theme) => ({
     fontWeight: 600
   },
 
+  modalBox: {
+    position: 'relative',
+    backgroundColor: "#FFF",
+    padding: 24,
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    minWidth: 700,
+    borderRadius: 24,
+    boxShadow: '0 0 24px -8px rgba(0, 0, 0, 0.5)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 24
+  },
+  closeModalButton: {
+    position: 'absolute',
+    top: 12,
+    right: 24,
+    color: 'red',
+    fontSize: 18,
+    padding: '4px 10px',
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    cursor: 'pointer'
+  },
+  modalTitle: {
+    fontSize: '2.4rem',
+    fontWeight: 500,
+    textAlign: 'center',
+    marginBottom: 36
+  },
+  modalLoadingText: {
+    textAlign: 'center'
+  },
+  progressArea: {
+    backgroundColor: 'rgb(155, 155, 155, .1)',
+    width: '100%',
+    height: 4,
+    borderRadius: 2
+  },
+  progressBar: {
+    backgroundColor: '#0097FF',
+    transition: 'width .4s',
+    height: 4,
+  },
+  modalTableArea: {
+    overflow: 'auto',
+    maxWidth: '100%'
+  },
+  modalInputsArea: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12
+  },
+  inpArea: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8
+  },
+
   roundedButton: {
     marginTop: '20px',
     borderRadius: '20px',
@@ -173,7 +235,7 @@ export default makeStyles((theme) => ({
     borderRight: '1px solid #ccc',
     '@media (max-width:600px)': {
       borderRight: 'none',
-      borderBottom:'1px solid #ccc'
+      borderBottom: '1px solid #ccc'
     },
   },
   h1: {
