@@ -18,6 +18,7 @@ import ModalCancel from './Modal/cancelOrder';
 import ModalDelete from './Modal/deleteOrder';
 import ModalDetailsOrder from './Modal/detailsOrder';
 import { Info } from '@material-ui/icons';
+import ModalDiff from './Modal/diffOrders';
 const Transaction = ({ event, user }) => {
   const columns = [
     {
@@ -49,7 +50,7 @@ const Transaction = ({ event, user }) => {
       render: ({ status }) => (status === 'cancelamento' ? 'Cancelado' : 'Normal'),
     }
   ];
-  if(user.role === 'master') {
+  if (user.role === 'master') {
     columns.push({
       title: 'Ações',
       render: (row) => (
@@ -64,7 +65,7 @@ const Transaction = ({ event, user }) => {
             </Button>
           )}
           <Button variant='outlined' size='small' color='secondary' onClick={handleDeleteProduct(row)}
-            style={{marginLeft: 5}}
+            style={{ marginLeft: 5 }}
           >
             Excluir
           </Button>
@@ -110,11 +111,13 @@ const Transaction = ({ event, user }) => {
   const [selectType, onSelectType] = useState(0);
   const [page, setPage] = useState(0);
   const [QRCode, setQRCode] = useState('');
+  const [diffValues, setDiffValues] = useState([])
 
   const [showCancel, setShowCancel] = useState(false);
   const [cancelData, setCancelData] = useState({});
   const [showDelete, setShowDelete] = useState(false);
   const [deleteData, setDeleteData] = useState({});
+  const [showDiffOrders, setShowDiffOrders] = useState(false);
   const [showDetailsOrder, setShowDetailsOrder] = useState(false);
   const [detailsOrderData, setDetailsOrderData] = useState(0);
   const [detailsOrderDataId, setDetailsOrderDataId] = useState(0);
@@ -132,31 +135,31 @@ const Transaction = ({ event, user }) => {
   };
   const handleCancelProduct =
     ({ id }) =>
-    () => {
-      setCancelData({ id: id, cancel: false });
-      setShowCancel(true);
-    };
+      () => {
+        setCancelData({ id: id, cancel: false });
+        setShowCancel(true);
+      };
   const handleUncancelProduct =
     ({ id }) =>
-    () => {
-      setCancelData({ id: id, cancel: true });
-      setShowCancel(true);
-    };
+      () => {
+        setCancelData({ id: id, cancel: true });
+        setShowCancel(true);
+      };
   const handleDeleteProduct =
     ({ id }) =>
-    () => {
-      setDeleteData({ id: id });
-      setShowDelete(true);
-    };
+      () => {
+        setDeleteData({ id: id });
+        setShowDelete(true);
+      };
   const handleDetailOrder =
     ({ order_id, id }) =>
-    () => {
-      setDetailsOrderData(order_id);
-      setDetailsOrderDataId(id);
-      setShowDetailsOrder(true);
-    };
+      () => {
+        setDetailsOrderData(order_id);
+        setDetailsOrderDataId(id);
+        setShowDetailsOrder(true);
+      };
 
-  const loadData = async (moreItens=false, pageination=page) => {
+  const loadData = async (moreItens = false, pageination = page) => {
     setLoading(true);
     try {
       const dateIni = formatDateTimeToDB(iniValue);
@@ -179,7 +182,7 @@ const Transaction = ({ event, user }) => {
       //setTotalSell(resp.data.totalSell);
       //setItensSell(resp.data.itensSell);
       //setItensCanceled(resp.data.itensCanceled);
-      if(moreItens)
+      if (moreItens)
         setData([...data, ...resp.data.orders]);
       else
         setData(resp.data.orders);
@@ -223,7 +226,7 @@ const Transaction = ({ event, user }) => {
 
   // See for changes on any input, to update the search
   useEffect(() => {
-    if(selectType != 2){
+    if (selectType != 2) {
       handleSearch();
     }
 
@@ -249,6 +252,28 @@ const Transaction = ({ event, user }) => {
     loadData();
   };
 
+  const checkDivgs = async () => {
+    let nData = data
+
+    if (nData.length > 0) {
+      let errorsValues = []
+
+      data.forEach((d) => {
+        if (d.payments.length === 0) {
+          errorsValues.push(d)
+        }
+      })
+
+      if (errorsValues.length > 0) {
+        setDiffValues(errorsValues)
+        setShowDiffOrders(true)
+      } else {
+        alert("Não houve divergências")
+      }
+    }
+  }
+
+
   return (
     <Grid container direction='column' spacing={2}>
       <ModalCancel show={showCancel} onClose={() => setShowCancel(false)} data={cancelData} updateRow={updateRow} event={event} />
@@ -259,6 +284,12 @@ const Transaction = ({ event, user }) => {
         onClose={() => setShowDetailsOrder(false)}
         order_id={detailsOrderData}
         detailsOrderDataId={detailsOrderDataId}
+      />
+      <ModalDiff
+        event={event}
+        show={showDiffOrders && diffValues.length > 0}
+        data={diffValues}
+        onClose={() => setShowDiffOrders(false)}
       />
       <Grid item lg={12} md={12} sm={12} xs={12}>
         <Grid container spacing={2}>
@@ -377,6 +408,11 @@ const Transaction = ({ event, user }) => {
               <MenuItem value='multiplus'>Multiplus</MenuItem>
             </TextField>
           </Grid>
+          <Grid item lg={1} md={1} sm={12} xs={12}>
+            <Button onClick={checkDivgs} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+              Divergência
+            </Button>
+          </Grid>
           <Grid item lg={2} md={4} sm={12} xs={12}>
             <TextField
               value={QRCode}
@@ -387,7 +423,7 @@ const Transaction = ({ event, user }) => {
               size='small'
             />
           </Grid>
-          <Grid item lg={10} md={8} sm={12} xs={12}>
+          <Grid item lg={9} md={7} sm={12} xs={12}>
             <Between
               iniValue={iniValue}
               onChangeIni={onChangeIni}
@@ -423,14 +459,14 @@ const Transaction = ({ event, user }) => {
           <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center', marginTop: 20 }}>
             <Button
               variant='outlined'
-                color='default'
-                onClick={() => {
-                  loadData(true, page+1)
-                  setPage(page+1)
-                }}
-                style={{ padding: '8px', backgroundColor: 'white', width: 150, borderRadius: 30 }}
-              >
-                Mostrar mais
+              color='default'
+              onClick={() => {
+                loadData(true, page + 1)
+                setPage(page + 1)
+              }}
+              style={{ padding: '8px', backgroundColor: 'white', width: 150, borderRadius: 30 }}
+            >
+              Mostrar mais
             </Button>
           </div>
         </Grid>
