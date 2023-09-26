@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Grid,
   Button,
@@ -7,8 +7,6 @@ import {
   Select,
   FormControl,
   InputLabel,
-  CircularProgress,
-  Checkbox,
 } from '@material-ui/core';
 import GridIcon from '@material-ui/icons/Apps';
 import ListIcon from '@material-ui/icons/List';
@@ -24,8 +22,12 @@ import ButtonRound from '../../components/ButtonRound';
 import productsIcon from '../../assets/icons/ic_produtos.svg';
 
 import { Favorite, FavoriteBorder, FlashOn } from '@material-ui/icons/';
+import useStyles from '../../global/styles';
 
 const Product = () => {
+
+  const styles = useStyles()
+
   const history = useHistory();
   const tableRef = useRef(null);
   const [data, setData] = useState([]);
@@ -273,26 +275,80 @@ const Product = () => {
       setLoading(false);
     }
   };
+
+  const padValue = (v) => String(v).padStart(2, '0')
+
+  const parseMoney = (v) => {
+    return `R$ ${(Number(v) / 100).toFixed(2).replace('.', ',')}`
+  }
+
+  const getDateString = () => {
+    const date = new Date()
+    const
+      d =
+        `${padValue(date.getFullYear())}-` +
+        `${padValue(date.getMonth())}-` +
+        `${padValue(date.getDate())}`,
+      h =
+        `${padValue(date.getHours())}-` +
+        `${padValue(date.getMinutes())}-` +
+        `${padValue(date.getSeconds())}`
+
+    return `${d}_${h}`
+  }
+
+  const exportData = () => {
+    let rows = []
+
+    data.forEach(d => {
+      rows.push([
+        d.name.trim(),
+        parseMoney(d.price_sell),
+        ''
+      ])
+    })
+
+    const csvContent = "data:text/csv;charset=UTF-8,"
+      + `${["Nome", "Preco", "Descricao"].join(';')}\n`
+      + rows.map(e => e.join(";")).join("\n")
+
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", `PagSeguro_${getDateString()}.csv`)
+
+    link.click()
+  }
+
+
   return (
     <Grid container direction='column' spacing={2}>
-      <Grid item lg md sm xs>
-        <Grid container direction='row' spacing={2}>
-          <Grid item>
-            <ButtonRound variant='contained' color='primary' onClick={handleCreateSimple}>
-              Cadastrar Produto
-            </ButtonRound>
+      <Grid item lg md sm xs className={styles.productsHeaderWrp}>
+        <div className={styles.productsHeaderContainer}>
+          <Grid container direction='row' spacing={2}>
+            <Grid item>
+              <ButtonRound variant='contained' color='primary' onClick={handleCreateSimple}>
+                Cadastrar Produto
+              </ButtonRound>
+            </Grid>
+            <Grid item>
+              <ButtonRound variant='contained' color='primary' onClick={handleCreateCombo}>
+                Cadastrar Combo
+              </ButtonRound>
+            </Grid>
+            <Grid item>
+              <ButtonRound variant='contained' color='primary' onClick={handleCreateComplement}>
+                Cadastrar Complemento
+              </ButtonRound>
+            </Grid>
           </Grid>
-          <Grid item>
-            <ButtonRound variant='contained' color='primary' onClick={handleCreateCombo}>
-              Cadastrar Combo
-            </ButtonRound>
+          <Grid container direction='row' spacing={2} className={styles.exportDataArea}>
+            <Button
+              className={styles.exportDataBtn}
+              onClick={exportData}
+            >Exportar dados</Button>
           </Grid>
-          <Grid item>
-            <ButtonRound variant='contained' color='primary' onClick={handleCreateComplement}>
-              Cadastrar Complemento
-            </ButtonRound>
-          </Grid>
-        </Grid>
+        </div>
       </Grid>
 
       <Grid item lg md sm xs>
@@ -421,12 +477,14 @@ const Product = () => {
           }}
         />
       </Grid>
-      {!isGrid && (<Grid item style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-        <ButtonRound variant='contained' style={{ height: 30, color: 'white', backgroundColor: 'red' }} onClick={disabelAll}>
-          Inativar Produtos
-        </ButtonRound>
-      </Grid>)}
-    </Grid>
+      {
+        !isGrid && (<Grid item style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+          <ButtonRound variant='contained' style={{ height: 30, color: 'white', backgroundColor: 'red' }} onClick={disabelAll}>
+            Inativar Produtos
+          </ButtonRound>
+        </Grid>)
+      }
+    </Grid >
   );
 };
 

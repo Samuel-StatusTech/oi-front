@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core';
+import { createMuiTheme, makeStyles } from '@material-ui/core';
 const colors = {
   blue: { color: '#3B94FF' },
   ligthBlue: { color: '#4FC3F7' },
@@ -89,6 +89,15 @@ const textType = {
   },
 };
 
+const customTheme = createMuiTheme({
+  xs: 0,
+  sm: 600,
+  md: 900,
+  lg: 1200,
+  xl: 1536,
+  laptop: 1024,
+})
+
 export default makeStyles((theme) => ({
   ...colors,
   ...backgroundColors,
@@ -136,6 +145,36 @@ export default makeStyles((theme) => ({
   labelSmallBold: {
     ...textType.small,
     fontWeight: 600
+  },
+  productsHeaderWrp: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  productsHeaderContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+
+    [theme.breakpoints.up('xs')]: {
+      margin: '12px 0',
+    },
+
+    [theme.breakpoints.up('md')]: {
+      flexDirection: 'row'
+    },
+  },
+  exportDataArea: {
+    display: 'flex',
+    justifyContent: 'end',
+    width: 'fit-content',
+    margin: 4,
+  },
+  exportDataBtn: {
+    color: '#0097FF',
+    border: '1px solid #0097FF',
+    height: 'fit-content',
+    whiteSpace: 'nowrap',
   },
 
   modalBox: {
