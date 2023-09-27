@@ -8,6 +8,7 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import RouteList from '../../router/admin';
 import { connect } from 'react-redux';
+import ModalCheck from '../../pages/FinancialStatement/Tabs/Overview/modal';
 
 const useStyles = makeStyles((theme) => ({
   // PARA MUDAR O SCROLL, MUDAR AQUI
@@ -97,7 +98,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded }) => {
+const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded, toggleModal }) => {
   const styles = useStyles();
   const location = useLocation();
   const actualLocation = location.pathname;
@@ -114,6 +115,7 @@ const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, set
   };
   const hasSelected = (route) => actualLocation === '/dashboard' + route;
 
+
   if (route.list && route.list.length > 0) {
     return (
       <>
@@ -129,7 +131,7 @@ const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, set
 
         <Collapse in={expanded[route.title]} timeout='auto' unmountOnExit>
           <List component='div' disablePadding dense>
-            {route.list.map((item) => {
+            {route.list.map((item, k) => {
               const isSelected = hasSelected(item.path);
 
               if (isSelected && !expanded) {
@@ -140,11 +142,20 @@ const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, set
                 return null;
               }
 
-              return (
+              return !item.isButton ? (
                 <ListItem
                   key={item.path}
                   button
                   onClick={() => handleClick(item.path)}
+                  className={isSelected ? styles.selectedPage : styles.page}
+                >
+                  <ListItemText primary={item.title} style={{ paddingLeft: 20 }} />
+                </ListItem>
+              ) : (
+                <ListItem
+                  key={k}
+                  button
+                  onClick={toggleModal}
                   className={isSelected ? styles.selectedPage : styles.page}
                 >
                   <ListItemText primary={item.title} style={{ paddingLeft: 20 }} />
@@ -184,6 +195,7 @@ const Sidebar = ({ open, toggle, user, events }) => {
   const history = useHistory();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
+  const [showingModal, setShowingModal] = useState(false)
 
   const handleClick = (route) => {
     history.push('/dashboard' + route);
@@ -191,33 +203,40 @@ const Sidebar = ({ open, toggle, user, events }) => {
   };
   const [expanded, setExpanded] = useState({});
 
+  const toggleModal = () => setShowingModal(!showingModal)
+
+
   return (
     events.length > 0 && (
-      <Drawer
-        open={open}
-        variant='persistent'
-        classes={{
-          paper: styles.drawer,
-        }}
-      >
-        <div className={styles.toolbar} />
-        <List className={styles.list} dense>
-          {RouteList.filter((route) => !route.hide)
-            .filter((route) => (!route.show || route.show.role === user.role))
-            .map((route, index) => {
-              return (
-                <RouteListItem
-                  key={index}
-                  route={route}
-                  handleClick={handleClick}
-                  user={user}
-                  expanded={expanded}
-                  setExpanded={setExpanded}
-                />
-              );
-            })}
-        </List>
-      </Drawer>
+      <>
+        <ModalCheck show={showingModal} onClose={() => setShowingModal(false)} />
+        <Drawer
+          open={open}
+          variant='persistent'
+          classes={{
+            paper: styles.drawer,
+          }}
+        >
+          <div className={styles.toolbar} />
+          <List className={styles.list} dense>
+            {RouteList.filter((route) => !route.hide)
+              .filter((route) => (!route.show || route.show.role === user.role))
+              .map((route, index) => {
+                return (
+                  <RouteListItem
+                    key={index}
+                    route={route}
+                    handleClick={handleClick}
+                    user={user}
+                    expanded={expanded}
+                    setExpanded={setExpanded}
+                    toggleModal={toggleModal}
+                  />
+                );
+              })}
+          </List>
+        </Drawer>
+      </>
     )
   );
 };

@@ -74,6 +74,7 @@ import FinancialStatement from '../pages/FinancialStatement';
 import Orgs, { Icon as OrgsIcon } from '../pages/Settings/Orgs';
 import OrgForm from '../pages/Settings/Orgs/form';
 import Profile from '../pages/Settings/Profile/form';
+import ModalCheck from '../pages/FinancialStatement/Tabs/Overview/modal';
 /*              CONFIGURAÇÕES                */
 
 
@@ -81,7 +82,7 @@ const EmBreve = () => {
   return (
     <div>
       <spam>
-       Esta tela estará disponível <b>Em Breve</b>
+        Esta tela estará disponível <b>Em Breve</b>
       </spam>
     </div>
   )
@@ -121,7 +122,7 @@ export default [
           role: 'master',
         },
         allow: {
-      
+
           allow_only_master: true,
         },
       },
@@ -225,7 +226,7 @@ export default [
           },
         ],
       },
-   
+
     ],
   },
   {
@@ -663,6 +664,12 @@ export default [
     title: 'Gerencial',
     icon: ManagerIcon,
     list: [
+      {
+        title: 'Conciliar dados',
+        path: null,
+        content: ModalCheck,
+        isButton: true
+      },
       {
         title: 'Transações',
         path: '/transaction',

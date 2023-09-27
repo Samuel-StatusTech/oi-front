@@ -143,9 +143,17 @@ const CustomList = ({
                   style={{ marginTop: '1rem' }}
                 >
                   <MenuItem value="todos">Todos</MenuItem>
-                  {groupList.map((group, index) => (
+                  {groupList.sort((a, b) => {
+                    if (a.name > b.name) {
+                      return 1
+                    }
+                    if (a.name < b.name) {
+                      return -1
+                    }
+                    return 0
+                  }).map((group, index) => (
                     <MenuItem key={index} value={group.id}>
-                      {group.name}
+                      {`${group.name[0].toUpperCase()}${group.name.substring(1)}`}
                     </MenuItem>
                   ))}
                 </TextField>

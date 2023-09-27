@@ -16,6 +16,7 @@ import {
   Paper
 } from '@material-ui/core';
 
+import Api from '../../../../api'
 import useStyles from '../../../../global/styles';
 import csvtojson from 'csvtojson';
 
@@ -47,47 +48,18 @@ const ModalCheck = ({ show, onClose }) => {
   const styles = useStyles()
 
   const [pagData, setPagData] = useState(null);
-  const [excelData, setExcelData] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
   const [dataErrors, setDataErrors] = useState([]);
   const [checkProgress, setCheckProgress] = useState(0);
+  const [finishMessage, setFinishMessage] = useState(null);
   const pagDataInput = useRef(null);
-  const excDataInput = useRef(null);
 
 
-  const changeProgress = (value) => setCheckProgress(value)
-
-  const loadPagseguroData = async (e) => {
-
-    const file = e.target.files[0]
-    const reader = new FileReader()
-
-    reader.onload = f => {
-      const xml = f.target.result
-      const obj = new DOMParser().parseFromString(xml, "text/xml")
-      const transactions = obj.querySelectorAll('Table')
-
-      let data = []
-
-      transactions.forEach(t => {
-        let fields = {}
-        const fieldInfo = Array.from(t.children)
-        fieldInfo.forEach(i => { fields[i.localName] = i.innerHTML })
-        data.push(fields)
-      })
-
-      if (checkProgress <= 25) setCheckProgress(checkProgress + 12.5)
-
-      setPagData({
-        fileName: file.name,
-        data: data
-      })
-    }
-
-    reader.readAsText(file)
+  const changeProgress = (value) => {
+    setCheckProgress(value + 30 < 100 ? value + 30 : 100)
   }
 
-  const loadExcelData = async (e) => {
+  const loadPagseguroData = async (e) => {
 
     const file = e.target.files[0]
     const reader = new FileReader()
@@ -97,9 +69,9 @@ const ModalCheck = ({ show, onClose }) => {
       const data = await csvtojson({ delimiter: ';' }).fromString(text)
       const checkable = data.filter(transaction => transaction.Tipo_Pagamento.toLowerCase !== 'dinheiro')
 
-      if (checkProgress <= 25) setCheckProgress(checkProgress + 12.5)
+      setCheckProgress(12.5)
 
-      setExcelData({
+      setPagData({
         fileName: file.name,
         data: checkable
       })
@@ -112,93 +84,139 @@ const ModalCheck = ({ show, onClose }) => {
     setCheckProgress(0)
     setDataErrors([])
     setPagData(null)
-    setExcelData(null)
     onClose()
+  }
+
+  const padValue = (v) => {
+    return String(v).padStart(2, '0')
+  }
+
+  const parseMoney = (v) => {
+    return `R$ ${(Number(v) / 100).toFixed(2).replace('.', ',')}`
+  }
+
+  const parseDate = (v) => {
+    const date = new Date(v)
+    const
+      d =
+        `${padValue(date.getDate())}/` +
+        `${padValue(date.getMonth())}/` +
+        `${padValue(date.getFullYear())}`,
+      h =
+        `${padValue(date.getHours())}:` +
+        `${padValue(date.getMinutes())}:` +
+        `${padValue(date.getSeconds())}`
+
+    return `${d} — ${h}`
   }
 
   const checkTotal = async () => {
     setIsChecking(true)
-    setCheckProgress(25)
+    setFinishMessage(null)
+    setCheckProgress(12.5)
 
-    let serialsErrors = []
+    const req = await Api.get('/order/getList/f8eb3d9a6373?status=todos&type=todos&per_page=1000000&page=0')
+      .then(res => {
+        setCheckProgress(30)
+        setTimeout(null, 300)
+        return res
+      })
 
-    let chunks = excelData.data.length > 3000 ? [
-      excelData.data.slice(0, Math.ceil(excelData.data.length / 3)),
-      excelData.data.slice(Math.ceil(excelData.data.length / 3), (Math.ceil(excelData.data.length / 3) * 2)),
-      excelData.data.slice((Math.ceil(excelData.data.length / 3) * 2), excelData.data.length)
-    ] : [...excelData.data]
+    if (req.status === 200) {
+      const backData = req.data.orders
 
-    pagData.data.map((k, i) => {
+      let serialsErrors = []
 
-      const o = function () {
-        const c1 = chunks[0].find((e, index) => {
-          let match = (e.Transacao_ID === k.Transacao_ID)
+      let chunks = backData.length > 3000 ? [
+        backData.slice(0, Math.ceil(backData.length / 3)),
+        backData.slice(Math.ceil(backData.length / 3), (Math.ceil(backData.length / 3) * 2)),
+        backData.slice((Math.ceil(backData.length / 3) * 2), backData.length)
+      ] : [[...backData]]
 
-          if (match) chunks[0] = chunks[0].filter((e, i) => i !== index)
-          return match
-        })
-        if (typeof c1 !== "undefined") return c1
+      pagData.data.map((k, i) => {
 
-        const c2 = chunks[1].find((e, index) => {
-          let match = (e.Transacao_ID === k.Transacao_ID)
+        const o = function () {
+          const c1 = chunks[0].find((e, index) => {
+            let match = (e.id === k.Transacao_ID)
 
-          if (match) chunks[1] = chunks[1].filter((e, i) => i !== index)
-          return match
-        })
-        if (typeof c2 !== "undefined") return c2
-
-        const c3 = chunks[2].find((e, index) => {
-          let match = (e.Transacao_ID === k.Transacao_ID)
-
-          if (match) chunks[2] = chunks[2].filter((e, i) => i !== index)
-          return match
-        })
-        if (typeof c3 !== "undefined") return c3
-        else return null
-      }()
+            if (match) chunks[0] = chunks[0].filter((e, i) => i !== index)
+            return match
+          })
+          if (typeof c1 !== "undefined") return c1
 
 
-      if (o) {
-        const pagNumber = Number(k.Valor_Bruto.replace(',', '.'))
-        const ownNumber = Number(o.Valor_Bruto.replace(',', '.'))
+          if (chunks.length > 1) {
+            const c2 = chunks[1].find((e, index) => {
+              let match = (e.id === k.Transacao_ID)
 
-        if (pagNumber !== ownNumber) serialsErrors.push({
-          Transacao_ID: o.Transacao_ID,
-          Valor_Bruto: `R$ ${ownNumber.toFixed(2).replace('.', ',')}`,
-          PagSeguro_Valor_Bruto: `R$ ${pagNumber.toFixed(2).replace('.', ',')}`,
-          Data_Transacao: o.Data_Transacao,
-          Serial_Leitor: o.Serial_Leitor,
-          Codigo_Usuario: o.Codigo_Usuario,
-          Codigo_Venda: o.Codigo_Venda,
-        })
+              if (match) chunks[1] = chunks[1].filter((e, i) => i !== index)
+              return match
+            })
+            if (typeof c2 !== "undefined") return c2
 
-        if (i % Math.floor(pagData.data.length / 5) === 0) {
-          let newPoint = Number(((i / pagData.data.length) * 100).toFixed(1))
-          setTimeout(() => changeProgress(newPoint), 100)
+            const c3 = chunks[2].find((e, index) => {
+              let match = (e.id === k.Transacao_ID)
+
+              if (match) chunks[2] = chunks[2].filter((e, i) => i !== index)
+              return match
+            })
+            if (typeof c3 !== "undefined") return c3
+            else return null
+          } else {
+            return null
+          }
+        }()
+
+        if (o) {
+          const pagNumber = Number(k.Valor_Bruto.replace(',', '.'))
+          const ownNumber = Number(o.total_price.replace(',', '.'))
+
+          if (pagNumber !== ownNumber) serialsErrors.push({
+            Transacao_ID: o.id,
+            Valor_Bruto: parseMoney(ownNumber),
+            PagSeguro_Valor_Bruto: parseMoney(pagNumber),
+            Data_Transacao: parseDate(o.Data_Transacao),
+            Serial_Leitor: k.Serial_Leitor,
+            Codigo_Usuario: k.Codigo_Usuario,
+            Codigo_Venda: k.Codigo_Venda,
+          })
+        } else {
+          serialsErrors.push({
+            Transacao_ID: k.Transacao_ID,
+            Valor_Bruto: 'Não encontrado',
+            PagSeguro_Valor_Bruto: parseMoney(k.Valor_Bruto),
+            Data_Transacao: k.Data_Transacao,
+            Serial_Leitor: k.Serial_Leitor,
+            Codigo_Usuario: k.Codigo_Usuario,
+            Codigo_Venda: k.Codigo_Venda,
+          })
         }
-      } else {
-        serialsErrors.push({
-          Transacao_ID: k.Transacao_ID,
-          Valor_Bruto: 'não encontrado',
-          PagSeguro_Valor_Bruto: `R$ ${Number(k.Valor_Bruto.replace(',', '.'))}`,
-          Data_Transacao: k.Data_Transacao,
-          Serial_Leitor: k.Serial_Leitor,
-          Codigo_Usuario: k.Codigo_Usuario,
-          Codigo_Venda: k.Codigo_Venda,
-        })
-      }
-    })
 
-    setDataErrors(serialsErrors)
-    setIsChecking(false)
+        if (i % Math.floor(pagData.data.length / 50) === 0) {
+          let newPoint = Number(((i / ((pagData.data.length / 8) * 7)) * 100).toFixed(1))
+          changeProgress(newPoint)
+        }
+      })
+
+      if (serialsErrors.length === 0) {
+        setFinishMessage('Os dados estão corretos')
+        setIsChecking(false)
+        return
+      } else if (serialsErrors.length !== pagData.data.length) {
+        setDataErrors(serialsErrors)
+      }
+      else {
+        setFinishMessage('todos os dados estão incorretos')
+      }
+      setIsChecking(false)
+    } else {
+      setIsChecking(false)
+      setFinishMessage('Não foi possível verificar. Tente novamente mais tarde.')
+    }
   }
 
   const triggerPagInput = () => {
     if (pagDataInput.current) pagDataInput.current.click()
-  }
-
-  const triggerExcInput = () => {
-    if (excDataInput.current) excDataInput.current.click()
   }
 
 
@@ -210,7 +228,8 @@ const ModalCheck = ({ show, onClose }) => {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 24
+          gap: 24,
+          maxHeight: '60vh'
         }}>
           <div className={styles.modalInputsArea}>
             <div className={styles.inpArea}>
@@ -218,25 +237,12 @@ const ModalCheck = ({ show, onClose }) => {
                 type='file'
                 ref={pagDataInput}
                 onChange={loadPagseguroData}
-                accept=".xml"
-              />
-              <Button onClick={triggerPagInput} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                Selecionar arquivo PagSeguro
-              </Button>
-              {pagData && <Typography>{pagData.fileName}</Typography>}
-            </div>
-
-            <div className={styles.inpArea}>
-              <input hidden
-                type='file'
-                ref={excDataInput}
-                onChange={loadExcelData}
                 accept=".csv"
               />
-              <Button onClick={triggerExcInput} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                Selecionar arquivo Excel
+              <Button onClick={triggerPagInput} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                Selecionar arquivo PagSeguro (.csv)
               </Button>
-              {excelData && <Typography>{excelData.fileName}</Typography>}
+              {pagData && <Typography>{pagData.fileName}</Typography>}
             </div>
           </div>
 
@@ -244,8 +250,16 @@ const ModalCheck = ({ show, onClose }) => {
             <div className={styles.progressBar} style={{ width: `${checkProgress}%` }}></div>
           </div>
 
-          {!isChecking && dataErrors.length > 0 &&
-            <TableContainer component={Paper} style={{ boxShadow: 'none' }}>
+          {finishMessage &&
+            <span style={{ textAlign: 'center' }}>{finishMessage}</span>
+          }
+
+          {!isChecking && dataErrors.length > 0 && !finishMessage &&
+            <TableContainer component={Paper} style={{
+              boxShadow: 'none',
+              flex: 1,
+              overflowY: 'auto'
+            }}>
               <Table size="medium" aria-label="conflicting-data">
                 <TableHead>
                   <TableRow>
@@ -259,9 +273,9 @@ const ModalCheck = ({ show, onClose }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {dataErrors.map((row) => (
+                  {dataErrors.map((row, k) => (
                     <TableRow
-                      key={row.name}
+                      key={k}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <TableTd value={row.Transacao_ID} />
@@ -281,20 +295,28 @@ const ModalCheck = ({ show, onClose }) => {
 
       </DialogContent>
       <DialogActions>
-        <Button type='button' onClick={checkTotal} variant='outlined' color='primary'>
+        <Button
+          type='button'
+          onClick={checkTotal}
+          variant='outlined'
+          color='primary'
+          disabled={pagData === null}
+        >
           {isChecking ? (
             <>
-              Checando <CircularProgress size={25} />
+              <span style={{ marginRight: 4 }}>Checando </span><CircularProgress size={25} />
             </>
           ) : (
             'Checar'
           )}
         </Button>
-        <Button variant='outlined' color='secondary' onClick={closeModal}>
+        <Button variant='outlined' color='secondary' onClick={closeModal} style={{
+          cursor: 'pointer'
+        }}>
           Fechar
         </Button>
       </DialogActions>
-    </Dialog>
+    </Dialog >
   )
 
 }

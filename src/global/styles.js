@@ -1,4 +1,6 @@
-import { createMuiTheme, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+
+
 const colors = {
   blue: { color: '#3B94FF' },
   ligthBlue: { color: '#4FC3F7' },
@@ -88,15 +90,6 @@ const textType = {
     fontWeight: 500,
   },
 };
-
-const customTheme = createMuiTheme({
-  xs: 0,
-  sm: 600,
-  md: 900,
-  lg: 1200,
-  xl: 1536,
-  laptop: 1024,
-})
 
 export default makeStyles((theme) => ({
   ...colors,
@@ -221,7 +214,7 @@ export default makeStyles((theme) => ({
   },
   progressBar: {
     backgroundColor: '#0097FF',
-    transition: 'width .4s',
+    transition: 'width .8s',
     height: 4,
   },
   modalTableArea: {
@@ -316,6 +309,10 @@ export default makeStyles((theme) => ({
   moneyLabelRed: {
     ...textType.moneyLabel,
     color: colors.lightRed.color,
+  },
+  moneyLabelGreen: {
+    ...textType.moneyLabel,
+    color: colors.green.color,
   },
   container: {
     display: 'flex',
