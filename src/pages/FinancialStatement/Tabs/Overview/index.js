@@ -3,13 +3,11 @@ import {
   Grid, Card, CardContent,
   Typography,
   CircularProgress,
-  Button,
 } from '@material-ui/core';
 
 import Api from '../../../../api';
 import axios from 'axios';
 import { format } from 'currency-formatter';
-import csvtojson from 'csvtojson';
 
 import { Between } from '../../../../components/Input/DateTime';
 import { formatDateTimeToDB } from '../../../../utils/date';
@@ -22,11 +20,10 @@ import pixTotalIcon from '../../../../assets/icons/ic_total-pix.svg';
 import virtualIcon from '../../../../assets/icons/ic_loja.svg';
 import othersIcon from '../../../../assets/icons/ic_outrasdespesas.svg';
 import Bar from '../../../../components/Chart/Bar';
-import ModalCheck from './modal';
 
 
 
-const CardValue = ({ infos, openModalFn }) => {
+const CardValue = ({ infos }) => {
   const styles = useStyles();
 
   const { totalRecipe = 0, cardPixGross = 0, cardPixNet = 0, virtualGross = 0, virtualNet = 0, withdrawal = 0, balance = 0 } = infos;
@@ -41,8 +38,6 @@ const CardValue = ({ infos, openModalFn }) => {
               <Typography className={styles.moneyLabelBlue}>  {format(totalRecipe / 100, { code: 'BRL' })}</Typography>
             </Grid>
             <Grid item lg={12} md={12} xs={12} sm={12} style={{ display: 'flex', alignItems: 'end' }}>
-              <Button onClick={openModalFn} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>Conciliar arquivos
-              </Button>
             </Grid>
           </Grid>
           <Grid container item lg={3} md={3} sm={6} xs={12} className={`${styles.borderRightBottomCard}`}>
@@ -95,7 +90,6 @@ export default (props) => {
   const [selected, onSelectType] = useState(1);
   const [dateIni, setDateIni] = useState(new Date());
   const [dateEnd, setDateEnd] = useState(new Date());
-  const [modalOpen, setModalOpen] = useState(false);
 
   const [cardInfo, setCardInfo] = useState({});
   const [payment, setPayment] = useState({
@@ -195,7 +189,6 @@ export default (props) => {
 
   return (
     <>
-      <ModalCheck show={modalOpen} onClose={() => setModalOpen(false)} />
 
       <Grid container direction='column' spacing={2}>
         <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -223,7 +216,7 @@ export default (props) => {
           <Grid item container>
             <Grid container spacing={2}>
               <Grid item xl={8} lg={8} md={12} sm={12} xs={12}>
-                <CardValue infos={cardInfo} openModalFn={() => setModalOpen(true)} />
+                <CardValue infos={cardInfo} />
               </Grid>
               <Grid item xl={4} lg={4} md={12} sm={12} xs={12}>
                 <Card>
