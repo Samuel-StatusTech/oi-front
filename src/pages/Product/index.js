@@ -7,10 +7,16 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Dialog,
+  DialogTitle,
+  CircularProgress,
+  DialogActions,
+  DialogContent,
 } from '@material-ui/core';
 import GridIcon from '@material-ui/icons/Apps';
 import ListIcon from '@material-ui/icons/List';
 import { useHistory } from 'react-router-dom';
+import csvtojson from 'csvtojson';
 
 import CardProduct from '../../components/Card/product';
 import InputMoney from '../../components/Input/Money';
@@ -39,6 +45,14 @@ const Product = () => {
   const [isGrid, setGrid] = useState(true);
   const [placeholder, setPlaceholder] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [newData, setNewData] = useState(null);
+  const [errData, setErrData] = useState([]);
+  const [confirmDialogShow, setConfirmDialogShow] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const fileinput = useRef(null)
+  const [dialogMessage, setDialogMessage] = useState('Deseja realmente cadastrar esses produtos?')
+  const [isRegisterMade, setIsRegisterMade] = useState(false)
+
   const columns = [
     {
       title: 'Tipo',
@@ -276,215 +290,298 @@ const Product = () => {
     }
   };
 
-  const padValue = (v) => String(v).padStart(2, '0')
+  const filterData = (data) => {
+    let arr, err = []
 
-  const parseMoney = (v) => {
-    return `R$ ${(Number(v) / 100).toFixed(2).replace('.', ',')}`
-  }
-
-  const getDateString = () => {
-    const date = new Date()
-    const
-      d =
-        `${padValue(date.getFullYear())}-` +
-        `${padValue(date.getMonth())}-` +
-        `${padValue(date.getDate())}`,
-      h =
-        `${padValue(date.getHours())}-` +
-        `${padValue(date.getMinutes())}-` +
-        `${padValue(date.getSeconds())}`
-
-    return `${d}_${h}`
-  }
-
-  const exportData = () => {
-    let rows = []
-
-    data.forEach(d => {
-      rows.push([
-        d.name.trim(),
-        parseMoney(d.price_sell),
-        ''
-      ])
+    data.forEach(p => {
+      if (p.Nome) {
+        if (p.Preco && p.Descricao) arr.push({
+          name: p.Nome,
+          price_sell: p.Preco,
+          description1: p.Descricao,
+          group_id: p.Grupo,
+          warehose: p.Quantidade
+        })
+        else {
+          err.push({
+            nome: p.Nome
+          })
+        }
+      }
     })
 
-    const csvContent = "data:text/csv;charset=UTF-8,"
-      + `${["Nome", "Preco", "Descricao"].join(';')}\n`
-      + rows.map(e => e.join(";")).join("\n")
+    return ({
+      arr,
+      err
+    })
+  }
 
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement("a")
-    link.setAttribute("href", encodedUri)
-    link.setAttribute("download", `PagSeguro_${getDateString()}.csv`)
+  const getFormData = (item) => {
+    const fd = new FormData()
 
-    link.click()
+    fd.append('name', item.name)
+    fd.append('price_sell', item.price_sell)
+    fd.append('description1', item.description1)
+    fd.append('group_id', item.group_id)
+    fd.append('warehose', item.warehouse)
+
+    return fd
+  }
+
+  const registerNewProducts = async () => {
+    setIsRegisterMade(false)
+    setIsRegistering(true)
+
+    const fData = filterData(newData)
+
+    if (fData.arr.length > 0) {
+      let noAdded = fData.err
+
+      fData.arr.forEach(async (i) => {
+        const formData = getFormData(i)
+
+        const reg = await Api.post('/product/createProduct', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+
+        if (reg.status === 400) noAdded.push(i.name)
+      })
+
+      setErrData(noAdded)
+    } else {
+      setDialogMessage('Nenhum produto adicionado. Confira seus campos e tente novamente.')
+      setErrData(fData.err)
+    }
+
+    setIsRegistering(false)
+    setIsRegisterMade(true)
+  }
+
+  const loadNewData = async (e) => {
+    const file = e.target.files[0]
+    const reader = new FileReader()
+
+    reader.onload = async f => {
+      const text = f.target.result
+      console.log('text', text)
+      const data = await csvtojson({ delimiter: ';' }).fromString(text)
+
+      setNewData(data)
+      setConfirmDialogShow(true)
+    }
+
+    reader.readAsText(file)
+  }
+
+  const triggerInputClick = () => {
+    if (fileinput.current) fileinput.current.click()
   }
 
 
   return (
-    <Grid container direction='column' spacing={2}>
-      <Grid item lg md sm xs className={styles.productsHeaderWrp}>
-        <div className={styles.productsHeaderContainer}>
+    <>
+      <Dialog open={confirmDialogShow} onClose={() => setConfirmDialogShow(false)} fullWidth maxWidth='md'>
+        <DialogTitle>{dialogMessage}</DialogTitle>
+        <DialogContent>
+        </DialogContent>
+        <DialogActions>
+          {errData.length === 0 &&
+            <Button
+              type='button'
+              onClick={registerNewProducts}
+              variant='outlined'
+              color='primary'
+            >
+              {isRegistering ? (
+                <>
+                  <span style={{ marginRight: 4 }}>Cadastrando </span><CircularProgress size={25} />
+                </>
+              ) : (
+                'Sim'
+              )}
+            </Button>
+          }
+          <Button variant='outlined' color='secondary' onClick={() => setConfirmDialogShow(false)} style={{
+            cursor: 'pointer'
+          }}>
+            {isRegisterMade ? 'Fechar' : 'Não'}
+          </Button>
+        </DialogActions>
+      </Dialog >
+
+      <Grid container direction='column' spacing={2}>
+        <Grid item lg md sm xs className={styles.productsHeaderWrp}>
+          <div className={styles.productsHeaderContainer}>
+            <Grid container direction='row' spacing={2}>
+              <Grid item>
+                <ButtonRound variant='contained' color='primary' onClick={handleCreateSimple}>
+                  Cadastrar Produto
+                </ButtonRound>
+              </Grid>
+              <Grid item>
+                <ButtonRound variant='contained' color='primary' onClick={handleCreateCombo}>
+                  Cadastrar Combo
+                </ButtonRound>
+              </Grid>
+              <Grid item>
+                <ButtonRound variant='contained' color='primary' onClick={handleCreateComplement}>
+                  Cadastrar Complemento
+                </ButtonRound>
+              </Grid>
+            </Grid>
+            <Grid container direction='row' spacing={2} className={styles.exportDataArea}>
+              <input
+                type='file'
+                accept='.csv'
+                ref={fileinput}
+                onChange={loadNewData}
+                hidden
+              />
+              <Button
+                className={styles.exportDataBtn}
+                onClick={triggerInputClick}
+              >Importar dados</Button>
+            </Grid>
+          </div>
+        </Grid>
+
+        <Grid item lg md sm xs>
           <Grid container direction='row' spacing={2}>
             <Grid item>
-              <ButtonRound variant='contained' color='primary' onClick={handleCreateSimple}>
-                Cadastrar Produto
-              </ButtonRound>
+              <FormControl variant='outlined' size='small' fullWidth>
+                <InputLabel>Tipo</InputLabel>
+                <Select value={type} onChange={handleType} label='Tipo' variant='outlined' fullWidth>
+                  <MenuItem value='todos'>Todos</MenuItem>
+                  <MenuItem value='bar'>Bar</MenuItem>
+                  <MenuItem value='ingresso'>Ingresso</MenuItem>
+                  <MenuItem value='estacionamento'>Estacionamento</MenuItem>
+                  <MenuItem value='complemento'>Complemento</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item>
-              <ButtonRound variant='contained' color='primary' onClick={handleCreateCombo}>
-                Cadastrar Combo
-              </ButtonRound>
+              <FormControl variant='outlined' size='small' fullWidth>
+                <InputLabel>Grupo</InputLabel>
+                <Select value={group} onChange={handleGroup} label='Grupo' variant='outlined' fullWidth>
+                  {groupList.map((groupItem) => (
+                    <MenuItem key={groupItem.id} value={groupItem.id}>
+                      {groupItem.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item>
-              <ButtonRound variant='contained' color='primary' onClick={handleCreateComplement}>
-                Cadastrar Complemento
-              </ButtonRound>
+              <FormControl variant='outlined' size='small' fullWidth>
+                <InputLabel>Situação</InputLabel>
+                <Select value={status} onChange={handleStatus} label='Situação' variant='outlined' fullWidth>
+                  <MenuItem value='todos'>Todos</MenuItem>
+                  <MenuItem value='1'>Ativo</MenuItem>
+                  <MenuItem value='0'>Inativo</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              <TextField
+                value={search}
+                onChange={handleSearch}
+                variant='outlined'
+                label='Pesquisar'
+                fullWidth
+                size='small'
+              />
+            </Grid>
+            <Grid item>
+              <Button onClick={() => setGrid(!isGrid)} style={{ textTransform: 'none' }}>
+                Modo de Visualização
+                {isGrid ? <ListIcon /> : <GridIcon />}
+              </Button>
             </Grid>
           </Grid>
-          <Grid container direction='row' spacing={2} className={styles.exportDataArea}>
-            <Button
-              className={styles.exportDataBtn}
-              onClick={exportData}
-            >Exportar dados</Button>
-          </Grid>
-        </div>
-      </Grid>
+        </Grid>
 
-      <Grid item lg md sm xs>
-        <Grid container direction='row' spacing={2}>
-          <Grid item>
-            <FormControl variant='outlined' size='small' fullWidth>
-              <InputLabel>Tipo</InputLabel>
-              <Select value={type} onChange={handleType} label='Tipo' variant='outlined' fullWidth>
-                <MenuItem value='todos'>Todos</MenuItem>
-                <MenuItem value='bar'>Bar</MenuItem>
-                <MenuItem value='ingresso'>Ingresso</MenuItem>
-                <MenuItem value='estacionamento'>Estacionamento</MenuItem>
-                <MenuItem value='complemento'>Complemento</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl variant='outlined' size='small' fullWidth>
-              <InputLabel>Grupo</InputLabel>
-              <Select value={group} onChange={handleGroup} label='Grupo' variant='outlined' fullWidth>
-                {groupList.map((groupItem) => (
-                  <MenuItem key={groupItem.id} value={groupItem.id}>
-                    {groupItem.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl variant='outlined' size='small' fullWidth>
-              <InputLabel>Situação</InputLabel>
-              <Select value={status} onChange={handleStatus} label='Situação' variant='outlined' fullWidth>
-                <MenuItem value='todos'>Todos</MenuItem>
-                <MenuItem value='1'>Ativo</MenuItem>
-                <MenuItem value='0'>Inativo</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <TextField
-              value={search}
-              onChange={handleSearch}
-              variant='outlined'
-              label='Pesquisar'
-              fullWidth
-              size='small'
-            />
-          </Grid>
-          <Grid item>
-            <Button onClick={() => setGrid(!isGrid)} style={{ textTransform: 'none' }}>
-              Modo de Visualização
-              {isGrid ? <ListIcon /> : <GridIcon />}
-            </Button>
+        <Grid item xs={12} hidden={!isGrid}>
+          <Grid container spacing={2}>
+            {data.map((product) => (
+              <CardProduct key={product.id} {...product} handleDelete={() => handleDelete(product)} />
+            ))}
           </Grid>
         </Grid>
-      </Grid>
 
-      <Grid item xs={12} hidden={!isGrid}>
-        <Grid container spacing={2}>
-          {data.map((product) => (
-            <CardProduct key={product.id} {...product} handleDelete={() => handleDelete(product)} />
-          ))}
+        <Grid item lg md sm xs hidden={isGrid}>
+          <EaseGrid
+            data={data}
+            columns={columns}
+            hasSearch={false}
+            actionsRight={true}
+            actions={[
+              (rowData) => ({
+                icon: () => (rowData.favorite ? <Favorite style={{ color: '#F50057' }} /> : <FavoriteBorder />),
+                tooltip: 'Favoritar',
+                onClick: async (event, rowData) => {
+                  try {
+                    const favorite = rowData.favorite ? 0 : 1;
+                    await Api.patch(`/product/updateFavorite/${rowData.id}`, {
+                      type: rowData.type,
+                      favorite,
+                    });
+                    const newData = [...data];
+                    newData[rowData.tableData.id].favorite = favorite;
+                    setData(newData);
+                  } catch (error) {
+                    alert(error?.message ?? 'Ocorreu um erro ao favoritar');
+                  }
+                },
+                hidden: rowData.type === 'complement',
+              }),
+              {
+                icon: () => <FlashOn />,
+                tooltip: 'Edição rápida',
+                onClick: (event, rowData) => {
+                  rowData.tableData.editing = 'update';
+                  forceUpdate();
+                },
+              },
+              {
+                icon: () => (
+                  <Button variant='outlined' color='primary' size='small'>
+                    Editar
+                  </Button>
+                ),
+                tooltip: 'Editar',
+                onClick: (event, rowData) => {
+                  handleEdit(rowData);
+                },
+              },
+              {
+                icon: () => (
+                  <Button variant='outlined' color='secondary' size='small'>
+                    Excluir
+                  </Button>
+                ),
+                tooltip: 'Excluir',
+                onClick: (event, rowData) => {
+                  handleDelete(rowData);
+                },
+              },
+            ]}
+            editable={{
+              isEditHidden: (rowData) => true,
+              onRowUpdate,
+            }}
+          />
         </Grid>
-      </Grid>
-
-      <Grid item lg md sm xs hidden={isGrid}>
-        <EaseGrid
-          data={data}
-          columns={columns}
-          hasSearch={false}
-          actionsRight={true}
-          actions={[
-            (rowData) => ({
-              icon: () => (rowData.favorite ? <Favorite style={{ color: '#F50057' }} /> : <FavoriteBorder />),
-              tooltip: 'Favoritar',
-              onClick: async (event, rowData) => {
-                try {
-                  const favorite = rowData.favorite ? 0 : 1;
-                  await Api.patch(`/product/updateFavorite/${rowData.id}`, {
-                    type: rowData.type,
-                    favorite,
-                  });
-                  const newData = [...data];
-                  newData[rowData.tableData.id].favorite = favorite;
-                  setData(newData);
-                } catch (error) {
-                  alert(error?.message ?? 'Ocorreu um erro ao favoritar');
-                }
-              },
-              hidden: rowData.type === 'complement',
-            }),
-            {
-              icon: () => <FlashOn />,
-              tooltip: 'Edição rápida',
-              onClick: (event, rowData) => {
-                rowData.tableData.editing = 'update';
-                forceUpdate();
-              },
-            },
-            {
-              icon: () => (
-                <Button variant='outlined' color='primary' size='small'>
-                  Editar
-                </Button>
-              ),
-              tooltip: 'Editar',
-              onClick: (event, rowData) => {
-                handleEdit(rowData);
-              },
-            },
-            {
-              icon: () => (
-                <Button variant='outlined' color='secondary' size='small'>
-                  Excluir
-                </Button>
-              ),
-              tooltip: 'Excluir',
-              onClick: (event, rowData) => {
-                handleDelete(rowData);
-              },
-            },
-          ]}
-          editable={{
-            isEditHidden: (rowData) => true,
-            onRowUpdate,
-          }}
-        />
-      </Grid>
-      {
-        !isGrid && (<Grid item style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <ButtonRound variant='contained' style={{ height: 30, color: 'white', backgroundColor: 'red' }} onClick={disabelAll}>
-            Inativar Produtos
-          </ButtonRound>
-        </Grid>)
-      }
-    </Grid >
+        {
+          !isGrid && (<Grid item style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <ButtonRound variant='contained' style={{ height: 30, color: 'white', backgroundColor: 'red' }} onClick={disabelAll}>
+              Inativar Produtos
+            </ButtonRound>
+          </Grid>)
+        }
+      </Grid >
+    </>
   );
 };
 
