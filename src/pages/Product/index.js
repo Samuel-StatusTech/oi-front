@@ -291,16 +291,16 @@ const Product = () => {
   };
 
   const filterData = (data) => {
-    let arr, err = []
+    let arr = [],
+      err = []
 
     data.forEach(p => {
       if (p.Nome) {
+        console.log(p)
         if (p.Preco && p.Descricao) arr.push({
           name: p.Nome,
           price_sell: p.Preco,
-          description1: p.Descricao,
-          group_id: p.Grupo,
-          warehose: p.Quantidade
+          description: p.Descricao,
         })
         else {
           err.push({
@@ -320,10 +320,37 @@ const Product = () => {
     const fd = new FormData()
 
     fd.append('name', item.name)
-    fd.append('price_sell', item.price_sell)
-    fd.append('description1', item.description1)
-    fd.append('group_id', item.group_id)
-    fd.append('warehose', item.warehouse)
+    fd.append('price_sell', `${Number(item.price_sell) * 100}`)
+    fd.append('description1', item.description)
+
+    fd.append('group_id', "5f976bbd834c")
+    fd.append('image', '')
+    fd.append('type', 'bar')
+    fd.append('description2', '')
+    fd.append('price_cost', `${Number(item.price_sell) * 100}`)
+    fd.append('has_variable', false)
+    fd.append('has_courtesy', false)
+    fd.append('status', true)
+    fd.append('favorite', false)
+    fd.append('warehouse', 0)
+    fd.append('warehouse_type', 'notControled')
+    fd.append('print_qrcode', false)
+    fd.append('print_ticket', true)
+    fd.append('print_local', true)
+    fd.append('print_date', true)
+    fd.append('print_value', true)
+    fd.append('has_control', false)
+    fd.append('start_at', 1)
+    fd.append('number_copy', 1)
+    fd.append('painel_control', false)
+    fd.append('print_group', false)
+    fd.append('has_cut', false)
+    fd.append('print_plate', false)
+    fd.append('print_tolerance', false)
+    fd.append('has_tolerance', false)
+    fd.append('time_tolerance', 0)
+    fd.append('take_tolerance', false)
+    fd.append('value_tolerance', 0)
 
     return fd
   }
@@ -346,6 +373,8 @@ const Product = () => {
           },
         })
 
+        console.log(reg)
+
         if (reg.status === 400) noAdded.push(i.name)
       })
 
@@ -365,9 +394,12 @@ const Product = () => {
 
     reader.onload = async f => {
       const text = f.target.result
-      console.log('text', text)
-      const data = await csvtojson({ delimiter: ';' }).fromString(text)
-
+      // ASCII
+      const data = await csvtojson({ delimiter: ',' }, {
+        defaultEncoding: 'ascii'
+      }).fromString(
+        new TextDecoder('ASCII').decode(new TextEncoder().encode(text))
+      )
       setNewData(data)
       setConfirmDialogShow(true)
     }
