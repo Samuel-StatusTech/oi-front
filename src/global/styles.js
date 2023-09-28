@@ -231,6 +231,16 @@ export default makeStyles((theme) => ({
     alignItems: 'center',
     gap: 8
   },
+  loadingOverlay: {
+    zIndex: 10000,
+    placeItems: 'center',
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)'
+  },
 
   roundedButton: {
     marginTop: '20px',

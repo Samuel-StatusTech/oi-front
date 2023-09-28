@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom'
 import { connect } from 'react-redux';
 import { Grid, Button, MenuItem, TextField, CircularProgress } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
@@ -19,7 +20,15 @@ import ModalDelete from './Modal/deleteOrder';
 import ModalDetailsOrder from './Modal/detailsOrder';
 import { Info } from '@material-ui/icons';
 import ModalDiff from './Modal/diffOrders';
+import useStyles from '../../../global/styles';
+
+
+
+
 const Transaction = ({ event, user }) => {
+
+  const styles = useStyles()
+
   const columns = [
     {
       title: '',
@@ -50,6 +59,7 @@ const Transaction = ({ event, user }) => {
       render: ({ status }) => (status === 'cancelamento' ? 'Cancelado' : 'Normal'),
     }
   ];
+
   if (user.role === 'master') {
     columns.push({
       title: 'Ações',
@@ -90,7 +100,9 @@ const Transaction = ({ event, user }) => {
       ),
     });
   }
+
   const [loading, setLoading] = useState(false);
+  const [checkLoading, setCheckLoading] = useState(false);
   const [data, setData] = useState([]);
   const [groupList, setGroupList] = useState([]);
   const [productList, setProductList] = useState([]);
@@ -121,6 +133,8 @@ const Transaction = ({ event, user }) => {
   const [showDetailsOrder, setShowDetailsOrder] = useState(false);
   const [detailsOrderData, setDetailsOrderData] = useState(0);
   const [detailsOrderDataId, setDetailsOrderDataId] = useState(0);
+
+
   const updateRow = (value, id) => {
     const newData = [...data];
     const index = data.findIndex((element) => element.id === id);
@@ -159,23 +173,41 @@ const Transaction = ({ event, user }) => {
         setShowDetailsOrder(true);
       };
 
+  const parseData = () => {
+
+    const dateIni = formatDateTimeToDB(iniValue);
+    const dateEnd = formatDateTimeToDB(endValue);
+
+    const statusURL = `status=${status}`;
+    const typeURL = `&type=${type}`;
+    const groupURL = group !== 'todos' && product === 'todos' ? `&group=${group}` : '';
+    const productURL = product !== 'todos' ? `&product=${product}` : '';
+    const operatorURL = operator !== 'todos' ? `&operator=${operator}` : '';
+    const paymentTypeURL = paymentType !== 'todos' ? `&paymentType=${paymentType}` : '';
+    const QRCodeURL = QRCode != '' ? `&qrcode=${`${QRCode}`.toUpperCase().trim()}` : '';
+    // const pageURL = `&per_page=${query.pageSize}&page=${query.page + 1}`;
+    const dateURL = selectType !== 1 ? `&date_ini=${dateIni}&date_end=${dateEnd}` : '';
+
+    return {
+      statusURL,
+      typeURL,
+      groupURL,
+      productURL,
+      operatorURL,
+      paymentTypeURL,
+      QRCodeURL,
+      dateURL
+    }
+
+  }
+
   const loadData = async (moreItens = false, pageination = page) => {
     setLoading(true);
     try {
-      const dateIni = formatDateTimeToDB(iniValue);
-      const dateEnd = formatDateTimeToDB(endValue);
 
-      const statusURL = `status=${status}`;
-      const typeURL = `&type=${type}`;
-      const groupURL = group !== 'todos' && product === 'todos' ? `&group=${group}` : '';
-      const productURL = product !== 'todos' ? `&product=${product}` : '';
-      const operatorURL = operator !== 'todos' ? `&operator=${operator}` : '';
-      const paymentTypeURL = paymentType !== 'todos' ? `&paymentType=${paymentType}` : '';
-      const QRCodeURL = QRCode != '' ? `&qrcode=${`${QRCode}`.toUpperCase().trim()}` : '';
-      // const pageURL = `&per_page=${query.pageSize}&page=${query.page + 1}`;
-      const dateURL = selectType !== 1 ? `&date_ini=${dateIni}&date_end=${dateEnd}` : '';
+      const p = parseData()
 
-      const url = `/order/getList/${event}?${statusURL}${typeURL}${groupURL}${productURL}${operatorURL}${paymentTypeURL}${dateURL}${QRCodeURL}&per_page=300&page=${pageination}`;
+      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=1000&page=${pageination}`;
 
       const resp = await Api.get(url);
 
@@ -252,226 +284,313 @@ const Transaction = ({ event, user }) => {
     loadData();
   };
 
-  const checkDivgs = async () => {
-    let nData = data
+  const getDetails = (tId) => {
 
-    if (nData.length > 0) {
+    return new Promise(async resolve => {
+      const req = await Api.get(`/order/getDetailsOrder/${tId}?event=${event}`)
+      resolve(req.data.orders)
+    })
+  }
+
+  const generateUrl = (qr = null) => {
+    const filters = parseData()
+
+    return `/order/getList/${event}?`
+      + `${filters.statusURL}`
+      + `${filters.typeURL}`
+      + `${filters.groupURL}`
+      + `${filters.productURL}`
+      + `${filters.operatorURL}`
+      + `${filters.paymentTypeURL}`
+      + `${qr ? `&qrcode=${qr}` : filters.QRCodeURL}`
+      + `&per_page=100000`
+      + `&page=${0}`
+  }
+
+  const findByQR = async (code) => {
+    return await Api.get(generateUrl(code))
+  }
+
+  const checkDivgs = async () => {
+
+    const allTransactions = await (await Api.get(generateUrl())).data.orders
+
+    // limite de transações a verificar
+    const testLimit = 300
+
+    if (allTransactions.length > 0) {
       let errorsValues = []
 
-      data.forEach((d) => {
-        if (d.payments.length === 0) {
-          errorsValues.push(d)
+      await new Promise(async resolve => {
+        console.log('starting')
+        allTransactions.forEach((transaction, index) => {
+          if (index < testLimit) {
+
+            // check empty payment field
+            if (transaction.payments.length === 0) {
+              errorsValues.push(transaction)
+              return
+            }
+
+            // check duplicate qr_code
+            getDetails(transaction.id)
+              .then(details => {
+                details.forEach(({ qr_code }, ind) => {
+                  if (qr_code) {
+                    findByQR(qr_code)
+                      .then(({ data }) => {
+                        const transactionID = data.orders.id
+                        if (transactionID !== transaction.id) errorsValues.push(transaction)
+                      })
+                  } else {
+                    errorsValues.push(transaction)
+                  }
+
+                  if (ind === (details.length - 1) && index === testLimit - 1) {
+                    console.log('finishing')
+                    resolve()
+                  }
+                })
+              })
+          }
+        })
+      }).then(() => {
+        if (errorsValues.length > 0) {
+          alert(`Houve ${errorsValues.length} divergências`)
+          setData(errorsValues)
         }
+        else alert("Não houve divergências")
       })
 
-      if (errorsValues.length > 0) {
-        setDiffValues(errorsValues)
-        setShowDiffOrders(true)
-      } else {
-        alert("Não houve divergências")
-      }
+      setCheckLoading(false)
+    }
+    else {
+      setCheckLoading(false)
     }
   }
 
 
-  return (
-    <Grid container direction='column' spacing={2}>
-      <ModalCancel show={showCancel} onClose={() => setShowCancel(false)} data={cancelData} updateRow={updateRow} event={event} />
-      <ModalDelete show={showDelete} onClose={() => setShowDelete(false)} data={deleteData} updateRow={deleteRow} event={event} />
-      <ModalDetailsOrder
-        event={event}
-        show={showDetailsOrder}
-        onClose={() => setShowDetailsOrder(false)}
-        order_id={detailsOrderData}
-        detailsOrderDataId={detailsOrderDataId}
-      />
-      <ModalDiff
-        event={event}
-        show={showDiffOrders && diffValues.length > 0}
-        data={diffValues}
-        onClose={() => setShowDiffOrders(false)}
-      />
-      <Grid item lg={12} md={12} sm={12} xs={12}>
-        <Grid container spacing={2}>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <TextField
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              label='Status'
-              variant='outlined'
-              size='small'
-              fullWidth
-              select
-            >
-              <MenuItem value='todos'>Todos</MenuItem>
-              <MenuItem value='validado'>Normal</MenuItem>
-              <MenuItem value='cancelamento'>Cancelado</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <TextField
-              value={type}
-              onChange={(e) => {
-                if (e.target.value !== 'todos') {
-                  const g = groupList.find((g) => g.id === group);
+  const renderLoadingOverlay = (showing) => {
 
-                  if (g && g.type !== e.target.value) {
-                    setGroup('todos');
-                    setProduct('todos');
-                  }
-                }
-                setType(e.target.value);
-              }}
-              label='Tipo'
-              variant='outlined'
-              size='small'
-              fullWidth
-              select
-            >
-              <MenuItem value='todos'>Todos</MenuItem>
-              <MenuItem value='bar'>Bar</MenuItem>
-              <MenuItem value='ingresso'>Ingresso</MenuItem>
-              <MenuItem value='estacionamento'>Estacionamento</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <TextField
-              value={group}
-              onChange={(e) => setGroup(e.target.value)}
-              label='Grupo'
-              variant='outlined'
-              size='small'
-              fullWidth
-              select
-            >
-              <MenuItem value='todos'>Todos</MenuItem>
-              {groupList
-                .filter((group) => type === 'todos' || type === group.type)
-                .map((group) => (
-                  <MenuItem key={group.id} value={group.id}>
-                    {group.name}
-                  </MenuItem>
-                ))}
-            </TextField>
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <Autocomplete
-              id='produtos'
-              defaultValue={{ id: 'todos', title: 'Todos' }}
-              getOptionSelected={(option, value) => option?.id === value?.id}
-              options={[
-                { id: 'todos', title: 'Todos' },
-                ...productList.map((product) => ({ id: product.id, title: product.name })),
-              ]}
-              onChange={(event, newValue) => {
-                setProduct(newValue?.id);
-              }}
-              size='small'
-              getOptionLabel={(option) => option?.title}
-              renderInput={(params) => <TextField {...params} label='Produtos' variant='outlined' />}
-              fullWidth
-            />
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <Autocomplete
-              id='operator'
-              defaultValue={{ id: 'todos', title: 'Todos' }}
-              getOptionSelected={(option, value) => option?.id === value?.id}
-              options={[
-                { id: 'todos', title: 'Todos' },
-                ...operatorList.map((operator) => ({ id: operator.id, title: operator.name })),
-              ]}
-              onChange={(event, newValue) => {
-                setOperator(newValue?.id);
-              }}
-              size='small'
-              getOptionLabel={(option) => option.title}
-              renderInput={(params) => <TextField {...params} label='Operador' variant='outlined' />}
-              fullWidth
-            />
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <TextField
-              value={paymentType}
-              onChange={(e) => setPaymentType(e.target.value)}
-              label='Forma de pagamento'
-              variant='outlined'
-              size='small'
-              select
-              fullWidth
-            >
-              <MenuItem value='todos'>Todos</MenuItem>
-              <MenuItem value='dinheiro'>Dinheiro</MenuItem>
-              <MenuItem value='debito'>Debito</MenuItem>
-              <MenuItem value='credito'>Credito</MenuItem>
-              <MenuItem value='pix'>Pix</MenuItem>
-              <MenuItem value='multiplus'>Multiplus</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item lg={1} md={1} sm={12} xs={12}>
-            <Button onClick={checkDivgs} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-              Divergência
-            </Button>
-          </Grid>
-          <Grid item lg={2} md={4} sm={12} xs={12}>
-            <TextField
-              value={QRCode}
-              onChange={(e) => setQRCode(e.target.value)}
-              variant='outlined'
-              label='QR Code'
-              fullWidth
-              size='small'
-            />
-          </Grid>
-          <Grid item lg={9} md={7} sm={12} xs={12}>
-            <Between
-              iniValue={iniValue}
-              onChangeIni={onChangeIni}
-              endValue={endValue}
-              onChangeEnd={onChangeEnd}
-              onSelectType={onSelectType}
-              selected={selectType}
-              onSearch={handleSearch}
-              size='small'
-              fullWidth
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item lg={12} md={12} sm={12} xs={12}>
-        <EaseGrid
-          config={{
-            rowStyle: (row) => ({
-              backgroundColor: row.status === 'cancelamento' ? '#fff0f0' : 'white',
-            }),
-          }}
-          /*paging
-          pageSize={data.length = 0 ? 10 : (data.length < 300 ? data.length : 300)}
-          pageSizeOptions={[10, 20, 50, 100, 300, 500]}*/
-          title='Transações'
-          columns={columns}
-          data={data}
-          loading={loading}
+    const el = (
+      <div
+        id="loadingOverlayTmp"
+        className={styles.loadingOverlay}
+        style={{
+          display: checkLoading ? 'grid' : 'none'
+        }}
+      >
+        <CircularProgress />
+      </div>
+    )
+
+    return createPortal(el, document.body)
+  }
+
+
+  return (
+    <>
+      {renderLoadingOverlay()}
+      <Grid container direction='column' spacing={2}>
+        <ModalCancel show={showCancel} onClose={() => setShowCancel(false)} data={cancelData} updateRow={updateRow} event={event} />
+        <ModalDelete show={showDelete} onClose={() => setShowDelete(false)} data={deleteData} updateRow={deleteRow} event={event} />
+        <ModalDetailsOrder
+          event={event}
+          show={showDetailsOrder}
+          onClose={() => setShowDetailsOrder(false)}
+          order_id={detailsOrderData}
+          detailsOrderDataId={detailsOrderDataId}
         />
-      </Grid>
-      {!loading &&
+        {/* <ModalDiff
+          event={event}
+          show={showDiffOrders && diffValues.length > 0}
+          data={diffValues}
+          onClose={() => setShowDiffOrders(false)}
+        /> */}
         <Grid item lg={12} md={12} sm={12} xs={12}>
-          <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center', marginTop: 20 }}>
-            <Button
-              variant='outlined'
-              color='default'
-              onClick={() => {
-                loadData(true, page + 1)
-                setPage(page + 1)
-              }}
-              style={{ padding: '8px', backgroundColor: 'white', width: 150, borderRadius: 30 }}
-            >
-              Mostrar mais
-            </Button>
-          </div>
+          <Grid container spacing={2}>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <TextField
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                label='Status'
+                variant='outlined'
+                size='small'
+                fullWidth
+                select
+              >
+                <MenuItem value='todos'>Todos</MenuItem>
+                <MenuItem value='validado'>Normal</MenuItem>
+                <MenuItem value='cancelamento'>Cancelado</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <TextField
+                value={type}
+                onChange={(e) => {
+                  if (e.target.value !== 'todos') {
+                    const g = groupList.find((g) => g.id === group);
+
+                    if (g && g.type !== e.target.value) {
+                      setGroup('todos');
+                      setProduct('todos');
+                    }
+                  }
+                  setType(e.target.value);
+                }}
+                label='Tipo'
+                variant='outlined'
+                size='small'
+                fullWidth
+                select
+              >
+                <MenuItem value='todos'>Todos</MenuItem>
+                <MenuItem value='bar'>Bar</MenuItem>
+                <MenuItem value='ingresso'>Ingresso</MenuItem>
+                <MenuItem value='estacionamento'>Estacionamento</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <TextField
+                value={group}
+                onChange={(e) => setGroup(e.target.value)}
+                label='Grupo'
+                variant='outlined'
+                size='small'
+                fullWidth
+                select
+              >
+                <MenuItem value='todos'>Todos</MenuItem>
+                {groupList
+                  .filter((group) => type === 'todos' || type === group.type)
+                  .map((group) => (
+                    <MenuItem key={group.id} value={group.id}>
+                      {group.name}
+                    </MenuItem>
+                  ))}
+              </TextField>
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <Autocomplete
+                id='produtos'
+                defaultValue={{ id: 'todos', title: 'Todos' }}
+                getOptionSelected={(option, value) => option?.id === value?.id}
+                options={[
+                  { id: 'todos', title: 'Todos' },
+                  ...productList.map((product) => ({ id: product.id, title: product.name })),
+                ]}
+                onChange={(event, newValue) => {
+                  setProduct(newValue?.id);
+                }}
+                size='small'
+                getOptionLabel={(option) => option?.title}
+                renderInput={(params) => <TextField {...params} label='Produtos' variant='outlined' />}
+                fullWidth
+              />
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <Autocomplete
+                id='operator'
+                defaultValue={{ id: 'todos', title: 'Todos' }}
+                getOptionSelected={(option, value) => option?.id === value?.id}
+                options={[
+                  { id: 'todos', title: 'Todos' },
+                  ...operatorList.map((operator) => ({ id: operator.id, title: operator.name })),
+                ]}
+                onChange={(event, newValue) => {
+                  setOperator(newValue?.id);
+                }}
+                size='small'
+                getOptionLabel={(option) => option.title}
+                renderInput={(params) => <TextField {...params} label='Operador' variant='outlined' />}
+                fullWidth
+              />
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <TextField
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value)}
+                label='Forma de pagamento'
+                variant='outlined'
+                size='small'
+                select
+                fullWidth
+              >
+                <MenuItem value='todos'>Todos</MenuItem>
+                <MenuItem value='dinheiro'>Dinheiro</MenuItem>
+                <MenuItem value='debito'>Debito</MenuItem>
+                <MenuItem value='credito'>Credito</MenuItem>
+                <MenuItem value='pix'>Pix</MenuItem>
+                <MenuItem value='multiplus'>Multiplus</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item lg={1} md={1} sm={12} xs={12}>
+              <Button onClick={() => {
+                setCheckLoading(true)
+                checkDivgs()
+              }} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                Divergência
+              </Button>
+            </Grid>
+            <Grid item lg={2} md={4} sm={12} xs={12}>
+              <TextField
+                value={QRCode}
+                onChange={(e) => setQRCode(e.target.value)}
+                variant='outlined'
+                label='QR Code'
+                fullWidth
+                size='small'
+              />
+            </Grid>
+            <Grid item lg={9} md={7} sm={12} xs={12}>
+              <Between
+                iniValue={iniValue}
+                onChangeIni={onChangeIni}
+                endValue={endValue}
+                onChangeEnd={onChangeEnd}
+                onSelectType={onSelectType}
+                selected={selectType}
+                onSearch={handleSearch}
+                size='small'
+                fullWidth
+              />
+            </Grid>
+          </Grid>
         </Grid>
-      }
-      {/*<Grid item lg={12} md={12} sm={12} xs={12}>
+        <Grid item lg={12} md={12} sm={12} xs={12}>
+          <EaseGrid
+            config={{
+              rowStyle: (row) => ({
+                backgroundColor: row.status === 'cancelamento' ? '#fff0f0' : 'white',
+              }),
+            }}
+            /*paging
+            pageSize={data.length = 0 ? 10 : (data.length < 300 ? data.length : 300)}
+            pageSizeOptions={[10, 20, 50, 100, 300, 500]}*/
+            title='Transações'
+            columns={columns}
+            data={data}
+            loading={loading}
+          />
+        </Grid>
+        {!loading &&
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center', marginTop: 20 }}>
+              <Button
+                variant='outlined'
+                color='default'
+                onClick={() => {
+                  loadData(true, page + 1)
+                  setPage(page + 1)
+                }}
+                style={{ padding: '8px', backgroundColor: 'white', width: 150, borderRadius: 30 }}
+              >
+                Mostrar mais
+              </Button>
+            </div>
+          </Grid>
+        }
+        {/*<Grid item lg={12} md={12} sm={12} xs={12}>
         <Grid container spacing={2} justify='flex-end'>
           <Grid item xl={2} lg={3} md={4} sm={12} xs={12}>
             <MainCard type={1} title='Total vendas:' value={format(totalSell / 100, { code: 'BRL' })} />
@@ -484,7 +603,8 @@ const Transaction = ({ event, user }) => {
           </Grid>
         </Grid>
         </Grid>*/}
-    </Grid>
+      </Grid>
+    </>
   );
 };
 
