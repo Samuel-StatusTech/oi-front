@@ -373,12 +373,11 @@ const Product = () => {
           },
         })
 
-        console.log(reg)
-
         if (reg.status === 400) noAdded.push(i.name)
       })
 
       setErrData(noAdded)
+      setDialogMessage('Produtos adicionados com sucesso. Você já pode fechar esta janela.')
     } else {
       setDialogMessage('Nenhum produto adicionado. Confira seus campos e tente novamente.')
       setErrData(fData.err)
@@ -394,7 +393,6 @@ const Product = () => {
 
     reader.onload = async f => {
       const text = f.target.result
-      // ASCII
       const data = await csvtojson({ delimiter: ',' }, {
         defaultEncoding: 'ascii'
       }).fromString(
@@ -415,16 +413,18 @@ const Product = () => {
   return (
     <>
       <Dialog open={confirmDialogShow} onClose={() => setConfirmDialogShow(false)} fullWidth maxWidth='md'>
-        <DialogTitle>{dialogMessage}</DialogTitle>
+        <DialogTitle>Cadastrar produtos</DialogTitle>
         <DialogContent>
+          <span>{dialogMessage}</span>
         </DialogContent>
         <DialogActions>
-          {errData.length === 0 &&
+          {!isRegisterMade && errData.length === 0 &&
             <Button
               type='button'
               onClick={registerNewProducts}
               variant='outlined'
               color='primary'
+              disabled={isRegistering}
             >
               {isRegistering ? (
                 <>
