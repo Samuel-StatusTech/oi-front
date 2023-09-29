@@ -315,22 +315,15 @@ const Transaction = ({ event, user }) => {
 
     const allTransactions = await (await Api.get(generateUrl())).data.orders
 
-    // limite de transações a verificar
-    const testLimit = 300
-
     if (allTransactions.length > 0) {
       let errorsValues = []
 
       await new Promise(async resolve => {
         console.log('starting')
         allTransactions.forEach((transaction, index) => {
-          if (index < testLimit) {
-
-            // check empty payment field
-            if (transaction.payments.length === 0) {
-              errorsValues.push(transaction)
-              return
-            }
+          // check empty payment field
+          if (transaction.payments.length === 0) {
+            errorsValues.push(transaction)
 
             // check duplicate qr_code
             getDetails(transaction.id)
@@ -345,13 +338,14 @@ const Transaction = ({ event, user }) => {
                   } else {
                     errorsValues.push(transaction)
                   }
-
-                  if (ind === (details.length - 1) && index === testLimit - 1) {
-                    console.log('finishing')
-                    resolve()
-                  }
                 })
               })
+
+            return
+          }
+
+          if (ind === (details.length - 1)) {
+            resolve()
           }
         })
       }).then(() => {
