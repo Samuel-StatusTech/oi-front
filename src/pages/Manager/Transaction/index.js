@@ -123,13 +123,11 @@ const Transaction = ({ event, user }) => {
   const [selectType, onSelectType] = useState(0);
   const [page, setPage] = useState(0);
   const [QRCode, setQRCode] = useState('');
-  const [diffValues, setDiffValues] = useState([])
 
   const [showCancel, setShowCancel] = useState(false);
   const [cancelData, setCancelData] = useState({});
   const [showDelete, setShowDelete] = useState(false);
   const [deleteData, setDeleteData] = useState({});
-  const [showDiffOrders, setShowDiffOrders] = useState(false);
   const [showDetailsOrder, setShowDetailsOrder] = useState(false);
   const [detailsOrderData, setDetailsOrderData] = useState(0);
   const [detailsOrderDataId, setDetailsOrderDataId] = useState(0);
@@ -207,7 +205,7 @@ const Transaction = ({ event, user }) => {
 
       const p = parseData()
 
-      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=1000&page=${pageination}`;
+      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=3000&page=${pageination}`;
 
       const resp = await Api.get(url);
 
@@ -303,7 +301,7 @@ const Transaction = ({ event, user }) => {
       + `${filters.operatorURL}`
       + `${filters.paymentTypeURL}`
       + `${qr ? `&qrcode=${qr}` : filters.QRCodeURL}`
-      + `&per_page=100000`
+      + `&per_page=1000000`
       + `&page=${0}`
   }
 
@@ -319,52 +317,63 @@ const Transaction = ({ event, user }) => {
       let errorsValues = []
 
       await new Promise(async resolve => {
-        console.log('starting')
         allTransactions.forEach((transaction, index) => {
+
           // check empty payment field
           if (transaction.payments.length === 0) {
             errorsValues.push(transaction)
 
             // check duplicate qr_code
             getDetails(transaction.id)
-              .then(details => {
-                details.forEach(({ qr_code }, ind) => {
-                  if (qr_code) {
-                    findByQR(qr_code)
-                      .then(({ data }) => {
-                        const transactionID = data.orders.id
-                        if (transactionID !== transaction.id) errorsValues.push(transaction)
-                      })
-                  } else {
-                    errorsValues.push(transaction)
-                  }
-                })
+              .then(async details => {
+                let res = []
+
+                await ((
+                  () => new Promise(concluded => {
+                    details.forEach(async (pSold, ind) => {
+                      let result = null
+                      const { qr_code } = pSold
+
+                      if (qr_code) result = await findByQR(qr_code).then(
+                        ({ data }) => {
+                          const containingCode = data.orders
+                          let r = []
+
+                          containingCode.forEach(sell => {
+                            const condition = !errorsValues.some(t => Number(t.id) === Number(sell.id))
+                            if (condition) r.push(sell)
+                          })
+
+                          return r
+                        })
+
+                      if (ind === details.length - 1) concluded(result)
+                    })
+                  }).then(data => {
+                    if (data) res = data
+                  })
+                )())
+
+                errorsValues = [...errorsValues, ...res]
+                resolve()
               })
-
-            return
-          }
-
-          if (index === (allTransactions.length - 1)) {
-            resolve()
           }
         })
       }).then(() => {
+        setCheckLoading(false)
+
         if (errorsValues.length > 0) {
-          alert(`Houve ${errorsValues.length} divergência${errorsValues.length > 1 ? 's' : ''}`)
           setData(errorsValues)
+          alert(`Houve ${errorsValues.length} divergência${errorsValues.length > 1 ? 's' : ''}`)
         }
         else alert("Não houve divergências")
       })
-
-      setCheckLoading(false)
     }
-    else {
-      setCheckLoading(false)
-    }
+    else setCheckLoading(false)
   }
 
 
-  const renderLoadingOverlay = (showing) => {
+  const renderLoadingOverlay = () => {
 
     const el = (
       <div
@@ -395,12 +404,6 @@ const Transaction = ({ event, user }) => {
           order_id={detailsOrderData}
           detailsOrderDataId={detailsOrderDataId}
         />
-        {/* <ModalDiff
-          event={event}
-          show={showDiffOrders && diffValues.length > 0}
-          data={diffValues}
-          onClose={() => setShowDiffOrders(false)}
-        /> */}
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Grid container spacing={2}>
             <Grid item lg={2} md={4} sm={12} xs={12}>
