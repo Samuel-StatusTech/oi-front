@@ -205,7 +205,7 @@ const Transaction = ({ event, user }) => {
 
       const p = parseData()
 
-      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=3000&page=${pageination}`;
+      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=1000&page=${pageination}`;
 
       const resp = await Api.get(url);
 
