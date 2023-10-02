@@ -344,13 +344,13 @@ const Transaction = ({ event, user }) => {
             return
           }
 
-          if (ind === (details.length - 1)) {
+          if (index === (allTransactions.length - 1)) {
             resolve()
           }
         })
       }).then(() => {
         if (errorsValues.length > 0) {
-          alert(`Houve ${errorsValues.length} divergências`)
+          alert(`Houve ${errorsValues.length} divergência${errorsValues.length > 1 ? 's' : ''}`)
           setData(errorsValues)
         }
         else alert("Não houve divergências")
