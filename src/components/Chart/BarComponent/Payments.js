@@ -7,9 +7,9 @@ import { Typography } from '@material-ui/core';
 import useStyles from '../../../global/styles';
 
 
-const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, loading }) => {
+const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, others = 0, loading }) => {
   const styles = useStyles();
-  const total = money + debit + credit + pix + webstore
+  const total = money + debit + credit + pix + webstore + others
 
   const colors = ['#4C7CD0', '#FF9843', '#F05968']
   let seriesData = []
@@ -27,6 +27,7 @@ const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, loa
   showInfo(credit, 'Crédito')
   showInfo(pix, 'Pix')
   showInfo(webstore, 'Loja Virtual')
+  showInfo(others, 'Outras Receitas')
 
   const mockData = {
     series: [{ name: 'Valor', data: seriesData }],
@@ -66,9 +67,9 @@ const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, loa
       dataLabels: {
         enabled: true,
         textAnchor: 'start',
-        offsetX: -15,
+        offsetX: 5,
         formatter: val => {
-          return ((val / total) * 100).toFixed(1) + "%";
+          return ((val / total) * 100).toFixed(1);
         },
         dropShadow: {
           enabled: true

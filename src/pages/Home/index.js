@@ -5,7 +5,7 @@ import { Grid, Typography } from '@material-ui/core';
 
 import EventCard from './Card/Event';
 import RecipeCard from './Card/Recipe';
-import PaymentCard from './Card/Payments';
+import PaymentCard from '../../components/Chart/Bar';
 import PanelCard from './Card/Panel';
 
 import EaseGrid from '../../components/EaseGrid';

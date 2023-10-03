@@ -220,13 +220,15 @@ export default (props) => {
               </Grid>
               <Grid item xl={4} lg={4} md={12} sm={12} xs={12}>
                 <Card>
-                  <CardContent >
-                    <Typography className={`${styles.h2} ${styles.textCenter}`}>Formas de Pagamento</Typography>
-                    <Bar
-                      series={[payment.gross.credit / 100, payment.gross.debit / 100, payment.gross.money / 100, payment.gross.pix / 100, 0, 0]}
-                      labels={['Crédito', 'Débito', 'Dinheiro', 'Pix', 'Loja Virtual', 'Outras Receitas']}
-                    />
-                  </CardContent>
+                  <Bar
+                    money={payment.gross.money / 100}
+                    debit={payment.gross.debit / 100}
+                    credit={payment.gross.credit / 100}
+                    pix={payment.gross.pix / 100}
+                    webstore={0}
+                    others={0}
+                    loading={false}
+                  />
                 </Card>
               </Grid>
               <Grid item lg={12} md={12} xs={12} sm={12}>

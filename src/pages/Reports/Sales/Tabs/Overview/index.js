@@ -13,6 +13,7 @@ import ChartPieG from './PieG';
 import { formatDateTimeToDB } from '../../../../../utils/date';
 import EaseGrid from '../../../../../components/EaseGrid/index';
 import useStyles from '../../../../../global/styles';
+import Bar from '../../../../../components/Chart/Bar'
 
 const titles = {
   sales: {
@@ -356,28 +357,18 @@ export default (props) => {
             </Grid>
             <Grid item xl={productType !== 'all' ? 3 : 6} lg={6} md={12} sm={12} xs={12}>
               <Card>
-                <CardContent sx={12}>
-                  <Grid>
-                    <Grid item>
-                      <Typography className={`${styles.h2} ${styles.textCenter}`}>Formas de Pagamento</Typography>
-                      {payment &&
-                        ((payment.credit / 100 > 0) || (payment.debit / 100 > 0) || (payment.money / 100 > 0) || (payment.pix / 100 > 0)) &&
-                        <ChartPieG
-                          values={{
-                            credit: payment.credit,
-                            debit: payment.debit,
-                            money: payment.money,
-                            pix: payment.pix
-                          }}
-                          series={[payment.credit / 100, payment.debit / 100, payment.money / 100, payment.pix / 100,
-                          ]}
-                          labels={['Crédito', 'Débito', 'Dinheiro', 'Pix']}
-                          showValueLegend={group == 'all'}
-                        />
-                      }
-                    </Grid>
-                  </Grid>
-                </CardContent>
+                {payment &&
+                  ((payment.credit / 100 > 0) || (payment.debit / 100 > 0) || (payment.money / 100 > 0) || (payment.pix / 100 > 0)) &&
+                  <Bar
+                    money={payment.money / 100}
+                    debit={payment.debit / 100}
+                    credit={payment.credit / 100}
+                    pix={payment.pix / 100}
+                    webstore={0}
+                    others={0}
+                    loading={false}
+                  />
+                }
               </Card>
             </Grid>
             {productType !== 'all' && (
