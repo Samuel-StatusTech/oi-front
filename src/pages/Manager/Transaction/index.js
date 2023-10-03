@@ -337,40 +337,49 @@ const Transaction = ({ event, user }) => {
 
           await new Promise(finishTransaction => {
 
-            // check duplicate qr_code
             getDetails(transaction.id).then(async details => {
 
               await ((
                 () => new Promise(async finishProduct => {
                   let result = []
 
-                  for (let i = 0; i < details.length; i++) {
-                    const pSold = details[i]
-                    const { qr_code } = pSold
+                  if (details.length > 0) {
 
-                    if (qr_code) {
-                      await findByQR(qr_code).then(
-                        ({ data }) => {
-                          const containingCode = data.orders
+                    for (let i = 0; i < details.length; i++) {
+                      const pSold = details[i]
+                      const { qr_code } = pSold
 
-                          if (i === details.length - 1) {
-                            finishProduct([...result, ...containingCode])
-                          } else {
-                            result = [...result, ...containingCode]
-                          }
-                        })
+                      if (qr_code) {
+                        await findByQR(qr_code).then(
+                          ({ data }) => {
+                            const containingCode = data.orders
+
+                            if (i === details.length - 1) {
+                              finishProduct([...result, ...containingCode])
+                            } else {
+                              result = [...result, ...containingCode]
+                            }
+                          })
+                      }
+
+                      else if (i === details.length - 1) finishProduct(result)
                     }
-                    else if (i === details.length - 1) finishProduct(result)
 
+                  } else {
+                    finishProduct([...result])
                   }
                 })
                   .then(resData => {
 
                     if (resData) {
-                      errorsValues = filterData([...errorsValues, ...resData])
-                      const resumeErrors = filterData([...errorsValues, ...resData])
 
-                      finishTransaction(resumeErrors)
+                      if (resData.length > 0) {
+                        errorsValues = filterData([...errorsValues, ...resData])
+                        const resumeErrors = filterData([...errorsValues, ...resData])
+                        finishTransaction(resumeErrors)
+                      } else {
+                        finishTransaction(filterData(errorsValues))
+                      }
                     }
                   })
               )())

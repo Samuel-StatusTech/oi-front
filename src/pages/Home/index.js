@@ -125,7 +125,7 @@ const Home = ({ event, events }) => {
   };
 
   const getOperatorsData = async () => {
-    const info = await Api.get('/statistical/saleOperations/f8eb3d9a6373?type=all')
+    const info = await Api.get(`/statistical/saleOperations/${event}?type=all`)
     return info.data.list
   }
 
