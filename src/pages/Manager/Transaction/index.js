@@ -309,67 +309,93 @@ const Transaction = ({ event, user }) => {
     return await Api.get(generateUrl(code))
   }
 
+  const filterData = arr => {
+    let newArr = []
+
+    arr.forEach(item => {
+      if (newArr.findIndex(i => Number(i.id) === Number(item.id)) < 0) {
+        newArr.push(item)
+      }
+    })
+
+    return newArr
+  }
+
   const checkDivgs = async () => {
 
     const allTransactions = await (await Api.get(generateUrl())).data.orders
+    const empties = allTransactions.filter(t => t.payments.length < 1)
 
-    if (allTransactions.length > 0) {
+    if (empties.length > 0) {
       let errorsValues = []
 
       await new Promise(async resolve => {
-        allTransactions.forEach((transaction, index) => {
 
-          // check empty payment field
-          if (transaction.payments.length === 0) {
-            errorsValues.push(transaction)
+        for (let k = 0; k < empties.length; k++) {
+          const transaction = empties[k]
+          errorsValues.push(transaction)
+
+          await new Promise(finishTransaction => {
 
             // check duplicate qr_code
-            getDetails(transaction.id)
-              .then(async details => {
-                let res = []
+            getDetails(transaction.id).then(async details => {
 
-                await ((
-                  () => new Promise(concluded => {
-                    details.forEach(async (pSold, ind) => {
-                      let result = null
-                      const { qr_code } = pSold
+              await ((
+                () => new Promise(async finishProduct => {
+                  let result = []
 
-                      if (qr_code) result = await findByQR(qr_code).then(
+                  for (let i = 0; i < details.length; i++) {
+                    const pSold = details[i]
+                    const { qr_code } = pSold
+
+                    if (qr_code) {
+                      await findByQR(qr_code).then(
                         ({ data }) => {
                           const containingCode = data.orders
-                          let r = []
 
-                          containingCode.forEach(sell => {
-                            const condition = !errorsValues.some(t => Number(t.id) === Number(sell.id))
-                            if (condition) r.push(sell)
-                          })
-
-                          return r
+                          if (i === details.length - 1) {
+                            finishProduct([...result, ...containingCode])
+                          } else {
+                            result = [...result, ...containingCode]
+                          }
                         })
+                    }
+                    else if (i === details.length - 1) finishProduct(result)
 
-                      if (ind === details.length - 1) concluded(result)
-                    })
-                  }).then(data => {
-                    if (data) res = data
+                  }
+                })
+                  .then(resData => {
+
+                    if (resData) {
+                      errorsValues = filterData([...errorsValues, ...resData])
+                      const resumeErrors = filterData([...errorsValues, ...resData])
+
+                      finishTransaction(resumeErrors)
+                    }
                   })
-                )())
+              )())
+            })
+          }).then((resumeErrors) => {
+            if (k === empties.length - 1) resolve(resumeErrors)
+          })
 
-                errorsValues = [...errorsValues, ...res]
-                resolve()
-              })
-          }
-        })
-      }).then(() => {
+
+        }
+
+      }).then((resumedData) => {
         setCheckLoading(false)
 
-        if (errorsValues.length > 0) {
-          setData(errorsValues)
-          alert(`Houve ${errorsValues.length} divergência${errorsValues.length > 1 ? 's' : ''}`)
+        if (resumedData.length > 0) {
+          setData(resumedData)
+          alert(`Houve ${resumedData.length} divergência${resumedData.length > 1 ? 's' : ''}`)
         }
         else alert("Não houve divergências")
       })
     }
-    else setCheckLoading(false)
+    else {
+      setCheckLoading(false)
+      alert("Não houve pagamentos em branco")
+    }
   }
 
 
@@ -379,9 +405,7 @@ const Transaction = ({ event, user }) => {
       <div
         id="loadingOverlayTmp"
         className={styles.loadingOverlay}
-        style={{
-          display: checkLoading ? 'grid' : 'none'
-        }}
+        style={{ display: checkLoading ? 'grid' : 'none' }}
       >
         <CircularProgress />
       </div>
