@@ -1,82 +1,82 @@
-import React from 'react';
+import React from "react"
 
-import Home, { Icon as HomeIcon } from '../pages/Home';
-import Warehouse, { Icon as WarehouseIcon } from '../pages/Warehouse';
+import Home, { Icon as HomeIcon } from "../pages/Home"
+import Warehouse, { Icon as WarehouseIcon } from "../pages/Warehouse"
 
 /*              PRODUTOS                */
-import ProductList, { Icon as ProductIcon } from '../pages/Product';
-import ProductSimpleForm from '../pages/Product/form/simple';
-import ProductComboForm from '../pages/Product/form/combo';
-import ProductComplementForm from '../pages/Product/form/complement';
+import ProductList, { Icon as ProductIcon } from "../pages/Product"
+import ProductSimpleForm from "../pages/Product/form/simple"
+import ProductComboForm from "../pages/Product/form/combo"
+import ProductComplementForm from "../pages/Product/form/complement"
 /*              PRODUTOS                */
 
 /*              CADASTRO                */
-import { Icon as RegisterIcon } from '../pages/Register/Icon';
-import EventList from '../pages/Register/Event';
-import EventForm from '../pages/Register/Event/form';
-import ManagerList from '../pages/Register/Manager';
-import ManagerForm from '../pages/Register/Manager/form';
-import GroupList from '../pages/Register/Group';
-import GroupForm from '../pages/Register/Group/form';
-import OperatorList from '../pages/Register/Operator';
-import OperatorForm from '../pages/Register/Operator/form';
-import WaiterList from '../pages/Register/Waiter';
-import WaiterForm from '../pages/Register/Waiter/form';
-import ValidatorList from '../pages/Register/Validator';
-import ValidatorForm from '../pages/Register/Validator/form';
-import ListsList from '../pages/Register/Lists';
-import ListsData from '../pages/Register/Lists/data';
-import PDVList from '../pages/Register/PDV';
-import PDVForm from '../pages/Register/PDV/form';
-import DeviceList from '../pages/Register/Device';
-import DeviceForm from '../pages/Register/Device/form';
-import ReservationList from '../pages/Register/Reservation';
-import ReservationForm from '../pages/Register/Reservation/form';
+import { Icon as RegisterIcon } from "../pages/Register/Icon"
+import EventList from "../pages/Register/Event"
+import EventForm from "../pages/Register/Event/form"
+import ManagerList from "../pages/Register/Manager"
+import ManagerForm from "../pages/Register/Manager/form"
+import GroupList from "../pages/Register/Group"
+import GroupForm from "../pages/Register/Group/form"
+import OperatorList from "../pages/Register/Operator"
+import OperatorForm from "../pages/Register/Operator/form"
+import WaiterList from "../pages/Register/Waiter"
+import WaiterForm from "../pages/Register/Waiter/form"
+import ValidatorList from "../pages/Register/Validator"
+import ValidatorForm from "../pages/Register/Validator/form"
+import ListsList from "../pages/Register/Lists"
+import ListsData from "../pages/Register/Lists/data"
+import PDVList from "../pages/Register/PDV"
+import PDVForm from "../pages/Register/PDV/form"
+import DeviceList from "../pages/Register/Device"
+import DeviceForm from "../pages/Register/Device/form"
+import ReservationList from "../pages/Register/Reservation"
+import ReservationForm from "../pages/Register/Reservation/form"
 /*              CADASTRO                */
 
 /*              VENDA ONLINE                */
-import { Icon as OnlineIcon } from '../pages/Online/Icon';
-import OnlineEventList from '../pages/Online/Event';
-import OnlineEventForm from '../pages/Online/Event/form';
-import OnlineProductList from '../pages/Online/Product';
-import OnlineProductForm from '../pages/Online/Product/form';
+import { Icon as OnlineIcon } from "../pages/Online/Icon"
+import OnlineEventList from "../pages/Online/Event"
+import OnlineEventForm from "../pages/Online/Event/form"
+import OnlineProductList from "../pages/Online/Product"
+import OnlineProductForm from "../pages/Online/Product/form"
 /*              VENDA ONLINE                */
 
 /*              GERENCIAL                */
-import { Icon as ManagerIcon } from '../pages/Manager/Icon';
-import TransactionList from '../pages/Manager/Transaction';
-import TransactionProductList from '../pages/Manager/Transaction/productList';
-import TransactionProductsList from '../pages/Manager/TransactionProduct';
-import TransactionExchangeList from '../pages/Manager/TransactionExchange';
-import CancelList from '../pages/Manager/Cancel';
-import CancelProductList from '../pages/Manager/Cancel/productList';
-import CancelBatch from '../pages/Manager/Cancel/batch';
-import CashlessList from '../pages/Manager/Cashless';
-import SyncList from '../pages/Manager/Sync';
-import AdjustmentList from '../pages/Manager/Adjustment';
-import AdjustmentEdit from '../pages/Manager/Adjustment/edit';
+import { Icon as ManagerIcon } from "../pages/Manager/Icon"
+import TransactionList from "../pages/Manager/Transaction"
+import TransactionProductList from "../pages/Manager/Transaction/productList"
+import TransactionProductsList from "../pages/Manager/TransactionProduct"
+import TransactionExchangeList from "../pages/Manager/TransactionExchange"
+import CancelList from "../pages/Manager/Cancel"
+import CancelProductList from "../pages/Manager/Cancel/productList"
+import CancelBatch from "../pages/Manager/Cancel/batch"
+import CashlessList from "../pages/Manager/Cashless"
+import SyncList from "../pages/Manager/Sync"
+import AdjustmentList from "../pages/Manager/Adjustment"
+import AdjustmentEdit from "../pages/Manager/Adjustment/edit"
+import ReconcileData from "../pages/Manager/ReconcileData"
 /*              GERENCIAL                */
 
 /*              RELATORIOS                */
-import { Icon as ReportIcon } from '../pages/Reports/Icon';
-import SalesReport from '../pages/Reports/Sales';
-import CashlessReport from '../pages/Reports/Cashless';
-import ValidationReport from '../pages/Reports/Validation';
-import WaiterReport from '../pages/Reports/Waiters';
-import ReservationReport from '../pages/Reports/Reservations';
-import ListReport from '../pages/Reports/Lists';
+import { Icon as ReportIcon } from "../pages/Reports/Icon"
+import SalesReport from "../pages/Reports/Sales"
+import CashlessReport from "../pages/Reports/Cashless"
+import ValidationReport from "../pages/Reports/Validation"
+import WaiterReport from "../pages/Reports/Waiters"
+import ReservationReport from "../pages/Reports/Reservations"
+import ListReport from "../pages/Reports/Lists"
 /*              EXTRATO FINANCEIRO */
-import { Icon as FinancialIcon } from '../pages/FinancialStatement/Icon';
-import FinancialStatement from '../pages/FinancialStatement';
+import { Icon as FinancialIcon } from "../pages/FinancialStatement/Icon"
+import FinancialStatement from "../pages/FinancialStatement"
 /*              RELATORIOS                */
 
 /*              CONFIGURAÇÕES                */
-import Orgs, { Icon as OrgsIcon } from '../pages/Settings/Orgs';
-import OrgForm from '../pages/Settings/Orgs/form';
-import Profile from '../pages/Settings/Profile/form';
-import ModalCheck from '../pages/FinancialStatement/Tabs/Overview/modal';
+import Orgs, { Icon as OrgsIcon } from "../pages/Settings/Orgs"
+import OrgForm from "../pages/Settings/Orgs/form"
+import Profile from "../pages/Settings/Profile/form"
+import ModalCheck from "../components/Modals/CheckDivergencies"
 /*              CONFIGURAÇÕES                */
-
 
 const EmBreve = () => {
   return (
@@ -86,156 +86,154 @@ const EmBreve = () => {
       </spam>
     </div>
   )
-};
+}
 
 export default [
   {
-    title: 'Resumo Geral',
-    path: '/home',
+    title: "Resumo Geral",
+    path: "/home",
     icon: HomeIcon,
     content: <Home />,
     paths: [
       {
-        title: 'Resumo Geral',
-        route: '/home',
+        title: "Resumo Geral",
+        route: "/home",
       },
     ],
   },
   {
-    title: 'Extrato Financeiro',
-    path: '/financial',
+    title: "Extrato Financeiro",
+    path: "/financial",
     icon: FinancialIcon,
     content: <FinancialStatement />,
-    role: 'master',
+    role: "master",
     allow: {
       allow_only_master: true,
     },
     show: {
-      role: 'master',
+      role: "master",
     },
     paths: [
       {
-        title: 'Resumo Geral',
-        route: '/home',
-        role: 'master',
+        title: "Resumo Geral",
+        route: "/home",
+        role: "master",
         show: {
-          role: 'master',
+          role: "master",
         },
         allow: {
-
           allow_only_master: true,
         },
       },
     ],
   },
   {
-    title: 'Relatórios',
+    title: "Relatórios",
     icon: ReportIcon,
     list: [
       {
-        title: 'Vendas',
-        path: '/report/sales',
+        title: "Vendas",
+        path: "/report/sales",
         content: <SalesReport />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Vendas',
-            route: '/sales',
+            title: "Vendas",
+            route: "/sales",
           },
         ],
       },
       {
-        title: 'Cashless',
-        path: '/report/cashless',
+        title: "Cashless",
+        path: "/report/cashless",
         //content: <CashlessReport />,
         content: <EmBreve />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Cashless',
-            route: '/cashless',
+            title: "Cashless",
+            route: "/cashless",
           },
         ],
       },
       {
-        title: 'Validações',
-        path: '/report/validation',
+        title: "Validações",
+        path: "/report/validation",
         content: <ValidationReport />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Validações',
-            route: '/validation',
+            title: "Validações",
+            route: "/validation",
           },
         ],
       },
       {
-        title: 'Garçons',
-        path: '/report/waiter',
+        title: "Garçons",
+        path: "/report/waiter",
         //content: <WaiterReport />,
         content: <EmBreve />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Garçons',
-            route: '/waiter',
+            title: "Garçons",
+            route: "/waiter",
           },
         ],
       },
       {
-        title: 'Mesas',
-        path: '/report/reservation',
+        title: "Mesas",
+        path: "/report/reservation",
         //content: <ReservationReport />,
         content: <EmBreve />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Mesas',
-            route: '/reservation',
+            title: "Mesas",
+            route: "/reservation",
           },
         ],
       },
       {
-        title: 'Listas',
-        path: '/report/list',
+        title: "Listas",
+        path: "/report/list",
         //content: <ListReport />,
         content: <EmBreve />,
         paths: [
           {
-            title: 'Relatórios',
-            route: '/report',
+            title: "Relatórios",
+            route: "/report",
           },
           {
-            title: 'Listas',
-            route: '/list',
+            title: "Listas",
+            route: "/list",
           },
         ],
       },
-
     ],
   },
   {
-    title: 'Cadastros',
+    title: "Cadastros",
     icon: RegisterIcon,
     list: [
       {
-        title: 'Eventos',
-        path: '/event',
+        title: "Eventos",
+        path: "/event",
         content: <EventList />,
         allow: {
           allow_register: 1,
@@ -243,13 +241,13 @@ export default [
         },
         paths: [
           {
-            title: 'Eventos',
-            route: '/event',
+            title: "Eventos",
+            route: "/event",
           },
         ],
       },
       {
-        path: '/event/:idEvent',
+        path: "/event/:idEvent",
         hide: true,
         content: <EventForm />,
         allow: {
@@ -258,14 +256,14 @@ export default [
         },
         paths: [
           {
-            title: 'Eventos',
-            route: '/event',
+            title: "Eventos",
+            route: "/event",
           },
         ],
       },
       {
-        title: 'Gerentes',
-        path: '/manager',
+        title: "Gerentes",
+        path: "/manager",
         allow: {
           allow_register: 1,
           allow_operation: 0,
@@ -273,13 +271,13 @@ export default [
         content: <ManagerList />,
         paths: [
           {
-            title: 'Gerentes',
-            route: '/manager',
+            title: "Gerentes",
+            route: "/manager",
           },
         ],
       },
       {
-        path: '/manager/:idManager',
+        path: "/manager/:idManager",
         hide: true,
         content: <ManagerForm />,
         allow: {
@@ -288,14 +286,14 @@ export default [
         },
         paths: [
           {
-            title: 'Gerentes',
-            route: '/manager',
+            title: "Gerentes",
+            route: "/manager",
           },
         ],
       },
       {
-        title: 'Grupos',
-        path: '/group',
+        title: "Grupos",
+        path: "/group",
         content: <GroupList />,
         allow: {
           allow_register: 1,
@@ -303,14 +301,14 @@ export default [
         },
         paths: [
           {
-            title: 'Grupos',
-            route: '/group',
+            title: "Grupos",
+            route: "/group",
           },
         ],
       },
       {
-        title: 'Produtos',
-        path: '/product',
+        title: "Produtos",
+        path: "/product",
         icon: ProductIcon,
         content: <ProductList />,
         allow: {
@@ -319,25 +317,25 @@ export default [
         },
         paths: [
           {
-            title: 'Produtos',
-            route: '/product',
+            title: "Produtos",
+            route: "/product",
           },
         ],
       },
       {
-        title: 'Estoques',
-        path: '/warehouse',
+        title: "Estoques",
+        path: "/warehouse",
         icon: WarehouseIcon,
         content: <Warehouse />,
         paths: [
           {
-            title: 'Estoques',
-            route: '/warehouse',
+            title: "Estoques",
+            route: "/warehouse",
           },
         ],
       },
       {
-        path: '/product/simple/:idProduct',
+        path: "/product/simple/:idProduct",
         hide: true,
         content: <ProductSimpleForm />,
         allow: {
@@ -346,17 +344,17 @@ export default [
         },
         paths: [
           {
-            title: 'Produtos',
-            route: '/product',
+            title: "Produtos",
+            route: "/product",
           },
           {
-            title: 'Simples',
-            route: '/simple',
+            title: "Simples",
+            route: "/simple",
           },
         ],
       },
       {
-        path: '/product/combo/:idProduct',
+        path: "/product/combo/:idProduct",
         hide: true,
         content: <ProductComboForm />,
         allow: {
@@ -365,17 +363,17 @@ export default [
         },
         paths: [
           {
-            title: 'Produtos',
-            route: '/product',
+            title: "Produtos",
+            route: "/product",
           },
           {
-            title: 'Combo',
-            route: '/combo',
+            title: "Combo",
+            route: "/combo",
           },
         ],
       },
       {
-        path: '/product/complement/:idProduct',
+        path: "/product/complement/:idProduct",
         hide: true,
         content: <ProductComplementForm />,
         allow: {
@@ -384,17 +382,17 @@ export default [
         },
         paths: [
           {
-            title: 'Produtos',
-            route: '/product',
+            title: "Produtos",
+            route: "/product",
           },
           {
-            title: 'Complemento',
-            route: '/complement',
+            title: "Complemento",
+            route: "/complement",
           },
         ],
       },
       {
-        path: '/group/:idGroup',
+        path: "/group/:idGroup",
         hide: true,
         content: <GroupForm />,
         allow: {
@@ -403,14 +401,14 @@ export default [
         },
         paths: [
           {
-            title: 'Grupos',
-            route: '/group',
+            title: "Grupos",
+            route: "/group",
           },
         ],
       },
       {
-        title: 'Operadores',
-        path: '/operator',
+        title: "Operadores",
+        path: "/operator",
         content: <OperatorList />,
         allow: {
           allow_register: 1,
@@ -418,13 +416,13 @@ export default [
         },
         paths: [
           {
-            title: 'Operadores',
-            route: '/operator',
+            title: "Operadores",
+            route: "/operator",
           },
         ],
       },
       {
-        path: '/operator/:idOperator',
+        path: "/operator/:idOperator",
         hide: true,
         content: <OperatorForm />,
         allow: {
@@ -433,14 +431,14 @@ export default [
         },
         paths: [
           {
-            title: 'Operadores',
-            route: '/operator',
+            title: "Operadores",
+            route: "/operator",
           },
         ],
       },
       {
-        title: 'Dispositivos',
-        path: '/device',
+        title: "Dispositivos",
+        path: "/device",
         content: <DeviceList />,
         allow: {
           allow_register: 1,
@@ -448,13 +446,13 @@ export default [
         },
         paths: [
           {
-            title: 'Dispositivos',
-            route: '/device',
+            title: "Dispositivos",
+            route: "/device",
           },
         ],
       },
       {
-        path: '/device/:idDevice',
+        path: "/device/:idDevice",
         hide: true,
         content: <DeviceForm />,
         allow: {
@@ -463,14 +461,14 @@ export default [
         },
         paths: [
           {
-            title: 'Dispositivos',
-            route: '/device',
+            title: "Dispositivos",
+            route: "/device",
           },
         ],
       },
       {
-        title: 'Validadores',
-        path: '/validator',
+        title: "Validadores",
+        path: "/validator",
         content: <ValidatorList />,
         allow: {
           allow_register: 1,
@@ -478,13 +476,13 @@ export default [
         },
         paths: [
           {
-            title: 'Validadores',
-            route: '/validator',
+            title: "Validadores",
+            route: "/validator",
           },
         ],
       },
       {
-        path: '/validator/:idValidator',
+        path: "/validator/:idValidator",
         hide: true,
         content: <ValidatorForm />,
         allow: {
@@ -493,14 +491,14 @@ export default [
         },
         paths: [
           {
-            title: 'Validadores',
-            route: '/validator',
+            title: "Validadores",
+            route: "/validator",
           },
         ],
       },
       {
-        title: 'Mesas',
-        path: '/reservation',
+        title: "Mesas",
+        path: "/reservation",
         //content: <ReservationList />,
         content: <EmBreve />,
         allow: {
@@ -509,13 +507,13 @@ export default [
         },
         paths: [
           {
-            title: 'Mesas',
-            route: '/reservation',
+            title: "Mesas",
+            route: "/reservation",
           },
         ],
       },
       {
-        path: '/reservation/:idReservation',
+        path: "/reservation/:idReservation",
         hide: true,
         content: <ReservationForm />,
         allow: {
@@ -524,14 +522,14 @@ export default [
         },
         paths: [
           {
-            title: 'Mesas',
-            route: '/reservation',
+            title: "Mesas",
+            route: "/reservation",
           },
         ],
       },
       {
-        title: 'Listas',
-        path: '/list',
+        title: "Listas",
+        path: "/list",
         //content: <ListsList />,
         content: <EmBreve />,
         allow: {
@@ -540,13 +538,13 @@ export default [
         },
         paths: [
           {
-            title: 'Listas',
-            route: '/list',
+            title: "Listas",
+            route: "/list",
           },
         ],
       },
       {
-        path: '/list/:idList',
+        path: "/list/:idList",
         hide: true,
         content: <ListsData />,
         allow: {
@@ -555,14 +553,14 @@ export default [
         },
         paths: [
           {
-            title: 'Listas',
-            route: '/list',
+            title: "Listas",
+            route: "/list",
           },
         ],
       },
       {
-        title: 'Códigos Garçons',
-        path: '/waiter',
+        title: "Códigos Garçons",
+        path: "/waiter",
         content: <WaiterList />,
         allow: {
           allow_register: 1,
@@ -570,13 +568,13 @@ export default [
         },
         paths: [
           {
-            title: 'Códigos Garçons',
-            route: '/waiter',
+            title: "Códigos Garçons",
+            route: "/waiter",
           },
         ],
       },
       {
-        path: '/waiter/:idWaiter',
+        path: "/waiter/:idWaiter",
         hide: true,
         content: <WaiterForm />,
         allow: {
@@ -585,20 +583,20 @@ export default [
         },
         paths: [
           {
-            title: 'Códigos Garçons',
-            route: '/waiter',
+            title: "Códigos Garçons",
+            route: "/waiter",
           },
         ],
       },
     ],
   },
   {
-    title: 'Loja Online',
+    title: "Loja Online",
     icon: OnlineIcon,
     list: [
       {
-        title: 'Eventos',
-        path: '/online-events',
+        title: "Eventos",
+        path: "/online-events",
         content: <OnlineEventList />,
         allow: {
           //allow_register: 1,
@@ -607,13 +605,13 @@ export default [
         },
         paths: [
           {
-            title: 'Eventos',
-            route: '/online-events',
+            title: "Eventos",
+            route: "/online-events",
           },
         ],
       },
       {
-        path: '/online-events/:idEvent',
+        path: "/online-events/:idEvent",
         hide: true,
         content: <OnlineEventForm />,
         allow: {
@@ -622,29 +620,27 @@ export default [
         },
         paths: [
           {
-            title: 'Eventos',
-            route: '/online-events',
+            title: "Eventos",
+            route: "/online-events",
           },
         ],
       },
       {
-        title: 'Ingressos',
-        path: '/online-products',
+        title: "Ingressos",
+        path: "/online-products",
         content: <OnlineProductList />,
         allow: {
-          //allow_register: 1,
-          //allow_operation: 0,
           allow_only_master: true,
         },
         paths: [
           {
-            title: 'Ingressos',
-            route: '/online-products',
+            title: "Ingressos",
+            route: "/online-products",
           },
         ],
       },
       {
-        path: '/online-products/:idProduct',
+        path: "/online-products/:idProduct",
         hide: true,
         content: <OnlineProductForm />,
         allow: {
@@ -653,26 +649,34 @@ export default [
         },
         paths: [
           {
-            title: 'Ingressos',
-            route: '/online-products',
+            title: "Ingressos",
+            route: "/online-products",
           },
         ],
       },
     ],
   },
   {
-    title: 'Gerencial',
+    title: "Gerencial",
     icon: ManagerIcon,
     list: [
       {
-        title: 'Conciliar dados',
-        path: null,
-        content: ModalCheck,
-        isButton: true
+        title: "Conciliar dados",
+        path: "/reconcile",
+        content: <ReconcileData />,
+        allow: {
+          allow_only_master: true,
+        },
+        paths: [
+          {
+            title: "Conciliar Dados",
+            route: "/reconcile",
+          },
+        ],
       },
       {
-        title: 'Transações',
-        path: '/transaction',
+        title: "Transações",
+        path: "/transaction",
         content: <TransactionList />,
         allow: {
           allow_register: 0,
@@ -680,14 +684,14 @@ export default [
         },
         paths: [
           {
-            title: 'Transações',
-            route: '/transaction',
+            title: "Transações",
+            route: "/transaction",
           },
         ],
       },
       {
-        title: 'Cancelamentos',
-        path: '/transaction/cancellations',
+        title: "Cancelamentos",
+        path: "/transaction/cancellations",
         //content: <TransactionProductsList />,
         content: <EmBreve />,
         allow: {
@@ -696,31 +700,31 @@ export default [
         },
         paths: [
           {
-            title: 'Transações',
-            route: '/transaction',
+            title: "Transações",
+            route: "/transaction",
           },
         ],
       },
       {
-        title: 'Trocar Produtos',
-        path: '/transaction/exchange',
+        title: "Trocar Produtos",
+        path: "/transaction/exchange",
         //content: <TransactionExchangeList />,
         content: <EmBreve />,
         show: {
-          role: 'master',
+          role: "master",
         },
         allow: {
           allow_only_master: true,
         },
         paths: [
           {
-            title: 'Transações',
-            route: '/transaction',
+            title: "Transações",
+            route: "/transaction",
           },
         ],
       },
       {
-        path: '/transaction/:idOrder',
+        path: "/transaction/:idOrder",
         hide: true,
         content: <TransactionProductList />,
         allow: {
@@ -729,8 +733,8 @@ export default [
         },
         paths: [
           {
-            title: 'Transações',
-            route: '/transaction',
+            title: "Transações",
+            route: "/transaction",
           },
         ],
       },
@@ -750,7 +754,7 @@ export default [
       //   ],
       // },
       {
-        path: '/cancel/:idOrder',
+        path: "/cancel/:idOrder",
         hide: true,
         content: <CancelProductList />,
         allow: {
@@ -759,8 +763,8 @@ export default [
         },
         paths: [
           {
-            title: 'Cancelamentos',
-            route: '/cancel',
+            title: "Cancelamentos",
+            route: "/cancel",
           },
         ],
       },
@@ -780,8 +784,8 @@ export default [
       //   ],
       // },
       {
-        title: 'Consulta cashless',
-        path: '/cashless',
+        title: "Consulta cashless",
+        path: "/cashless",
         //content: <CashlessList />,
         content: <EmBreve />,
         allow: {
@@ -790,14 +794,14 @@ export default [
         },
         paths: [
           {
-            title: 'Consulta cashless',
-            route: '/cashless',
+            title: "Consulta cashless",
+            route: "/cashless",
           },
         ],
       },
       {
-        title: 'Sincronizações',
-        path: '/sync',
+        title: "Sincronizações",
+        path: "/sync",
         //content: <SyncList />,
         content: <EmBreve />,
         allow: {
@@ -806,8 +810,8 @@ export default [
         },
         paths: [
           {
-            title: 'Sincronizações',
-            route: '/sync',
+            title: "Sincronizações",
+            route: "/sync",
           },
         ],
       },
@@ -844,14 +848,15 @@ export default [
     ],
   },
   {
-    title: 'Configurações',
+    title: "Configurações",
 
     allow: {
       allow_register: 0,
       allow_operation: 0,
     },
     icon: OrgsIcon,
-    list: [/*
+    list: [
+      /*
       {
         show: {
           role: 'master',
@@ -874,7 +879,7 @@ export default [
         ],
       },*/
       {
-        path: '/organization/:idOrg',
+        path: "/organization/:idOrg",
         hide: true,
         content: <OrgForm />,
         allow: {
@@ -882,30 +887,30 @@ export default [
         },
         paths: [
           {
-            title: 'Configuração',
-            route: '/organization',
+            title: "Configuração",
+            route: "/organization",
           },
           {
-            title: 'Clientes',
-            route: '/organization',
+            title: "Clientes",
+            route: "/organization",
           },
         ],
       },
       {
-        path: '/profile',
-        title: 'Meu Perfil',
+        path: "/profile",
+        title: "Meu Perfil",
         content: <Profile />,
         paths: [
           {
-            title: 'Configuração',
-            route: '/organization',
+            title: "Configuração",
+            route: "/organization",
           },
           {
-            title: 'Perfil',
-            route: '/profile',
+            title: "Perfil",
+            route: "/profile",
           },
         ],
       },
     ],
   },
-];
+]

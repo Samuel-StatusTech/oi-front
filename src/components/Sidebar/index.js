@@ -8,7 +8,6 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
 import RouteList from '../../router/admin';
 import { connect } from 'react-redux';
-import ModalCheck from '../../pages/FinancialStatement/Tabs/Overview/modal';
 
 const useStyles = makeStyles((theme) => ({
   // PARA MUDAR O SCROLL, MUDAR AQUI
@@ -98,7 +97,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded, toggleModal }) => {
+const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded,  }) => {
   const styles = useStyles();
   const location = useLocation();
   const actualLocation = location.pathname;
@@ -142,20 +141,11 @@ const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, set
                 return null;
               }
 
-              return !item.isButton ? (
+              return (
                 <ListItem
                   key={item.path}
                   button
                   onClick={() => handleClick(item.path)}
-                  className={isSelected ? styles.selectedPage : styles.page}
-                >
-                  <ListItemText primary={item.title} style={{ paddingLeft: 20 }} />
-                </ListItem>
-              ) : (
-                <ListItem
-                  key={k}
-                  button
-                  onClick={toggleModal}
                   className={isSelected ? styles.selectedPage : styles.page}
                 >
                   <ListItemText primary={item.title} style={{ paddingLeft: 20 }} />
@@ -195,7 +185,6 @@ const Sidebar = ({ open, toggle, user, events }) => {
   const history = useHistory();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-  const [showingModal, setShowingModal] = useState(false)
 
   const handleClick = (route) => {
     history.push('/dashboard' + route);
@@ -203,13 +192,10 @@ const Sidebar = ({ open, toggle, user, events }) => {
   };
   const [expanded, setExpanded] = useState({});
 
-  const toggleModal = () => setShowingModal(!showingModal)
-
 
   return (
     events.length > 0 && (
       <>
-        <ModalCheck show={showingModal} onClose={() => setShowingModal(false)} />
         <Drawer
           open={open}
           variant='persistent'
@@ -230,7 +216,6 @@ const Sidebar = ({ open, toggle, user, events }) => {
                     user={user}
                     expanded={expanded}
                     setExpanded={setExpanded}
-                    toggleModal={toggleModal}
                   />
                 );
               })}
