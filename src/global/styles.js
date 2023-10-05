@@ -355,6 +355,9 @@ export default makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  inactive:{
+    backgroundColor: 'rgba(0, 0, 0, .1)'
+  },
   textCenter: {
     textAlign: 'center',
   },

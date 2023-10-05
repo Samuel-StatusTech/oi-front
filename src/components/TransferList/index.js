@@ -193,6 +193,8 @@ export default function TransferList({
               setChecked={setChecked}
               selectAll={selectAll}
               isSearch
+              groupList={groupList}
+              isGroupFilter
             />
           </Grid>
         </>
