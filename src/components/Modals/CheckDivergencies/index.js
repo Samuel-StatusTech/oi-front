@@ -27,7 +27,16 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     setCheckProgress(value + 30 < 100 ? value + 30 : 100)
   }
 
-  const parseTime = (dString) => new Date(dString).getTime()
+  const parseTime = (dString) => {
+    const [dateFull, hour] = dString.split(" ")
+    const date = dateFull.split("/")
+    const dmyFormat = `${date[1]}-${date[0]}-${date[2]}`
+    const newStr = `${dmyFormat} ${hour}`
+
+    const newD = new Date(newStr).getTime()
+    console.log(newD)
+    return newD
+  }
 
   const padValue = (v) => String(v).padStart(2, "0")
 
@@ -41,34 +50,49 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     return Number(pureString)
   }
 
-  const calcPagTotal = () => {
+  const calcTotal = async (transactions, from) => {
     let total = 0
 
-    pagData.data.reduce((acc, t) => acc + parsePagMoney(t.Valor_Bruto), total)
-
-    return total
+    return new Promise((resolve) => {
+      if (from === "pagseguro") {
+        transactions.reduce((acc, t, i) => {
+          const currentTotal = acc + parsePagMoney(t.Valor_Bruto)
+          if (i === transactions.length - 1) {
+            resolve(acc + currentTotal)
+          } else return currentTotal
+        }, total)
+      } else if (from === "back") {
+        transactions.reduce((acc, t, i) => {
+          const currentTotal = acc + parseMoney(t.total_price)
+          if (i === transactions.length - 1) {
+            resolve(acc + currentTotal)
+          } else return currentTotal
+        }, total)
+      }
+    })
   }
 
-  const calcBackTotal = (transactions) => {
-    let total = 0
-
-    transactions.reduce((acc, t) => acc + parseMoney(t.Valor_Bruto), total)
-
-    return total
+  const filterBackData = (log) => {
+    return log.filter((transaction) => {
+      return !transaction.payments.some((p) =>
+        "dinheiro".includes(p.payment_type.toLowerCase())
+      )
+      // return !"dinheiro".includes(
+      //   transaction.payments[0].payment_type.toLowerCase()
+      // )
+    })
   }
 
   const filterPagSeguro = (log) => {
     const { iniDate, endDate } = dates
+    console.log(`iniDate: ${iniDate}, endDate: ${endDate}`)
 
     const hasntFilters = iniDate === null && endDate === null
 
     const f = hasntFilters
-      ? log.filter(
-          (transaction) => transaction.Tipo_Pagamento.toLowerCase !== "dinheiro"
-        )
+      ? log
       : log.filter(
           (transaction) =>
-            transaction.Tipo_Pagamento.toLowerCase !== "dinheiro" &&
             parseTime(transaction.Data_Transacao) >= iniDate &&
             parseTime(transaction.Data_Transacao) <= endDate
         )
@@ -134,12 +158,36 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     return `${d} — ${h}`
   }
 
+  const getEventSerials = (data) => {
+    let codes = []
+
+    data.forEach((order) => {
+      order.payments.forEach((p) => {
+        if (p.machineData.length > 0) {
+          const machInfo = JSON.parse(p.machineData)
+          if (machInfo) {
+            const machineSerial = machInfo.terminalSerialNumber
+            if (!codes.includes(machineSerial)) codes.push(machineSerial)
+          }
+        }
+      })
+    })
+
+    return codes
+  }
+
+  const filterPagDataByMachines = (machines) => {
+    const machinesTransactions = pagData.data.filter((t) =>
+      machines.includes(t.Serial_Leitor)
+    )
+
+    return machinesTransactions
+  }
+
   const checkTotal = async () => {
     setIsChecking(true)
     setFinishMessage(null)
     setCheckProgress(12.5)
-
-    const totalPag = calcPagTotal()
 
     const req = await Api.get(urlWithFilters).then((res) => {
       setCheckProgress(30)
@@ -148,10 +196,36 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     })
 
     if (req.status === 200) {
+      let serialsErrors = []
+
+      // 1. Pega dados do banco
       const backData = req.data.orders
 
-      const totalPag = calcPagTotal()
-      const totalBack = calcBackTotal(backData)
+      // 2. Filtra pelas transações que não envolvem dinheiro (em nenhuma transação)
+      const filteredBack = filterBackData(backData)
+
+      // 3. Pega as máquinas que registraram transações no evento
+      const machinesInEvent = getEventSerials(filteredBack)
+      console.log(machinesInEvent)
+
+      // 4. Filtra os dados do pagseguro dessas máquinas
+      const pagDataFromMachines = filterPagDataByMachines(machinesInEvent)
+
+      console.log(
+        `pagseguro data (${pagDataFromMachines.length}) - back data (${filteredBack.length})`
+      )
+
+      console.log(
+        `Total from pagseguro: ${await calcTotal(
+          pagDataFromMachines,
+          "pagseguro"
+        )}`,
+        `Total from back: ${await calcTotal(filteredBack, "back")}`
+      )
+
+      changeProgress(100)
+
+      // -------
 
       if (serialsErrors.length === 0) {
         setFinishMessage("Os dados estão corretos")
@@ -219,22 +293,24 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button
-          type="button"
-          onClick={checkTotal}
-          variant="outlined"
-          color="primary"
-          disabled={pagData === null}
-        >
-          {isChecking ? (
-            <>
-              <span style={{ marginRight: 4 }}>Checando </span>
-              <CircularProgress size={25} />
-            </>
-          ) : (
-            "Checar"
-          )}
-        </Button>
+        {checkProgress < 99 && (
+          <Button
+            type="button"
+            onClick={checkTotal}
+            variant="outlined"
+            color="primary"
+            disabled={pagData === null || isChecking}
+          >
+            {isChecking ? (
+              <>
+                <span style={{ marginRight: 4 }}>Checando </span>
+                <CircularProgress size={25} />
+              </>
+            ) : (
+              "Checar"
+            )}
+          </Button>
+        )}
         <Button
           variant="outlined"
           color="secondary"
