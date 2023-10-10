@@ -18,7 +18,6 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
   const [pagData, setPagData] = useState(null)
   const [isChecking, setIsChecking] = useState(false)
-  const [dataErrors, setDataErrors] = useState([])
   const [checkProgress, setCheckProgress] = useState(0)
   const [finishMessage, setFinishMessage] = useState(null)
   const pagDataInput = useRef(null)
@@ -34,7 +33,6 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     const newStr = `${dmyFormat} ${hour}`
 
     const newD = new Date(newStr).getTime()
-    console.log(newD)
     return newD
   }
 
@@ -51,23 +49,63 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
   }
 
   const calcTotal = async (transactions, from) => {
-    let total = 0
+    let details = {
+      credit: 0,
+      debit: 0,
+      pix: 0,
+    }
 
     return new Promise((resolve) => {
       if (from === "pagseguro") {
         transactions.reduce((acc, t, i) => {
-          const currentTotal = acc + parsePagMoney(t.Valor_Bruto)
+          const parsedMoney = parsePagMoney(t.Valor_Bruto)
+          const currentTotal = acc + parsedMoney
+
+          switch (t.Tipo_Pagamento) {
+            case "Cartão de Crédito":
+              details.credit = details.credit + parsedMoney
+              break
+            case "Cartão de Débito":
+              details.debit = details.debit + parsedMoney
+              break
+            case "Pix":
+              details.pix = details.pix + parsedMoney
+              break
+          }
+
           if (i === transactions.length - 1) {
-            resolve(acc + currentTotal)
+            resolve({
+              resume: currentTotal,
+              details,
+            })
           } else return currentTotal
-        }, total)
+        }, 0)
       } else if (from === "back") {
         transactions.reduce((acc, t, i) => {
-          const currentTotal = acc + parseMoney(t.total_price)
+          const parsedMoney = parseMoney(t.total_price)
+          const currentTotal = acc + parsedMoney
+
+          t.payments.forEach((p) => {
+            switch (p.payment_type) {
+              case "credito":
+                details.credit = details.credit + parsedMoney
+                break
+              case "debito":
+                details.debit = details.debit + parsedMoney
+                break
+              case "pix":
+                details.pix = details.pix + parsedMoney
+                break
+            }
+          })
+
           if (i === transactions.length - 1) {
-            resolve(acc + currentTotal)
+            resolve({
+              resume: currentTotal,
+              details,
+            })
           } else return currentTotal
-        }, total)
+        }, 0)
       }
     })
   }
@@ -77,15 +115,11 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       return !transaction.payments.some((p) =>
         "dinheiro".includes(p.payment_type.toLowerCase())
       )
-      // return !"dinheiro".includes(
-      //   transaction.payments[0].payment_type.toLowerCase()
-      // )
     })
   }
 
   const filterPagSeguro = (log) => {
     const { iniDate, endDate } = dates
-    console.log(`iniDate: ${iniDate}, endDate: ${endDate}`)
 
     const hasntFilters = iniDate === null && endDate === null
 
@@ -106,7 +140,10 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
     reader.onload = async (f) => {
       const text = f.target.result
-      const data = await csvtojson({ delimiter: ";" }).fromString(text)
+      const data = await csvtojson({
+        delimiter: ";",
+        encoding: "ascii",
+      }).fromString(text)
       const checkable = filterPagSeguro(data)
 
       setCheckProgress(12.5)
@@ -117,31 +154,13 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       })
     }
 
-    reader.readAsText(file)
+    reader.readAsText(file, "ascii")
   }
 
   const closeModal = () => {
-    const data = {
-      totals: {
-        pag: {
-          credit: 0,
-          debit: 0,
-          pix: 0,
-        },
-        oi: {
-          credit: 0,
-          debit: 0,
-          pix: 0,
-        },
-      },
-      cancelled: [],
-    }
-
     setCheckProgress(0)
-    setDataErrors([])
     setPagData(null)
-
-    finish(!isChecking && checkProgress > 98 ? data : null)
+    setFinishMessage(null)
   }
 
   const parseDate = (v) => {
@@ -196,52 +215,29 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     })
 
     if (req.status === 200) {
-      let serialsErrors = []
-
-      // 1. Pega dados do banco
       const backData = req.data.orders
 
-      // 2. Filtra pelas transações que não envolvem dinheiro (em nenhuma transação)
       const filteredBack = filterBackData(backData)
 
-      // 3. Pega as máquinas que registraram transações no evento
       const machinesInEvent = getEventSerials(filteredBack)
-      console.log(machinesInEvent)
 
-      // 4. Filtra os dados do pagseguro dessas máquinas
       const pagDataFromMachines = filterPagDataByMachines(machinesInEvent)
 
-      console.log(
-        `pagseguro data (${pagDataFromMachines.length}) - back data (${filteredBack.length})`
-      )
+      const pagTotal = await calcTotal(pagDataFromMachines, "pagseguro")
+      const backTotal = await calcTotal(filteredBack, "back")
 
-      console.log(
-        `Total from pagseguro: ${await calcTotal(
-          pagDataFromMachines,
-          "pagseguro"
-        )}`,
-        `Total from back: ${await calcTotal(filteredBack, "back")}`
-      )
+      const totals = {
+        pagseguro: pagTotal,
+        backData: backTotal,
+        cancelled: [],
+      }
+
+      finish(totals)
 
       changeProgress(100)
 
-      // -------
-
-      if (serialsErrors.length === 0) {
-        setFinishMessage("Os dados estão corretos")
-        setIsChecking(false)
-        return
-      } else if (serialsErrors.length !== pagData.data.length) {
-        setDataErrors(serialsErrors)
-      } else {
-        setFinishMessage("todos os dados estão incorretos")
-      }
       setIsChecking(false)
-    } else {
-      setIsChecking(false)
-      setFinishMessage(
-        "Não foi possível verificar. Tente novamente mais tarde."
-      )
+      closeModal()
     }
   }
 

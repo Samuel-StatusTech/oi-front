@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { connect } from "react-redux"
-import { Grid, Button, CircularProgress } from "@material-ui/core"
+import { Grid, CircularProgress } from "@material-ui/core"
 import { format } from "currency-formatter"
 
 import EaseGrid from "../../../components/EaseGrid"
@@ -21,7 +21,15 @@ import ModalCheck from "../../../components/Modals/CheckDivergencies"
 const ReconcileData = ({ event, user }) => {
   const styles = useStyles()
 
-  const columns = [
+  const totalColumns = [
+    { title: "Origem", field: "origin" },
+    { title: "Total", field: "total" },
+    { title: "Crédito", field: "credit" },
+    { title: "Débito", field: "debit" },
+    { title: "Pix", field: "pix" },
+  ]
+
+  const cancelledColumns = [
     {
       title: "",
       render: (row) => (
@@ -59,14 +67,8 @@ const ReconcileData = ({ event, user }) => {
 
   const [loading, setLoading] = useState(false)
   const [checkLoading, setCheckLoading] = useState(false)
-  const [data, setData] = useState([])
-  const [groupList, setGroupList] = useState([])
+  const [totalData, setTotalData] = useState([])
   const [productList, setProductList] = useState([])
-  const [operatorList, setOperatorList] = useState([])
-
-  const [totalSell, setTotalSell] = useState(0)
-  const [itensSell, setItensSell] = useState(0)
-  const [itensCanceled, setItensCanceled] = useState(0)
 
   const [status, setStatus] = useState("todos")
   const [type, setType] = useState("todos")
@@ -77,10 +79,12 @@ const ReconcileData = ({ event, user }) => {
   const [iniValue, onChangeIni] = useState(new Date().setHours(0, 0, 0, 0))
   const [endValue, onChangeEnd] = useState(new Date().setHours(23, 59, 59, 999))
   const [selectType, onSelectType] = useState(0)
-  const [page, setPage] = useState(0)
   const [urlWithFilters, setUrlWithFilters] = useState(
     `/order/getList/${event}?status=todos&type=todos&per_page=1000000&page=0`
   )
+  const [showDetailsOrder, setShowDetailsOrder] = useState(false)
+  const [detailsOrderData, setDetailsOrderData] = useState(0)
+  const [detailsOrderDataId, setDetailsOrderDataId] = useState(0)
   const [dateFilters, setDateFilters] = useState({
     iniDate: null,
     endDate: null,
@@ -89,44 +93,8 @@ const ReconcileData = ({ event, user }) => {
 
   const [showFilePicker, setShowFilePicker] = useState(false)
 
-  const [showCancel, setShowCancel] = useState(false)
-  const [cancelData, setCancelData] = useState({})
-  const [showDelete, setShowDelete] = useState(false)
-  const [deleteData, setDeleteData] = useState({})
-  const [showDetailsOrder, setShowDetailsOrder] = useState(false)
-  const [detailsOrderData, setDetailsOrderData] = useState(0)
-  const [detailsOrderDataId, setDetailsOrderDataId] = useState(0)
+  const parseMoney = (v) => `R$ ${Number(v).toFixed(2).replace(".", ",")}`
 
-  const updateRow = (value, id) => {
-    const newData = [...data]
-    const index = data.findIndex((element) => element.id === id)
-    newData[index] = value
-    setData(newData)
-  }
-  const deleteRow = (id) => {
-    const index = data.findIndex((element) => element.id === id)
-    const newData = [...data]
-    newData.splice(index, 1)
-    setData(newData)
-  }
-  const handleCancelProduct =
-    ({ id }) =>
-    () => {
-      setCancelData({ id: id, cancel: false })
-      setShowCancel(true)
-    }
-  const handleUncancelProduct =
-    ({ id }) =>
-    () => {
-      setCancelData({ id: id, cancel: true })
-      setShowCancel(true)
-    }
-  const handleDeleteProduct =
-    ({ id }) =>
-    () => {
-      setDeleteData({ id: id })
-      setShowDelete(true)
-    }
   const handleDetailOrder =
     ({ order_id, id }) =>
     () => {
@@ -165,26 +133,6 @@ const ReconcileData = ({ event, user }) => {
     }
   }
 
-  const loadData = async (moreItens = false, pageination = page) => {
-    setLoading(true)
-    try {
-      const p = parseData()
-
-      const url = `/order/getList/${event}?${p.statusURL}${p.typeURL}${p.groupURL}${p.productURL}${p.operatorURL}${p.paymentTypeURL}${p.dateURL}${p.QRCodeURL}&per_page=1000&page=${pageination}`
-
-      const resp = await Api.get(url)
-
-      //setTotalSell(resp.data.totalSell);
-      //setItensSell(resp.data.itensSell);
-      //setItensCanceled(resp.data.itensCanceled);
-      if (moreItens) setData([...data, ...resp.data.orders])
-      else setData(resp.data.orders)
-    } catch (error) {
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     if (!event) console.log("Sem evento")
   }, [event])
@@ -205,13 +153,6 @@ const ReconcileData = ({ event, user }) => {
     }
   }, [group, product, productList])
 
-  const getDetails = (tId) => {
-    return new Promise(async (resolve) => {
-      const req = await Api.get(`/order/getDetailsOrder/${tId}?event=${event}`)
-      resolve(req.data.orders)
-    })
-  }
-
   const generateUrl = () => {
     const filters = parseData()
 
@@ -224,22 +165,6 @@ const ReconcileData = ({ event, user }) => {
       `&per_page=1000000` +
       `&page=0`
     )
-  }
-
-  const findByQR = async (code) => {
-    return await Api.get(generateUrl(code))
-  }
-
-  const filterData = (arr) => {
-    let newArr = []
-
-    arr.forEach((item) => {
-      if (newArr.findIndex((i) => Number(i.id) === Number(item.id)) < 0) {
-        newArr.push(item)
-      }
-    })
-
-    return newArr
   }
 
   const handleDivgsSearch = () => {
@@ -284,6 +209,24 @@ const ReconcileData = ({ event, user }) => {
 
   const handleCheckOver = (checkResult) => {
     setShowFilePicker(false)
+    const parsedResult = [
+      {
+        origin: "PagSeguro",
+        total: parseMoney(checkResult.pagseguro.resume),
+        credit: parseMoney(checkResult.pagseguro.details.credit),
+        debit: parseMoney(checkResult.pagseguro.details.debit),
+        pix: parseMoney(checkResult.pagseguro.details.pix),
+      },
+      {
+        origin: "OiTickets",
+        total: parseMoney(checkResult.backData.resume),
+        credit: parseMoney(checkResult.backData.details.credit),
+        debit: parseMoney(checkResult.backData.details.debit),
+        pix: parseMoney(checkResult.backData.details.pix),
+      },
+    ]
+    console.log(parsedResult)
+    setTotalData(parsedResult)
   }
 
   useEffect(() => {
@@ -330,48 +273,12 @@ const ReconcileData = ({ event, user }) => {
 
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <EaseGrid
-            config={{
-              rowStyle: (row) => ({
-                backgroundColor:
-                  row.status === "cancelamento" ? "#fff0f0" : "white",
-              }),
-            }}
-            title="Resultados"
-            columns={columns}
-            data={data}
+            title="Totais Pagseguro e Registrados"
+            columns={totalColumns}
+            data={totalData}
             loading={loading}
           />
         </Grid>
-        {!loading && (
-          <Grid item lg={12} md={12} sm={12} xs={12}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flex: 1,
-                justifyContent: "center",
-                marginTop: 20,
-              }}
-            >
-              <Button
-                variant="outlined"
-                color="default"
-                onClick={() => {
-                  loadData(true, page + 1)
-                  setPage(page + 1)
-                }}
-                style={{
-                  padding: "8px",
-                  backgroundColor: "white",
-                  width: 150,
-                  borderRadius: 30,
-                }}
-              >
-                Mostrar mais
-              </Button>
-            </div>
-          </Grid>
-        )}
       </Grid>
     </>
   )
