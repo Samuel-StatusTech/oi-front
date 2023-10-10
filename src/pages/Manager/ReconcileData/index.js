@@ -21,53 +21,62 @@ import ModalCheck from "../../../components/Modals/CheckDivergencies"
 const ReconcileData = ({ event, user }) => {
   const styles = useStyles()
 
-  const totalColumns = [
-    { title: "Origem", field: "origin" },
-    { title: "Total", field: "total" },
-    { title: "Crédito", field: "credit" },
-    { title: "Débito", field: "debit" },
-    { title: "Pix", field: "pix" },
-  ]
-
-  const cancelledColumns = [
-    {
-      title: "",
-      render: (row) => (
-        <>
-          <Info
-            variant="outlined"
-            size="small"
-            color="primary"
-            style={{ cursor: "pointer" }}
-            onClick={handleDetailOrder(row)}
-          ></Info>
-        </>
-      ),
-    },
-    { title: "ID transação", field: "id" },
-    {
-      title: "Forma de Pagamento",
-      field: "payments",
-      render: PaymentTypeColumn,
-    },
-    { title: "Data/Hora", field: "created_at", type: "datetime" },
-    { title: "Operador", field: "user_id", render: UserColumn },
-    {
-      title: "Valor",
-      field: "total_price",
-      render: ({ total_price }) => format(total_price / 100, { code: "BRL" }),
-    },
-    {
-      title: "Status",
-      field: "status",
-      render: ({ status }) =>
-        status === "cancelamento" ? "Cancelado" : "Normal",
-    },
-  ]
+  const columns = {
+    totals: [
+      { title: "Origem", field: "origin" },
+      { title: "Total", field: "total" },
+      { title: "Crédito", field: "credit" },
+      { title: "Débito", field: "debit" },
+      { title: "Pix", field: "pix" },
+    ],
+    cancelled: [
+      {
+        title: "",
+        render: (row) => (
+          <>
+            <Info
+              variant="outlined"
+              size="small"
+              color="primary"
+              style={{ cursor: "pointer" }}
+              onClick={handleDetailOrder(row)}
+            ></Info>
+          </>
+        ),
+      },
+      { title: "ID transação", field: "id" },
+      {
+        title: "Forma de Pagamento",
+        field: "payments",
+        render: PaymentTypeColumn,
+      },
+      { title: "Data/Hora", field: "created_at", type: "datetime" },
+      { title: "Operador", field: "user_id", render: UserColumn },
+      {
+        title: "Valor",
+        field: "total_price",
+        render: ({ total_price }) => format(total_price / 100, { code: "BRL" }),
+      },
+      {
+        title: "Status",
+        field: "status",
+        render: ({ status }) =>
+          status === "cancelamento" ? "Cancelado" : "Normal",
+      },
+    ],
+    notReg: [
+      { title: "ID PagSeguro", field: "Transacao_ID" },
+      { title: "Tipo de Pagamento", field: "Tipo_Pagamento" },
+      { title: "Data e Hora", field: "Data_Compensacao" },
+      { title: "Valor", field: "Valor_Bruto" },
+    ],
+  }
 
   const [loading, setLoading] = useState(false)
   const [checkLoading, setCheckLoading] = useState(false)
   const [totalData, setTotalData] = useState([])
+  const [cancelledData, setCancelledData] = useState([])
+  const [notRegData, setNotRegData] = useState([])
   const [productList, setProductList] = useState([])
 
   const [status, setStatus] = useState("todos")
@@ -93,8 +102,6 @@ const ReconcileData = ({ event, user }) => {
 
   const [showFilePicker, setShowFilePicker] = useState(false)
 
-  const parseMoney = (v) => `R$ ${Number(v).toFixed(2).replace(".", ",")}`
-
   const handleDetailOrder =
     ({ order_id, id }) =>
     () => {
@@ -117,7 +124,6 @@ const ReconcileData = ({ event, user }) => {
       paymentType !== "todos" ? `&paymentType=${paymentType}` : ""
     const QRCodeURL =
       QRCode != "" ? `&qrcode=${`${QRCode}`.toUpperCase().trim()}` : ""
-    // const pageURL = `&per_page=${query.pageSize}&page=${query.page + 1}`;
     const dateURL =
       selectType !== 1 ? `&date_ini=${dateIni}&date_end=${dateEnd}` : ""
 
@@ -212,21 +218,22 @@ const ReconcileData = ({ event, user }) => {
     const parsedResult = [
       {
         origin: "PagSeguro",
-        total: parseMoney(checkResult.pagseguro.resume),
-        credit: parseMoney(checkResult.pagseguro.details.credit),
-        debit: parseMoney(checkResult.pagseguro.details.debit),
-        pix: parseMoney(checkResult.pagseguro.details.pix),
+        total: checkResult.pagseguro.resume,
+        credit: checkResult.pagseguro.details.credit,
+        debit: checkResult.pagseguro.details.debit,
+        pix: checkResult.pagseguro.details.pix,
       },
       {
         origin: "OiTickets",
-        total: parseMoney(checkResult.backData.resume),
-        credit: parseMoney(checkResult.backData.details.credit),
-        debit: parseMoney(checkResult.backData.details.debit),
-        pix: parseMoney(checkResult.backData.details.pix),
+        total: checkResult.backData.resume,
+        credit: checkResult.backData.details.credit,
+        debit: checkResult.backData.details.debit,
+        pix: checkResult.backData.details.pix,
       },
     ]
-    console.log(parsedResult)
     setTotalData(parsedResult)
+    setCancelledData(checkResult.cancelled)
+    setNotRegData(checkResult.notReg)
   }
 
   useEffect(() => {
@@ -274,12 +281,44 @@ const ReconcileData = ({ event, user }) => {
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <EaseGrid
             title="Totais Pagseguro e Registrados"
-            columns={totalColumns}
+            columns={columns.totals}
             data={totalData}
             loading={loading}
           />
         </Grid>
       </Grid>
+
+      {notRegData.length > 0 && (
+        <Grid container direction="column" spacing={2}>
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <EaseGrid
+              title="Transações no PagSeguro e não encontradas nos registros"
+              columns={columns.notReg}
+              data={notRegData}
+              loading={loading}
+            />
+          </Grid>
+        </Grid>
+      )}
+
+      {totalData.length > 0 && (
+        <Grid container direction="column" spacing={2}>
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <EaseGrid
+              config={{
+                rowStyle: (row) => ({
+                  backgroundColor:
+                    row.status === "cancelamento" ? "#fff0f0" : "white",
+                }),
+              }}
+              title="Transações canceladas"
+              columns={columns.cancelled}
+              data={cancelledData}
+              loading={loading}
+            />
+          </Grid>
+        </Grid>
+      )}
     </>
   )
 }

@@ -47,6 +47,9 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
     return Number(pureString)
   }
+  const parseBRL = (v) => {
+    return `R$ ${String(v.toFixed(2)).replace(".", ",")}`
+  }
 
   const calcTotal = async (transactions, from) => {
     let details = {
@@ -75,8 +78,12 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
           if (i === transactions.length - 1) {
             resolve({
-              resume: currentTotal,
-              details,
+              resume: parseBRL(currentTotal),
+              details: {
+                credit: parseBRL(details.credit),
+                debit: parseBRL(details.debit),
+                pix: parseBRL(details.pix),
+              },
             })
           } else return currentTotal
         }, 0)
@@ -101,8 +108,12 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
           if (i === transactions.length - 1) {
             resolve({
-              resume: currentTotal,
-              details,
+              resume: parseBRL(currentTotal),
+              details: {
+                credit: parseBRL(details.credit),
+                debit: parseBRL(details.debit),
+                pix: parseBRL(details.pix),
+              },
             })
           } else return currentTotal
         }, 0)
@@ -174,7 +185,7 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
         `${padValue(date.getMinutes())}:` +
         `${padValue(date.getSeconds())}`
 
-    return `${d} — ${h}`
+    return `${d} ${h}`
   }
 
   const getEventSerials = (data) => {
@@ -203,6 +214,48 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     return machinesTransactions
   }
 
+  const parseBaseData = (arr) => {
+    let filtered = []
+
+    arr.forEach((a) => {
+      filtered.push({
+        Transacao_ID: a.Transacao_ID,
+        Tipo_Pagamento: a.Tipo_Pagamento,
+        Data_Compensacao: a.Data_Compensacao,
+        Valor_Bruto: `R$ ${parsePagMoney(a.Valor_Bruto)
+          .toFixed(2)
+          .replace(".", ",")}`,
+      })
+    })
+
+    return filtered
+  }
+
+  const findNotRegs = (from, on) => {
+    let kk = []
+    let arr = []
+
+    const filtered = from.filter((i) => {
+      const regEx = new RegExp(i.Codigo_Venda)
+
+      const id = on.findIndex((t) => {
+        if (t.payments.length > 1) kk.push(t)
+
+        return t.payments.some((p) => {
+          return p.machineData.match(regEx)
+        })
+      })
+
+      return id === -1
+    })
+
+    kk.forEach((t) => {
+      if (!arr.some((a) => a.id === t.id)) arr.push(t)
+    })
+
+    return [...parseBaseData(filtered)]
+  }
+
   const checkTotal = async () => {
     setIsChecking(true)
     setFinishMessage(null)
@@ -218,6 +271,7 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       const backData = req.data.orders
 
       const filteredBack = filterBackData(backData)
+      const cancelledData = backData.filter((t) => t.status === "cancelamento")
 
       const machinesInEvent = getEventSerials(filteredBack)
 
@@ -226,10 +280,13 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       const pagTotal = await calcTotal(pagDataFromMachines, "pagseguro")
       const backTotal = await calcTotal(filteredBack, "back")
 
+      const notRegistereds = findNotRegs(pagDataFromMachines, filteredBack)
+
       const totals = {
         pagseguro: pagTotal,
         backData: backTotal,
-        cancelled: [],
+        cancelled: cancelledData,
+        notReg: notRegistereds,
       }
 
       finish(totals)
