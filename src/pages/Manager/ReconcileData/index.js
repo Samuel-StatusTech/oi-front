@@ -87,7 +87,7 @@ const ReconcileData = ({ event, user }) => {
         field: "payments",
         render: PaymentTypeColumn,
       },
-      { title: "Data/Hora", field: "created_at", type: "datetime" },
+      { title: "Data e Hora", field: "created_at", type: "datetime" },
       { title: "Operador", field: "user_id", render: UserColumn },
       {
         title: "Valor",
@@ -254,6 +254,18 @@ const ReconcileData = ({ event, user }) => {
     return createPortal(el, document.body)
   }
 
+  const orderByData = (arr) =>
+    arr.sort((a, b) => {
+      const aDate = a.Data_Transacao ?? a.created_at
+      const bDate = b.Data_Transacao ?? b.created_at
+
+      return new Date(aDate).getTime() === new Date(bDate).getTime()
+        ? 0
+        : new Date(aDate).getTime() > new Date(bDate).getTime()
+        ? 1
+        : -1
+    })
+
   const handleCheckOver = (checkResult) => {
     setShowFilePicker(false)
     const parsedResult = [
@@ -273,8 +285,8 @@ const ReconcileData = ({ event, user }) => {
       },
     ]
     setTotalData(parsedResult)
-    setCancelledData(checkResult.cancelled)
-    setNotRegData(checkResult.notReg)
+    setCancelledData(orderByData(checkResult.cancelled))
+    setNotRegData(orderByData(checkResult.notReg))
   }
 
   useEffect(() => {
@@ -345,8 +357,7 @@ const ReconcileData = ({ event, user }) => {
           </Grid>
         )}
 
-      {totalData.length > 0 &&
-        !totalData[0].total.ok &&  (
+      {totalData.length > 0 && !totalData[0].total.ok && (
         <Grid container direction="column" spacing={2}>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <EaseGrid

@@ -56,6 +56,7 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
       debit: 0,
       pix: 0,
     }
+
     if (transactions.length === 0) {
       return {
         resume: parseBRL(0),
@@ -108,6 +109,7 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             } else return currentTotal
           }, 0)
         } else if (from === "back") {
+          
           transactions.reduce((acc, t, i) => {
             const parsedMoney = parseMoney(t.total_price)
             const currentTotal = acc + parsedMoney
@@ -115,13 +117,13 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             t.payments.forEach((p) => {
               switch (p.payment_type) {
                 case "credito":
-                  details.credit = details.credit + parsedMoney
+                  details.credit = details.credit + parseMoney(p.price)
                   break
                 case "debito":
-                  details.debit = details.debit + parsedMoney
+                  details.debit = details.debit + parseMoney(p.price)
                   break
                 case "pix":
-                  details.pix = details.pix + parsedMoney
+                  details.pix = details.pix + parseMoney(p.price)
                   break
               }
             })
