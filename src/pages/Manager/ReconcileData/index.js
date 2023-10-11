@@ -25,8 +25,8 @@ const ReconcileData = ({ event, user }) => {
     totals: [
       { title: "Origem", field: "origin" },
       { title: "Total", field: "total" },
-      { title: "Crédito", field: "credit" },
       { title: "Débito", field: "debit" },
+      { title: "Crédito", field: "credit" },
       { title: "Pix", field: "pix" },
     ],
     cancelled: [
@@ -109,6 +109,10 @@ const ReconcileData = ({ event, user }) => {
       setDetailsOrderDataId(id)
       setShowDetailsOrder(true)
     }
+
+  const unshowModal = () => {
+    setShowFilePicker(false)
+  }
 
   const parseData = () => {
     const dateIni = formatDateTimeToDB(iniValue)
@@ -255,6 +259,7 @@ const ReconcileData = ({ event, user }) => {
         <ModalCheck
           show={showFilePicker}
           finish={handleCheckOver}
+          closeFn={unshowModal}
           urlWithFilters={urlWithFilters}
           dates={dateFilters}
         />

@@ -13,7 +13,7 @@ import Api from "../../../api"
 import useStyles from "../../../global/styles"
 import csvtojson from "csvtojson"
 
-const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
+const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
   const styles = useStyles()
 
   const [pagData, setPagData] = useState(null)
@@ -21,6 +21,7 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
   const [checkProgress, setCheckProgress] = useState(0)
   const [finishMessage, setFinishMessage] = useState(null)
   const pagDataInput = useRef(null)
+  const checkBtn = useRef(null)
 
   const changeProgress = (value) => {
     setCheckProgress(value + 30 < 100 ? value + 30 : 100)
@@ -35,8 +36,6 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     const newD = new Date(newStr).getTime()
     return newD
   }
-
-  const padValue = (v) => String(v).padStart(2, "0")
 
   const parseMoney = (v) => Number(v) / 100
 
@@ -57,74 +56,88 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       debit: 0,
       pix: 0,
     }
+    if (transactions.length === 0) {
+      return {
+        resume: parseBRL(0),
+        details: {
+          credit: parseBRL(details.credit),
+          debit: parseBRL(details.debit),
+          pix: parseBRL(details.pix),
+        },
+      }
+    } else {
+      return new Promise((resolve) => {
+        if (from === "pagseguro") {
+          transactions.reduce((acc, t, i) => {
+            const parsedMoney = parsePagMoney(t.Valor_Bruto)
+            const currentTotal = acc + parsedMoney
 
-    return new Promise((resolve) => {
-      if (from === "pagseguro") {
-        transactions.reduce((acc, t, i) => {
-          const parsedMoney = parsePagMoney(t.Valor_Bruto)
-          const currentTotal = acc + parsedMoney
-
-          switch (t.Tipo_Pagamento) {
-            case "Cartão de Crédito":
-              details.credit = details.credit + parsedMoney
-              break
-            case "Cartão de Débito":
-              details.debit = details.debit + parsedMoney
-              break
-            case "Pix":
-              details.pix = details.pix + parsedMoney
-              break
-          }
-
-          if (i === transactions.length - 1) {
-            resolve({
-              resume: parseBRL(currentTotal),
-              details: {
-                credit: parseBRL(details.credit),
-                debit: parseBRL(details.debit),
-                pix: parseBRL(details.pix),
-              },
-            })
-          } else return currentTotal
-        }, 0)
-      } else if (from === "back") {
-        transactions.reduce((acc, t, i) => {
-          const parsedMoney = parseMoney(t.total_price)
-          const currentTotal = acc + parsedMoney
-
-          t.payments.forEach((p) => {
-            switch (p.payment_type) {
-              case "credito":
+            switch (t.Tipo_Pagamento) {
+              case "Cartão de Crédito":
                 details.credit = details.credit + parsedMoney
                 break
-              case "debito":
+              case "Cartão de Débito":
                 details.debit = details.debit + parsedMoney
                 break
-              case "pix":
+              case "Pix":
                 details.pix = details.pix + parsedMoney
                 break
             }
-          })
 
-          if (i === transactions.length - 1) {
-            resolve({
-              resume: parseBRL(currentTotal),
-              details: {
-                credit: parseBRL(details.credit),
-                debit: parseBRL(details.debit),
-                pix: parseBRL(details.pix),
-              },
+            if (i === transactions.length - 1) {
+              resolve({
+                resume: parseBRL(currentTotal),
+                details: {
+                  credit: parseBRL(details.credit),
+                  debit: parseBRL(details.debit),
+                  pix: parseBRL(details.pix),
+                },
+              })
+            } else return currentTotal
+          }, 0)
+        } else if (from === "back") {
+          transactions.reduce((acc, t, i) => {
+            const parsedMoney = parseMoney(t.total_price)
+            const currentTotal = acc + parsedMoney
+
+            t.payments.forEach((p) => {
+              switch (p.payment_type) {
+                case "credito":
+                  details.credit = details.credit + parsedMoney
+                  break
+                case "debito":
+                  details.debit = details.debit + parsedMoney
+                  break
+                case "pix":
+                  details.pix = details.pix + parsedMoney
+                  break
+              }
             })
-          } else return currentTotal
-        }, 0)
-      }
-    })
+
+            if (i === transactions.length - 1) {
+              return resolve({
+                resume: parseBRL(currentTotal),
+                details: {
+                  credit: parseBRL(details.credit),
+                  debit: parseBRL(details.debit),
+                  pix: parseBRL(details.pix),
+                },
+              })
+            }
+
+            return acc + parsedMoney
+          }, 0)
+        }
+      })
+    }
   }
 
   const filterBackData = (log) => {
     return log.filter((transaction) => {
-      return !transaction.payments.some((p) =>
-        "dinheiro".includes(p.payment_type.toLowerCase())
+      return (
+        !transaction.payments.some((p) =>
+          "dinheiro".includes(p.payment_type.toLowerCase())
+        ) && transaction.status === "validado"
       )
     })
   }
@@ -145,47 +158,10 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     return f
   }
 
-  const loadPagseguroData = async (e) => {
-    const file = e.target.files[0]
-    const reader = new FileReader()
-
-    reader.onload = async (f) => {
-      const text = f.target.result
-      const data = await csvtojson({
-        delimiter: ";",
-        encoding: "ascii",
-      }).fromString(text)
-      const checkable = filterPagSeguro(data)
-
-      setCheckProgress(12.5)
-
-      setPagData({
-        fileName: file.name,
-        data: checkable,
-      })
-    }
-
-    reader.readAsText(file, "ascii")
-  }
-
   const closeModal = () => {
     setCheckProgress(0)
     setPagData(null)
     setFinishMessage(null)
-  }
-
-  const parseDate = (v) => {
-    const date = new Date(v)
-    const d =
-        `${padValue(date.getDate())}/` +
-        `${padValue(date.getMonth())}/` +
-        `${padValue(date.getFullYear())}`,
-      h =
-        `${padValue(date.getHours())}:` +
-        `${padValue(date.getMinutes())}:` +
-        `${padValue(date.getSeconds())}`
-
-    return `${d} ${h}`
   }
 
   const getEventSerials = (data) => {
@@ -221,7 +197,7 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
       filtered.push({
         Transacao_ID: a.Transacao_ID,
         Tipo_Pagamento: a.Tipo_Pagamento,
-        Data_Compensacao: a.Data_Compensacao,
+        Data_Transacao: a.Data_Transacao,
         Valor_Bruto: `R$ ${parsePagMoney(a.Valor_Bruto)
           .toFixed(2)
           .replace(".", ",")}`,
@@ -259,10 +235,9 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
   const checkTotal = async () => {
     setIsChecking(true)
     setFinishMessage(null)
-    setCheckProgress(12.5)
+    setCheckProgress(100)
 
     const req = await Api.get(urlWithFilters).then((res) => {
-      setCheckProgress(30)
       setTimeout(null, 300)
       return res
     })
@@ -270,23 +245,48 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
     if (req.status === 200) {
       const backData = req.data.orders
 
-      const filteredBack = filterBackData(backData)
-      const cancelledData = backData.filter((t) => t.status === "cancelamento")
+      if (backData.length > 0 && pagData.data.length > 0) {
+        const cancelledData = backData.filter(
+          (t) => t.status === "cancelamento"
+        )
+        const filteredBack = filterBackData(backData)
 
-      const machinesInEvent = getEventSerials(filteredBack)
+        const machinesInEvent = getEventSerials(filteredBack)
 
-      const pagDataFromMachines = filterPagDataByMachines(machinesInEvent)
+        const pagDataFromMachines = filterPagDataByMachines(machinesInEvent)
 
-      const pagTotal = await calcTotal(pagDataFromMachines, "pagseguro")
-      const backTotal = await calcTotal(filteredBack, "back")
+        const pagTotal = await calcTotal(pagDataFromMachines, "pagseguro")
+        const backTotal = await calcTotal(filteredBack, "back")
 
-      const notRegistereds = findNotRegs(pagDataFromMachines, filteredBack)
+        const notRegistereds = findNotRegs(pagDataFromMachines, filteredBack)
 
+        const totals = {
+          pagseguro: pagTotal,
+          backData: backTotal,
+          cancelled: cancelledData,
+          notReg: notRegistereds,
+        }
+
+        finish(totals)
+      } else {
+        const totals = {
+          pagseguro: await calcTotal([], "pagseguro"),
+          backData: await calcTotal([], "back"),
+          cancelled: [],
+          notReg: [],
+        }
+
+        finish(totals)
+      }
+
+      setIsChecking(false)
+      closeModal()
+    } else {
       const totals = {
-        pagseguro: pagTotal,
-        backData: backTotal,
-        cancelled: cancelledData,
-        notReg: notRegistereds,
+        pagseguro: await calcTotal([], "pagseguro"),
+        backData: await calcTotal([], "back"),
+        cancelled: [],
+        notReg: [],
       }
 
       finish(totals)
@@ -300,6 +300,33 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
 
   const triggerPagInput = () => {
     if (pagDataInput.current) pagDataInput.current.click()
+  }
+
+  const triggerCheckBtn = () => {
+    if (checkBtn.current) checkBtn.current.click()
+  }
+
+  const loadPagseguroData = async (e) => {
+    const file = e.target.files[0]
+    const reader = new FileReader()
+
+    reader.onload = async (f) => {
+      const text = f.target.result
+      const data = await csvtojson({
+        delimiter: ";",
+        encoding: "ascii",
+      }).fromString(text)
+      const checkable = filterPagSeguro(data)
+
+      setPagData({
+        fileName: file.name,
+        data: checkable,
+      })
+
+      setTimeout(triggerCheckBtn, 300)
+    }
+
+    reader.readAsText(file, "ascii")
   }
 
   return (
@@ -346,34 +373,45 @@ const ModalCheck = ({ show, finish, urlWithFilters, dates }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        {checkProgress < 99 && (
-          <Button
-            type="button"
-            onClick={checkTotal}
-            variant="outlined"
-            color="primary"
-            disabled={pagData === null || isChecking}
-          >
-            {isChecking ? (
-              <>
-                <span style={{ marginRight: 4 }}>Checando </span>
-                <CircularProgress size={25} />
-              </>
-            ) : (
-              "Checar"
-            )}
-          </Button>
-        )}
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={closeModal}
+        <div
           style={{
-            cursor: "pointer",
+            width: "100%",
+            position: "relative",
+            display: "flex",
+            justifyContent: "flex-end",
           }}
         >
-          Fechar
-        </Button>
+          {isChecking && (
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <CircularProgress size={25} />
+            </div>
+          )}
+          <button
+            onClick={checkTotal}
+            style={{ visibility: "hidden" }}
+            ref={checkBtn}
+          />
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              closeFn()
+              closeModal()
+            }}
+            style={{
+              cursor: "pointer",
+            }}
+          >
+            Fechar
+          </Button>
+        </div>
       </DialogActions>
     </Dialog>
   )
