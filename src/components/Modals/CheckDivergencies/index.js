@@ -85,12 +85,24 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             }
 
             if (i === transactions.length - 1) {
-              resolve({
-                resume: parseBRL(currentTotal),
+              return resolve({
+                resume: {
+                  value: parseBRL(currentTotal),
+                  ok: false,
+                },
                 details: {
-                  credit: parseBRL(details.credit),
-                  debit: parseBRL(details.debit),
-                  pix: parseBRL(details.pix),
+                  credit: {
+                    value: parseBRL(details.credit),
+                    ok: false,
+                  },
+                  debit: {
+                    value: parseBRL(details.debit),
+                    ok: false,
+                  },
+                  pix: {
+                    value: parseBRL(details.pix),
+                    ok: false,
+                  },
                 },
               })
             } else return currentTotal
@@ -116,11 +128,23 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
 
             if (i === transactions.length - 1) {
               return resolve({
-                resume: parseBRL(currentTotal),
+                resume: {
+                  value: parseBRL(currentTotal),
+                  ok: false,
+                },
                 details: {
-                  credit: parseBRL(details.credit),
-                  debit: parseBRL(details.debit),
-                  pix: parseBRL(details.pix),
+                  credit: {
+                    value: parseBRL(details.credit),
+                    ok: false,
+                  },
+                  debit: {
+                    value: parseBRL(details.debit),
+                    ok: false,
+                  },
+                  pix: {
+                    value: parseBRL(details.pix),
+                    ok: false,
+                  },
                 },
               })
             }
@@ -198,9 +222,7 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
         Transacao_ID: a.Transacao_ID,
         Tipo_Pagamento: a.Tipo_Pagamento,
         Data_Transacao: a.Data_Transacao,
-        Valor_Bruto: `R$ ${parsePagMoney(a.Valor_Bruto)
-          .toFixed(2)
-          .replace(".", ",")}`,
+        Valor_Bruto: parseBRL(parsePagMoney(a.Valor_Bruto)),
       })
     })
 
@@ -232,6 +254,39 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
     return [...parseBaseData(filtered)]
   }
 
+  const getOks = (pagInfo, backInfo) => {
+    let res = {
+      pagseguro: pagInfo,
+      backData: backInfo,
+    }
+
+    // resume check
+    if (pagInfo.resume.value === backInfo.resume.value) {
+      res.pagseguro.resume.ok = true
+      res.backData.resume.ok = true
+    }
+
+    // credit check
+    if (pagInfo.details.credit.value === backInfo.details.credit.value) {
+      res.pagseguro.details.credit.ok = true
+      res.backData.details.credit.ok = true
+    }
+
+    // debit check
+    if (pagInfo.details.debit.value === backInfo.details.debit.value) {
+      res.pagseguro.details.debit.ok = true
+      res.backData.details.debit.ok = true
+    }
+
+    // pix check
+    if (pagInfo.details.pix.value === backInfo.details.pix.value) {
+      res.pagseguro.details.pix.ok = true
+      res.backData.details.pix.ok = true
+    }
+
+    return res
+  }
+
   const checkTotal = async () => {
     setIsChecking(true)
     setFinishMessage(null)
@@ -261,8 +316,7 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
         const notRegistereds = findNotRegs(pagDataFromMachines, filteredBack)
 
         const totals = {
-          pagseguro: pagTotal,
-          backData: backTotal,
+          ...getOks(pagTotal, backTotal),
           cancelled: cancelledData,
           notReg: notRegistereds,
         }

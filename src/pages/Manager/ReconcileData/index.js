@@ -18,16 +18,53 @@ import { Info } from "@material-ui/icons"
 import useStyles from "../../../global/styles"
 import ModalCheck from "../../../components/Modals/CheckDivergencies"
 
+const colors = {
+  ok: "#1FAA34",
+  error: "#B22222",
+}
+
 const ReconcileData = ({ event, user }) => {
   const styles = useStyles()
 
   const columns = {
     totals: [
       { title: "Origem", field: "origin" },
-      { title: "Total", field: "total" },
-      { title: "Débito", field: "debit" },
-      { title: "Crédito", field: "credit" },
-      { title: "Pix", field: "pix" },
+      {
+        title: "Total",
+        field: "total",
+        render: ({ total }) => (
+          <td style={{ color: total.ok ? colors.ok : colors.error }}>
+            {total.value}
+          </td>
+        ),
+      },
+      {
+        title: "Débito",
+        field: "debit",
+        render: ({ debit }) => (
+          <td style={{ color: debit.ok ? colors.ok : colors.error }}>
+            {debit.value}
+          </td>
+        ),
+      },
+      {
+        title: "Crédito",
+        field: "credit",
+        render: ({ credit }) => (
+          <td style={{ color: credit.ok ? colors.ok : colors.error }}>
+            {credit.value}
+          </td>
+        ),
+      },
+      {
+        title: "Pix",
+        field: "pix",
+        render: ({ pix }) => (
+          <td style={{ color: pix.ok ? colors.ok : colors.error }}>
+            {pix.value}
+          </td>
+        ),
+      },
     ],
     cancelled: [
       {
@@ -67,7 +104,7 @@ const ReconcileData = ({ event, user }) => {
     notReg: [
       { title: "ID PagSeguro", field: "Transacao_ID" },
       { title: "Tipo de Pagamento", field: "Tipo_Pagamento" },
-      { title: "Data e Hora", field: "Data_Compensacao" },
+      { title: "Data e Hora", field: "Data_Transacao" },
       { title: "Valor", field: "Valor_Bruto" },
     ],
   }
@@ -293,20 +330,23 @@ const ReconcileData = ({ event, user }) => {
         </Grid>
       </Grid>
 
-      {notRegData.length > 0 && (
-        <Grid container direction="column" spacing={2}>
-          <Grid item lg={12} md={12} sm={12} xs={12}>
-            <EaseGrid
-              title="Transações no PagSeguro e não encontradas nos registros"
-              columns={columns.notReg}
-              data={notRegData}
-              loading={loading}
-            />
+      {notRegData.length > 0 &&
+        totalData.length > 0 &&
+        !totalData[0].total.ok && (
+          <Grid container direction="column" spacing={2}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <EaseGrid
+                title="Transações no PagSeguro e não encontradas nos registros"
+                columns={columns.notReg}
+                data={notRegData}
+                loading={loading}
+              />
+            </Grid>
           </Grid>
-        </Grid>
-      )}
+        )}
 
-      {totalData.length > 0 && (
+      {totalData.length > 0 &&
+        !totalData[0].total.ok &&  (
         <Grid container direction="column" spacing={2}>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <EaseGrid
