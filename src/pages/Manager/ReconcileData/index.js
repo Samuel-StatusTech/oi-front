@@ -33,36 +33,36 @@ const ReconcileData = ({ event, user }) => {
         title: "Total",
         field: "total",
         render: ({ total }) => (
-          <td style={{ color: total.ok ? colors.ok : colors.error }}>
+          <span style={{ color: total.ok ? colors.ok : colors.error }}>
             {total.value}
-          </td>
+          </span>
         ),
       },
       {
         title: "Débito",
         field: "debit",
         render: ({ debit }) => (
-          <td style={{ color: debit.ok ? colors.ok : colors.error }}>
+          <span style={{ color: debit.ok ? colors.ok : colors.error }}>
             {debit.value}
-          </td>
+          </span>
         ),
       },
       {
         title: "Crédito",
         field: "credit",
         render: ({ credit }) => (
-          <td style={{ color: credit.ok ? colors.ok : colors.error }}>
+          <span style={{ color: credit.ok ? colors.ok : colors.error }}>
             {credit.value}
-          </td>
+          </span>
         ),
       },
       {
         title: "Pix",
         field: "pix",
         render: ({ pix }) => (
-          <td style={{ color: pix.ok ? colors.ok : colors.error }}>
+          <span style={{ color: pix.ok ? colors.ok : colors.error }}>
             {pix.value}
-          </td>
+          </span>
         ),
       },
     ],
@@ -111,6 +111,7 @@ const ReconcileData = ({ event, user }) => {
 
   const [loading, setLoading] = useState(false)
   const [checkLoading, setCheckLoading] = useState(false)
+  const [autoTotal, setAutoTotal] = useState(null)
   const [totalData, setTotalData] = useState([])
   const [cancelledData, setCancelledData] = useState([])
   const [notRegData, setNotRegData] = useState([])
@@ -293,6 +294,38 @@ const ReconcileData = ({ event, user }) => {
     generateDateFilters()
   }, [iniValue, endValue, selectType])
 
+  useEffect(() => {
+    if (event)
+      Api.get(`/statistical/resume/${event}`).then((res) => {
+        const { success, totalReceipt } = res.data
+        if (success) {
+          setAutoTotal({
+            resume: {
+              value:
+                (parseInt(totalReceipt.total_credit) +
+                parseInt(totalReceipt.total_debit) +
+                parseInt(totalReceipt.total_pix)) / 100,
+              ok: false,
+            },
+            details: {
+              credit: {
+                value: parseInt(totalReceipt.total_credit) / 100,
+                ok: false,
+              },
+              debit: {
+                value: parseInt(totalReceipt.total_debit) / 100,
+                ok: false,
+              },
+              pix: {
+                value: parseInt(totalReceipt.total_pix) / 100,
+                ok: false,
+              },
+            },
+          })
+        }
+      })
+  }, [])
+
   return (
     <>
       {renderLoadingOverlay()}
@@ -311,6 +344,7 @@ const ReconcileData = ({ event, user }) => {
           closeFn={unshowModal}
           urlWithFilters={urlWithFilters}
           dates={dateFilters}
+          autoTotal={autoTotal}
         />
 
         <Grid item lg={12} md={12} sm={12} xs={12}>

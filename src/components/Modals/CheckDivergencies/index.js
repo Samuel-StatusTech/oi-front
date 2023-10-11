@@ -13,7 +13,14 @@ import Api from "../../../api"
 import useStyles from "../../../global/styles"
 import csvtojson from "csvtojson"
 
-const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
+const ModalCheck = ({
+  show,
+  finish,
+  closeFn,
+  urlWithFilters,
+  dates,
+  autoTotal,
+}) => {
   const styles = useStyles()
 
   const [pagData, setPagData] = useState(null)
@@ -59,11 +66,11 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
 
     if (transactions.length === 0) {
       return {
-        resume: parseBRL(0),
+        resume: 0,
         details: {
-          credit: parseBRL(details.credit),
-          debit: parseBRL(details.debit),
-          pix: parseBRL(details.pix),
+          credit: details.credit,
+          debit: details.debit,
+          pix: details.pix,
         },
       }
     } else {
@@ -88,20 +95,20 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             if (i === transactions.length - 1) {
               return resolve({
                 resume: {
-                  value: parseBRL(currentTotal),
+                  value: currentTotal,
                   ok: false,
                 },
                 details: {
                   credit: {
-                    value: parseBRL(details.credit),
+                    value: details.credit,
                     ok: false,
                   },
                   debit: {
-                    value: parseBRL(details.debit),
+                    value: details.debit,
                     ok: false,
                   },
                   pix: {
-                    value: parseBRL(details.pix),
+                    value: details.pix,
                     ok: false,
                   },
                 },
@@ -109,7 +116,6 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             } else return currentTotal
           }, 0)
         } else if (from === "back") {
-          
           transactions.reduce((acc, t, i) => {
             const parsedMoney = parseMoney(t.total_price)
             const currentTotal = acc + parsedMoney
@@ -131,20 +137,20 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
             if (i === transactions.length - 1) {
               return resolve({
                 resume: {
-                  value: parseBRL(currentTotal),
+                  value: currentTotal,
                   ok: false,
                 },
                 details: {
                   credit: {
-                    value: parseBRL(details.credit),
+                    value: details.credit,
                     ok: false,
                   },
                   debit: {
-                    value: parseBRL(details.debit),
+                    value: details.debit,
                     ok: false,
                   },
                   pix: {
-                    value: parseBRL(details.pix),
+                    value: details.pix,
                     ok: false,
                   },
                 },
@@ -256,6 +262,53 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
     return [...parseBaseData(filtered)]
   }
 
+  const parseAllToBRL = (res) => {
+    let parsedRes = {
+      pagseguro: {
+        resume: {
+          ...res.pagseguro.resume,
+          value: parseBRL(res.pagseguro.resume.value),
+        },
+        details: {
+          credit: {
+            ...res.pagseguro.details.credit,
+            value: parseBRL(res.pagseguro.details.credit.value),
+          },
+          debit: {
+            ...res.pagseguro.details.debit,
+            value: parseBRL(res.pagseguro.details.debit.value),
+          },
+          pix: {
+            ...res.pagseguro.details.pix,
+            value: parseBRL(res.pagseguro.details.pix.value),
+          },
+        },
+      },
+      backData: {
+        resume: {
+          ...res.backData.resume,
+          value: parseBRL(res.backData.resume.value),
+        },
+        details: {
+          credit: {
+            ...res.backData.details.credit,
+            value: parseBRL(res.backData.details.credit.value),
+          },
+          debit: {
+            ...res.backData.details.debit,
+            value: parseBRL(res.backData.details.debit.value),
+          },
+          pix: {
+            ...res.backData.details.pix,
+            value: parseBRL(res.backData.details.pix.value),
+          },
+        },
+      },
+    }
+
+    return parsedRes
+  }
+
   const getOks = (pagInfo, backInfo) => {
     let res = {
       pagseguro: pagInfo,
@@ -286,8 +339,15 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
       res.backData.details.pix.ok = true
     }
 
-    return res
+    const parsed = parseAllToBRL(res)
+    return parsed
   }
+
+  const matchAutoValues = (pagTotal, autoTotal) =>
+    pagTotal.resume.value === autoTotal.resume.value &&
+    pagTotal.details.credit.value === autoTotal.details.credit.value &&
+    pagTotal.details.debit.value === autoTotal.details.debit.value &&
+    pagTotal.details.pix.value === autoTotal.details.pix.value
 
   const checkTotal = async () => {
     setIsChecking(true)
@@ -301,18 +361,28 @@ const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates }) => {
 
     if (req.status === 200) {
       const backData = req.data.orders
+      const filteredBack = filterBackData(backData)
 
       if (backData.length > 0 && pagData.data.length > 0) {
         const cancelledData = backData.filter(
           (t) => t.status === "cancelamento"
         )
-        const filteredBack = filterBackData(backData)
 
         const machinesInEvent = getEventSerials(filteredBack)
 
         const pagDataFromMachines = filterPagDataByMachines(machinesInEvent)
 
         const pagTotal = await calcTotal(pagDataFromMachines, "pagseguro")
+
+        if (matchAutoValues(pagTotal, autoTotal)) {
+          finish({
+            ...getOks(pagTotal, autoTotal),
+            cancelled: cancelledData,
+            notReg: [],
+          })
+          return
+        }
+
         const backTotal = await calcTotal(filteredBack, "back")
 
         const notRegistereds = findNotRegs(pagDataFromMachines, filteredBack)
