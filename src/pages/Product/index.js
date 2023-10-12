@@ -328,13 +328,24 @@ const Product = () => {
     return str.trim()
   }
 
-  const filterData = (data) => {
+  const filterData = async (data) => {
     let arr = [],
       err = []
 
-    data.forEach((p) => {
-      const matchedGroup = groupList.find((g) => g.name === p.Group)
-      if (p.Nome && p.Preco && p.Descricao && matchedGroup) {
+    await data.forEach(async (p) => {
+      if (p.Nome && p.Preco && p.Descricao && p.Grupo) {
+        let matchedGroup = groupList.find(
+          (g) => String(g.name).toLowerCase() === String(p.Grupo).toLowerCase()
+        )
+        if (typeof matchedGroup === "undefined") {
+          const { category: newGroup } = await Api.post("/group/createGroup", {
+            name: p.Grupo,
+            type: "bar",
+            status: true,
+          })
+          matchedGroup = newGroup
+        }
+
         arr.push({
           name: capitalizeWords(p.Nome),
           price_sell: p.Preco,
@@ -361,14 +372,14 @@ const Product = () => {
     const fd = new FormData()
 
     fd.append("name", item.name)
-    fd.append("price_sell", `${Number(item.price_sell) * 100}`)
+    fd.append("price_sell", item.price_sell)
     fd.append("description1", item.description)
 
     fd.append("group_id", item.group_id)
     fd.append("image", "")
     fd.append("type", "bar")
     fd.append("description2", "")
-    fd.append("price_cost", `${Number(item.price_sell) * 100}`)
+    fd.append("price_cost", item.price_sell)
     fd.append("has_variable", false)
     fd.append("has_courtesy", false)
     fd.append("status", true)
@@ -400,42 +411,57 @@ const Product = () => {
     setIsRegisterMade(false)
     setIsRegistering(true)
 
-    const fData = filterData(newData)
+    const fData = await filterData(newData)
 
     if (fData.arr.length > 0) {
-      let noAdded = fData.err
-
       await new Promise(async (resolve) => {
+        let noAdded = fData.err
+        let added = 0
         fData.arr.forEach(async (i, k) => {
           const formData = getFormData(i)
 
-          const reg = await Api.post("/product/createProduct", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+          await Api.post("/product/createProduct", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
           })
-
-          console.log(reg.status, 'status')
-          if (reg.status === 400) noAdded.push(i.name)
-          if (k === fData.arr.length - 1) resolve()
+            .then(() => {
+              if (k === fData.arr.length - 1) {
+                resolve({
+                  added: added + 1,
+                  noAdded,
+                })
+              } else added = added + 1
+            })
+            .catch(() => {
+              if (k === fData.arr.length - 1) {
+                resolve({
+                  added,
+                  noAdded: [...noAdded, i],
+                })
+              } else noAdded.push(i)
+            })
         })
-      }).then(() => {
-        setErrData(noAdded)
+      }).then((result) => {
+        setErrData(result.noAdded)
         setDialogMessage(
-          "Produtos adicionados com sucesso. Você já pode fechar esta janela."
+          result.added > 0
+            ? `${result.added} Produto${
+                result.added > 1 ? "s" : ""
+              } adicionado${
+                result.added > 1 ? "s" : ""
+              } com sucesso. Você já pode fechar esta janela.`
+            : "Nenhum produto foi adicionado. Tente novamente mais tarde."
         )
         setIsRegistering(false)
         setIsRegisterMade(true)
       })
     } else {
       setDialogMessage(
-        "Nenhum produto adicionado. Confira seus campos e tente novamente."
+        "Nenhum produto foi adicionado. Confira seus campos e tente novamente."
       )
       setErrData(fData.err)
       setIsRegistering(false)
       setIsRegisterMade(true)
     }
-
   }
 
   const loadNewData = async (e) => {
@@ -445,7 +471,7 @@ const Product = () => {
     reader.onload = async (f) => {
       const text = f.target.result
       const data = await csvtojson({
-        delimiter: ",",
+        delimiter: [";", ","],
         encoding: "ascii",
       }).fromString(text)
       setNewData(data)
