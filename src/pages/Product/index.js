@@ -485,6 +485,55 @@ const Product = () => {
     if (fileinput.current) fileinput.current.click()
   }
 
+  const padValue = (number) => String(number).padStart(2, "0")
+
+  const getDateString = () => {
+    const date = new Date()
+    const d = {
+      year: String(date.getFullYear()),
+      month: padValue(date.getMonth() + 1),
+      day: padValue(date.getDate()),
+    }
+    const h = {
+      hour: padValue(date.getHours()),
+      mins: padValue(date.getMinutes()),
+      secs: padValue(date.getSeconds()),
+    }
+    return `${d.year}-${d.month}-${d.day}_` + `${h.hour}-${h.mins}-${h.secs}`
+  }
+
+  const parseDataToDownload = () => {
+    let rows = []
+    data.forEach((d) => {
+      rows.push([
+        d.id ?? "Não definido",
+        d.name ?? "Não definido",
+        d.type ?? "Não definido",
+        d.price_sell ?? "Não definido",
+        d.quantity ?? 0,
+        d.status === 1 ? "Ativo" : "Inativo" ?? "Não definido",
+        d.group && d.group.name ? d.group.name : "Não definido",
+      ])
+    })
+
+    const csvContent =
+      "data:text/csv;charset=UTF-8," +
+      `${["Id", "Nome", "Tipo", "Preco", "Quantidade", "Status", "Grupo"].join(
+        ";"
+      )}\n` +
+      rows.map((r) => r.join(";")).join("\n")
+
+    return encodeURI(csvContent)
+  }
+
+  const exportData = async () => {
+    const uri = parseDataToDownload()
+    const aEl = document.createElement("a")
+    aEl.setAttribute("href", uri)
+    aEl.setAttribute("download", `Produtos_${getDateString()}.csv`)
+    aEl.click()
+  }
+
   return (
     <>
       <Dialog
@@ -567,19 +616,26 @@ const Product = () => {
               spacing={2}
               className={styles.exportDataArea}
             >
-              <input
-                type="file"
-                accept=".csv"
-                ref={fileinput}
-                onChange={loadNewData}
-                hidden
-              />
-              <Button
-                className={styles.exportDataBtn}
-                onClick={triggerInputClick}
-              >
-                Importar dados
-              </Button>
+              <>
+                <Button className={styles.exportDataBtn} onClick={exportData}>
+                  Exportar dados
+                </Button>
+              </>
+              <>
+                <input
+                  type="file"
+                  accept=".csv"
+                  ref={fileinput}
+                  onChange={loadNewData}
+                  hidden
+                />
+                <Button
+                  className={styles.exportDataBtn}
+                  onClick={triggerInputClick}
+                >
+                  Importar dados
+                </Button>
+              </>
             </Grid>
           </div>
         </Grid>

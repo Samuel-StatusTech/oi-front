@@ -159,8 +159,9 @@ export default makeStyles((theme) => ({
   },
   exportDataArea: {
     display: 'flex',
+    alignItems:'center',
     justifyContent: 'end',
-    width: 'fit-content',
+    gap:24,
     margin: 4,
   },
   exportDataBtn: {
