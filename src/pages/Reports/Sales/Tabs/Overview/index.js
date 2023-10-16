@@ -170,7 +170,7 @@ export default (props) => {
         const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
         cancelTokenSource.current = axios.CancelToken.source();
 
-        if(groupURL.length === 0) {   // quando no geral
+        if(groupURL.length === 0) {
 
           const { data } = await Api.get(
             `/statistical/resume/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
@@ -190,9 +190,9 @@ export default (props) => {
           const totalRecipe = total
           const balanceCashless = overview.cardInfo.total_park
           const sales = +data.total.total_bar
-          const balance = productType === 'all' ?
-            +data.total.total_ticket :
-            ((total / overview.cardInfo.sales_items)*100).toFixed(2)
+          const balance = productType!=='all'?
+            ((total / overview.cardInfo.sales_items)*100):
+            +data.total.total_ticket
           const salesItems = overview.cardInfo.sales_items
   
   
@@ -212,12 +212,12 @@ export default (props) => {
             setProducts(overview.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
           setPayment(data.paymentInfo);
 
-        } else {   // quando escolhe grupo
+        } else {
+
           cancelTokenSource.current = axios.CancelToken.source();
           const { data } = await Api.get(`/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
   
           const totalRecipe = data.cardInfo.total;
-          // const balanceCashless = data.cardInfo.total_park;
           const balanceCashless = data.cardInfo.total_park;
           const sales = data.cardInfo.total_bar;
           const balance = data.cardInfo.total_ticket;
@@ -370,33 +370,29 @@ export default (props) => {
                   </TextField>
                 </Grid>
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
-                  {1===0 &&
-                    <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                      {loadingReport ?
-                        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-                          <CircularProgress size={20} color='#0097FF' />
-                        </div>
-                        :
-                        'Gerar PDF'
-                      }
-                    </Button>
-                  }
+                  <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                    {loadingReport ?
+                      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                        <CircularProgress size={20} color='#0097FF' />
+                      </div>
+                      :
+                      'Gerar PDF'
+                    }
+                  </Button>
                 </Grid>
               </Grid>
             </Grid>
           ) : (
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              {1===0 &&
-                <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                  {loadingReport ?
-                    <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-                      <CircularProgress size={20} color='#0097FF' />
-                    </div>
-                    :
-                    'Gerar PDF'
-                  }
-                </Button>
-              }
+              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                {loadingReport ?
+                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                    <CircularProgress size={20} color='#0097FF' />
+                  </div>
+                  :
+                  'Gerar PDF'
+                }
+              </Button>
             </Grid>
           )}
 
