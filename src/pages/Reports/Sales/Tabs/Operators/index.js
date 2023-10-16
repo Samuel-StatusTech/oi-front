@@ -44,6 +44,57 @@ const Operators = ({ type, event }) => {
     }
   }
 
+  const getMachSells = (mach) => {
+    return new Promise(async (resolve) => {
+      const url = `/order/getList/${event}?status=todos&type=todos&operator=${mach.user.id}&per_page=1000000&page=0`
+      const sells = await Api.get(url)
+      const res = {
+        ...mach,
+        orders:sells.data.orders
+      }
+      resolve(res)
+    })
+  }
+
+  const parseMoney = (v) => Number(v) / 100
+
+  const getUnitaryTotal = (t) => {
+
+    return new Promise(resolve => {
+      let details = {
+        money: 0,
+        debit: 0,
+        credit: 0,
+        pix: 0,
+      }
+      
+      t.orders.forEach((o,k) => {
+        if(o.status === "cancelamento") {
+          if (k < t.orders.length - 1 ) return
+        } else {
+          o.payments.forEach((p) => {
+            switch (p.payment_type) {
+            case "credito":
+              details.credit = details.credit + (parseMoney(p.price) * 100)
+              break
+            case "debito":
+              details.debit = details.debit + (parseMoney(p.price) * 100)
+              break
+            case "pix":
+              details.pix = details.pix + (parseMoney(p.price) * 100)
+              break
+            case "dinheiro":
+              details.money = details.money + (parseMoney(p.price) * 100)
+              break
+            }
+          })
+        }
+              
+        if(k === t.orders.length - 1) resolve(details)
+      })
+    })
+  }
+
   const handleSearch = () => {
     setLoading(true);
     if (event) {
@@ -54,33 +105,52 @@ const Operators = ({ type, event }) => {
 
       cancelTokenSource.current = axios.CancelToken.source();
 
-      Api.get(`/statistical/saleDetails/${event}?type=${type}${dateURL}${groupURL}`, { cancelToken: cancelTokenSource.current.token }).then(({ data }) => {
-        if (data) {
-          for(const idx in data) {
-            const products = []
-            for(const key in data[idx].products) {
-              let productIdx = -1;
-              if(data[idx].products[key].productVariable) {
-                for(const pIdx in products) {
-                  if(products[pIdx].product_name == data[idx].products[key].product_name && products[pIdx].productId == data[idx].products[key].productId) {
-                    productIdx = pIdx;
-                    break;
+      Api.get(`/statistical/saleDetails/${event}?type=${type}${dateURL}${groupURL}`, { cancelToken: cancelTokenSource.current.token }).then(async ({ data:allDetails }) => {
+        if (allDetails) {
+          let promises = []
+
+          for(const idx in allDetails) promises.push(getMachSells(allDetails[idx]))
+          
+          Promise.all(promises).then(async data => {
+            
+            for(const idx in data) {
+              const products = []
+              for(const key in data[idx].products) {
+                let productIdx = -1;
+                if(data[idx].products[key].productVariable) {
+                  for(const pIdx in products) {
+                    if(products[pIdx].product_name == data[idx].products[key].product_name && products[pIdx].productId == data[idx].products[key].productId) {
+                      productIdx = pIdx;
+                      break;
+                    }
                   }
                 }
+                if(productIdx < 0) {
+                  products.push(data[idx].products[key]);
+                } else {
+                  products[productIdx].quantity += data[idx].products[key].quantity;
+                  products[productIdx].price_total = Number(products[productIdx].price_total) + Number(data[idx].products[key].price_total);
+                  products[productIdx].price_unit = 'Variável';
+                }
               }
-              if(productIdx < 0) {
-                products.push(data[idx].products[key]);
-              } else {
-                products[productIdx].quantity += data[idx].products[key].quantity;
-                products[productIdx].price_total = Number(products[productIdx].price_total) + Number(data[idx].products[key].price_total);
-                products[productIdx].price_unit = 'Variável';
+
+              data[idx].products = products;
+
+              const thisTotal = await getUnitaryTotal(data[idx])
+              
+              data[idx].payments = {
+                money: thisTotal.money,
+                debit: thisTotal.debit,
+                credit: thisTotal.credit,
+                pix: thisTotal.pix
               }
             }
-            data[idx].products = products;
-          }
-          setUsers(data.sort((a, b) => a.user.name.localeCompare(b.user.name)));
+            
+            setUsers(data.sort((a, b) => a.user.name.localeCompare(b.user.name)));
+
+            setLoading(false);
+          })
         }
-        setLoading(false);
       });
     }
   }

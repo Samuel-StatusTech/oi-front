@@ -159,27 +159,40 @@ export default (props) => {
 
   const handleSearch = async () => {
     try {
-      setLoading(true);
-      if (event) {
+      setLoading(true)
+      if(event) {
+        
         const dateIniFormatted = formatDateTimeToDB(dateIni);
         const dateEndFormatted = formatDateTimeToDB(dateEnd);
 
         const dateURL = selected !== 1 ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}` : '';
         const groupURL = (group && group != 'all') ? `&group_id=${group}` : '';
         const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
-
         cancelTokenSource.current = axios.CancelToken.source();
-        const { data } = await Api.get(`/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
 
-        const totalRecipe = data.cardInfo.total;
-        const balanceCashless = data.cardInfo.total_park;
-        const sales = data.cardInfo.total_bar;
-        const balance = data.cardInfo.total_ticket;
-        const salesItems = data.cardInfo.sales_items;
+        const { data } = await Api.get(
+          `/statistical/resume/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+          { cancelToken: cancelTokenSource.current.token }
+        )
+        
+        const { data:overview } = await Api.get(
+          `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+          { cancelToken: cancelTokenSource.current.token }
+        )
 
-        const topListMap = data.productInfo.topList.map((item) => {
+        const totalRecipe = +data.totalReceipt.total_money +
+          +data.totalReceipt.total_debit +
+          +data.totalReceipt.total_credit +
+          +data.totalReceipt.total_pix
+        const balanceCashless = +data.total.total_park
+        const sales = +data.total.total_bar
+        const balance = +data.total.total_ticket
+        const salesItems = overview.cardInfo.sales_items
+
+        const topListMap = overview.productInfo.topList.map((item) => {
           return { label: item.name, value: item.quantity };
         });
+
         setCardInfo({
           totalRecipe,
           balanceCashless,
@@ -188,16 +201,17 @@ export default (props) => {
           salesItems,
         });
         setTopList(topListMap);
-        if (data.productInfo.productList)
-          setProducts(data.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
+        if (overview.productInfo.productList)
+          setProducts(overview.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
         setPayment(data.paymentInfo);
+        
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (selected != 2) {
