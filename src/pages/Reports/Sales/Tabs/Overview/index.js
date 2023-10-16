@@ -183,9 +183,9 @@ export default (props) => {
           )
 
           const total = +data.totalReceipt.total_money +
-          +data.totalReceipt.total_debit +
-          +data.totalReceipt.total_credit +
-          +data.totalReceipt.total_pix
+            +data.totalReceipt.total_debit +
+            +data.totalReceipt.total_credit +
+            +data.totalReceipt.total_pix
   
           const totalRecipe = total
           const balanceCashless = overview.cardInfo.total_park
@@ -215,12 +215,20 @@ export default (props) => {
         } else {
 
           cancelTokenSource.current = axios.CancelToken.source();
-          const { data } = await Api.get(`/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
+          const { data } = await Api.get(`/statistical/salesOverview/${event}?&type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
   
-          const totalRecipe = data.cardInfo.total;
+          const total = data.paymentInfo.money +
+            data.paymentInfo.debit +
+            data.paymentInfo.credit +
+            data.paymentInfo.pix
+          
+          const totalRecipe = total;
           const balanceCashless = data.cardInfo.total_park;
-          const sales = data.cardInfo.total_bar;
-          const balance = data.cardInfo.total_ticket;
+          const sales = total;
+
+          const balance = productType !=='all' ?
+          ((total / data.cardInfo.sales_items) * 100).toFixed(2) :
+          data.cardInfo.total_park;
           const salesItems = data.cardInfo.sales_items;
   
           const topListMap = data.productInfo.topList.map((item) => {
