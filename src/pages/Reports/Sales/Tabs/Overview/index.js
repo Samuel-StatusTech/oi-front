@@ -211,7 +211,12 @@ export default (props) => {
           setTopList(topListMap);
           if (overview.productInfo.productList)
             setProducts(overview.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
-          setPayment(data.paymentInfo);
+          setPayment({
+            money: data.totalReceipt.total_money, 
+            credit: data.totalReceipt.total_credit, 
+            debit: data.totalReceipt.total_debit, 
+            pix: data.totalReceipt.total_pix
+          });
 
         } else {
 
@@ -246,6 +251,7 @@ export default (props) => {
           if (data.productInfo.productList)
             setProducts(data.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
           setPayment(data.paymentInfo);
+          
         }
         
       }
