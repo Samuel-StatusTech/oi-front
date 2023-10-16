@@ -123,15 +123,17 @@ export default (props) => {
       <AccordionDetails className={styles.backgroundWhite}>
         <Grid container spacing={2}>
           <Grid item lg={12} md={12} xs={12} sm={12}>
-            <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF'}}>
-              {loading ?
-                <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center'}}>
-                  <CircularProgress size={20} color='#0097FF' />
-                </div>
-              :
-                'Gerar PDF'
-              }
-            </Button>
+            {1===0 &&
+              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF'}}>
+                {loading ?
+                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center'}}>
+                    <CircularProgress size={20} color='#0097FF' />
+                  </div>
+                :
+                  'Gerar PDF'
+                }
+              </Button>
+            }
           </Grid>
           <Grid item lg={12} md={12} xs={12} sm={12}>
             <Grid container spacing={2}>

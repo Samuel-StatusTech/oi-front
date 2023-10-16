@@ -170,40 +170,74 @@ export default (props) => {
         const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
         cancelTokenSource.current = axios.CancelToken.source();
 
-        const { data } = await Api.get(
-          `/statistical/resume/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
-          { cancelToken: cancelTokenSource.current.token }
-        )
-        
-        const { data:overview } = await Api.get(
-          `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
-          { cancelToken: cancelTokenSource.current.token }
-        )
+        if(groupURL.length === 0) {   // quando no geral
 
-        const totalRecipe = +data.totalReceipt.total_money +
+          const { data } = await Api.get(
+            `/statistical/resume/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+            { cancelToken: cancelTokenSource.current.token }
+          )
+          
+          const { data:overview } = await Api.get(
+            `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+            { cancelToken: cancelTokenSource.current.token }
+          )
+
+          const total = +data.totalReceipt.total_money +
           +data.totalReceipt.total_debit +
           +data.totalReceipt.total_credit +
           +data.totalReceipt.total_pix
-        const balanceCashless = +data.total.total_park
-        const sales = +data.total.total_bar
-        const balance = +data.total.total_ticket
-        const salesItems = overview.cardInfo.sales_items
+  
+          const totalRecipe = total
+          const balanceCashless = overview.cardInfo.total_park
+          const sales = +data.total.total_bar
+          const balance = productType === 'all' ?
+            +data.total.total_ticket :
+            ((total / overview.cardInfo.sales_items)*100).toFixed(2)
+          const salesItems = overview.cardInfo.sales_items
+  
+  
+          const topListMap = overview.productInfo.topList.map((item) => {
+            return { label: item.name, value: item.quantity };
+          });
+  
+          setCardInfo({
+            totalRecipe,
+            balanceCashless,
+            sales,
+            balance,
+            salesItems,
+          });
+          setTopList(topListMap);
+          if (overview.productInfo.productList)
+            setProducts(overview.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
+          setPayment(data.paymentInfo);
 
-        const topListMap = overview.productInfo.topList.map((item) => {
-          return { label: item.name, value: item.quantity };
-        });
-
-        setCardInfo({
-          totalRecipe,
-          balanceCashless,
-          sales,
-          balance,
-          salesItems,
-        });
-        setTopList(topListMap);
-        if (overview.productInfo.productList)
-          setProducts(overview.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
-        setPayment(data.paymentInfo);
+        } else {   // quando escolhe grupo
+          cancelTokenSource.current = axios.CancelToken.source();
+          const { data } = await Api.get(`/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`, { cancelToken: cancelTokenSource.current.token });
+  
+          const totalRecipe = data.cardInfo.total;
+          // const balanceCashless = data.cardInfo.total_park;
+          const balanceCashless = data.cardInfo.total_park;
+          const sales = data.cardInfo.total_bar;
+          const balance = data.cardInfo.total_ticket;
+          const salesItems = data.cardInfo.sales_items;
+  
+          const topListMap = data.productInfo.topList.map((item) => {
+            return { label: item.name, value: item.quantity };
+          });
+          setCardInfo({
+            totalRecipe,
+            balanceCashless,
+            sales,
+            balance,
+            salesItems,
+          });
+          setTopList(topListMap);
+          if (data.productInfo.productList)
+            setProducts(data.productInfo.productList.sort((a, b) => a.name.localeCompare(b.name)));
+          setPayment(data.paymentInfo);
+        }
         
       }
     } catch (error) {
@@ -212,6 +246,24 @@ export default (props) => {
       setLoading(false)
     }
   }
+
+  const handleSearch2 = async () => {
+    try {
+      setLoading(true);
+      if (event) {
+        const dateIniFormatted = formatDateTimeToDB(dateIni);
+        const dateEndFormatted = formatDateTimeToDB(dateEnd);
+
+        const dateURL = selected !== 1 ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}` : '';
+        const groupURL = (group && group != 'all') ? `&group_id=${group}` : '';
+        const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (selected != 2) {
@@ -318,29 +370,33 @@ export default (props) => {
                   </TextField>
                 </Grid>
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
-                  <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                    {loadingReport ?
-                      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-                        <CircularProgress size={20} color='#0097FF' />
-                      </div>
-                      :
-                      'Gerar PDF'
-                    }
-                  </Button>
+                  {1===0 &&
+                    <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                      {loadingReport ?
+                        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                          <CircularProgress size={20} color='#0097FF' />
+                        </div>
+                        :
+                        'Gerar PDF'
+                      }
+                    </Button>
+                  }
                 </Grid>
               </Grid>
             </Grid>
           ) : (
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                {loadingReport ?
-                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-                    <CircularProgress size={20} color='#0097FF' />
-                  </div>
-                  :
-                  'Gerar PDF'
-                }
-              </Button>
+              {1===0 &&
+                <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                  {loadingReport ?
+                    <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                      <CircularProgress size={20} color='#0097FF' />
+                    </div>
+                    :
+                    'Gerar PDF'
+                  }
+                </Button>
+              }
             </Grid>
           )}
 
