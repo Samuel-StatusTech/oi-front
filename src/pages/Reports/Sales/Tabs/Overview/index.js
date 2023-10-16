@@ -110,6 +110,7 @@ const CardValue = ({ productType, infos }) => {
 };
 
 export default (props) => {
+  const showingBtns = false
   const [loading, setLoading] = useState(false);
   const [loadingReport, setLoadingReport] = useState(false);
   const styles = useStyles();
@@ -255,24 +256,6 @@ export default (props) => {
     }
   }
 
-  const handleSearch2 = async () => {
-    try {
-      setLoading(true);
-      if (event) {
-        const dateIniFormatted = formatDateTimeToDB(dateIni);
-        const dateEndFormatted = formatDateTimeToDB(dateEnd);
-
-        const dateURL = selected !== 1 ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}` : '';
-        const groupURL = (group && group != 'all') ? `&group_id=${group}` : '';
-        const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (selected != 2) {
       onSearch();
@@ -378,29 +361,33 @@ export default (props) => {
                   </TextField>
                 </Grid>
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
-                  <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                    {loadingReport ?
-                      <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                  {showingBtns &&
+                    <Button onClick={exportPdfReportByType} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                      {loadingReport ?
+                        <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
                         <CircularProgress size={20} color='#0097FF' />
-                      </div>
-                      :
-                      'Gerar PDF'
-                    }
-                  </Button>
+                        </div>
+                        :
+                        'Gerar PDF'
+                      }
+                    </Button>
+                  }
                 </Grid>
               </Grid>
             </Grid>
           ) : (
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
-                {loadingReport ?
-                  <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-                    <CircularProgress size={20} color='#0097FF' />
-                  </div>
-                  :
-                  'Gerar PDF'
-                }
-              </Button>
+              {showingBtns &&
+                <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF' }}>
+                  {loadingReport ?
+                    <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                      <CircularProgress size={20} color='#0097FF' />
+                    </div>
+                    :
+                    'Gerar PDF'
+                  }
+               </Button>
+              }
             </Grid>
           )}
 

@@ -23,6 +23,7 @@ export default (props) => {
   const { money=0, debit=0, credit=0, pix=0 } = payments ?? {};
   const { sangria=0, aporte=0 } = operations ?? {};
   const styles = useStyles();
+  const showingBtns = false
 
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -123,7 +124,7 @@ export default (props) => {
       <AccordionDetails className={styles.backgroundWhite}>
         <Grid container spacing={2}>
           <Grid item lg={12} md={12} xs={12} sm={12}>
-            {1===0 &&
+            {showingBtns &&
               <Button onClick={exportPdfReport} style={{ color: '#0097FF', border: '1px solid #0097FF'}}>
                 {loading ?
                   <div style={{ display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'center'}}>
