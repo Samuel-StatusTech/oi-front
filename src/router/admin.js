@@ -664,6 +664,9 @@ export default [
         title: "Conciliar dados",
         path: "/reconcile",
         content: <ReconcileData />,
+        show:{
+          role: "master",
+        },
         allow: {
           allow_only_master: true,
         },

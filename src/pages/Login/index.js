@@ -66,6 +66,7 @@ const Login = ({ loadUserData }) => {
             setLoading(false);
         }).catch(error =>
           {
+            console.log(error)
             alert(authErrors[error?.code] ?? "E-mail ou senha inválidos") 
             setLoading(false);
           }           
