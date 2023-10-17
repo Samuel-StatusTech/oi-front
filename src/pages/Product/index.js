@@ -333,14 +333,14 @@ const Product = () => {
       err = []
 
     await data.forEach(async (p) => {
-      if (p.Nome && p.Preco && p.Descricao && p.Grupo) {
+      if (p.Nome && p.Tipo && p.Grupo) {
         let matchedGroup = groupList.find(
           (g) => String(g.name).toLowerCase() === String(p.Grupo).toLowerCase()
         )
         if (typeof matchedGroup === "undefined") {
           const { category: newGroup } = await Api.post("/group/createGroup", {
             name: p.Grupo,
-            type: "bar",
+            type: p.Tipo ?? "bar",
             status: true,
           })
           matchedGroup = newGroup
@@ -348,15 +348,13 @@ const Product = () => {
 
         arr.push({
           name: capitalizeWords(p.Nome),
-          price_sell: p.Preco,
-          description: p.Descricao,
+          type: p.Tipo,
           group_id: matchedGroup.id,
         })
       } else {
         err.push({
           name: p.Nome ?? "Não definido",
-          price_sell: p.Preco ?? "Não definido",
-          description: p.Descricao ?? "Não definida",
+          type: p.Tipo ?? "Não definida",
           group_id: p.Grupo ?? "Não definido",
         })
       }
@@ -372,14 +370,14 @@ const Product = () => {
     const fd = new FormData()
 
     fd.append("name", item.name)
-    fd.append("price_sell", item.price_sell)
-    fd.append("description1", item.description)
-
     fd.append("group_id", item.group_id)
+    fd.append("type", item.type ?? "bar")
+    
     fd.append("image", "")
-    fd.append("type", "bar")
+    fd.append("description1", "")
     fd.append("description2", "")
-    fd.append("price_cost", item.price_sell)
+    fd.append("price_sell", 100)
+    fd.append("price_cost", 0)
     fd.append("has_variable", false)
     fd.append("has_courtesy", false)
     fd.append("status", true)
@@ -464,6 +462,20 @@ const Product = () => {
     }
   }
 
+  const getOnlyNeeded = (arr) => {
+    let parsed = []
+
+    arr.forEach(item=>{
+      parsed.push({
+        "Nome": item.Nome,
+        "Tipo": item.Tipo,
+        "Grupo": item.Grupo
+      })
+    })
+    
+    return parsed
+  }
+
   const loadNewData = async (e) => {
     const file = e.target.files[0]
     const reader = new FileReader()
@@ -474,7 +486,8 @@ const Product = () => {
         delimiter: [";", ","],
         encoding: "utf-8",
       }).fromString(text)
-      setNewData(data)
+      const neededInfo = getOnlyNeeded(data)
+      setNewData(neededInfo)
       setConfirmDialogShow(true)
     }
 
@@ -506,21 +519,15 @@ const Product = () => {
     let rows = []
     data.forEach((d) => {
       rows.push([
-        d.id ?? "Não definido",
         d.name ?? "Não definido",
         d.type ?? "Não definido",
-        d.price_sell ?? "Não definido",
-        d.quantity ?? 0,
-        d.status === 1 ? "Ativo" : "Inativo" ?? "Não definido",
         d.group && d.group.name ? d.group.name : "Não definido",
       ])
     })
 
     const csvContent =
       "data:text/csv;charset=UTF-8," +
-      `${["Id", "Nome", "Tipo", "Preco", "Quantidade", "Status", "Grupo"].join(
-        ";"
-      )}\n` +
+      `${["Nome", "Tipo", "Grupo"].join(";")}\n` +
       rows.map((r) => r.join(";")).join("\n")
 
     return encodeURI(csvContent)
