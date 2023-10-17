@@ -1,3 +1,7 @@
 * {
 	font-family: 'Open Sans', Roboto, 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
+
+iframe {
+	display: none;
+}

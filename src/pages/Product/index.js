@@ -541,11 +541,16 @@ const Product = () => {
     aEl.click()
   }
 
+  const handleCloseBtn = () => {
+    setConfirmDialogShow(false)
+    if(isRegisterMade) window.location.reload()
+  }
+
   return (
     <>
       <Dialog
         open={confirmDialogShow}
-        onClose={() => setConfirmDialogShow(false)}
+        onClose={handleCloseBtn}
         fullWidth
         maxWidth="md"
       >
@@ -575,7 +580,7 @@ const Product = () => {
           <Button
             variant="outlined"
             color="secondary"
-            onClick={() => setConfirmDialogShow(false)}
+            onClick={handleCloseBtn}
             style={{
               cursor: "pointer",
             }}
