@@ -472,13 +472,13 @@ const Product = () => {
       const text = f.target.result
       const data = await csvtojson({
         delimiter: [";", ","],
-        encoding: "ascii",
+        encoding: "utf-8",
       }).fromString(text)
       setNewData(data)
       setConfirmDialogShow(true)
     }
 
-    reader.readAsText(file, "ascii")
+    reader.readAsText(file, "utf-8")
   }
 
   const triggerInputClick = () => {
