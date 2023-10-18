@@ -43,25 +43,24 @@ const Login = ({ loadUserData }) => {
 
         firebase.auth().signInWithEmailAndPassword(username, password).then(async (_user) => {
             const user = _user.user
-            console.log(user)
             if(user) {
-                const { data, status, statusText } = await Api.post('/authenticateDash', {
-                    userKey: user.uid
-                });
-                if (status === 200 && data.success) {
-                    setErrors({});
-            
-                    loadUserData({
-                        ...data.user,
-                        roleData: data.roleData,
-                    });
-                    localStorage.setItem('token', data.token);
-                    localStorage.removeItem('hideExpire');
-                    
-                    history.push('/select');
-                } else {
-                  alert(data?.message ?? statusText);
-                }
+              const { data, status, statusText } = await Api.post('/authenticateDash', {
+                userKey: user.uid
+              });
+              if (status === 200 && data.success) {
+                  setErrors({});
+          
+                  loadUserData({
+                      ...data.user,
+                      roleData: data.roleData,
+                  });
+                  localStorage.setItem('token', data.token);
+                  localStorage.removeItem('hideExpire');
+                  
+                  history.push('/select');
+              } else {
+                alert(data?.message ?? statusText);
+              }
             }
             setLoading(false);
         }).catch(error =>

@@ -121,7 +121,11 @@ const Product = () => {
         setGroupList([
           { id: "todos", name: "Todos" },
           { id: "combo", name: "Combos" },
-          ...groups,
+          ...groups.sort((a, b) => {
+          if (a.name < b.name) return -1
+          if (a.name > b.name) return 1
+          return 0
+        }),
         ])
       } else {
         alert("Erro ao carregar os grupos")
@@ -328,29 +332,56 @@ const Product = () => {
     return str.trim()
   }
 
+  const isEmpty = (str) => str.trim().length === 0
+
   const filterData = async (data) => {
     let arr = [],
       err = []
 
     await data.forEach(async (p) => {
-      if (p.Nome && p.Tipo && p.Grupo) {
+      if (!isEmpty(p.Nome) && !isEmpty(p.Grupo)) {
         let matchedGroup = groupList.find(
-          (g) => String(g.name).toLowerCase() === String(p.Grupo).toLowerCase()
+          (g) => String(g.name).trim().toLowerCase() === String(p.Grupo).trim().toLowerCase()
         )
-        if (typeof matchedGroup === "undefined") {
-          const { category: newGroup } = await Api.post("/group/createGroup", {
+        
+        if (matchedGroup === undefined) {
+          await Api.post("/group/createGroup", {
             name: p.Grupo,
-            type: p.Tipo ?? "bar",
+            type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
             status: true,
           })
-          matchedGroup = newGroup
+          .then(({ category: newGroup }) => {
+            arr.push({
+              name: capitalizeWords(p.Nome),
+              type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
+              group_id: newGroup.id,
+            })
+
+            setGroupList(
+              [ ...groupList, newGroup ]
+              .sort((a, b) => {
+                if (a.name < b.name) return -1
+                if (a.name > b.name) return 1
+                return 0
+              })
+            )
+            return
+          })
+          .catch((err)=>{
+            err.push({
+              name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
+              type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
+              group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
+            })
+          })
+        } else {
+          arr.push({
+            name: capitalizeWords(p.Nome),
+            type: p.Tipo,
+            group_id: matchedGroup.id,
+          })
         }
 
-        arr.push({
-          name: capitalizeWords(p.Nome),
-          type: p.Tipo,
-          group_id: matchedGroup.id,
-        })
       } else {
         err.push({
           name: p.Nome ?? "Não definido",
@@ -369,9 +400,11 @@ const Product = () => {
   const getFormData = (item) => {
     const fd = new FormData()
 
+    const itemType = !isEmpty(item.type) ? item.type : "bar"
+
     fd.append("name", item.name)
     fd.append("group_id", item.group_id)
-    fd.append("type", item.type ?? "bar")
+    fd.append("type", itemType)
     
     fd.append("image", "")
     fd.append("description1", "")
@@ -543,6 +576,7 @@ const Product = () => {
 
   const handleCloseBtn = () => {
     setConfirmDialogShow(false)
+    setNewData(null)
     if(isRegisterMade) window.location.reload()
   }
 
@@ -581,9 +615,7 @@ const Product = () => {
             variant="outlined"
             color="secondary"
             onClick={handleCloseBtn}
-            style={{
-              cursor: "pointer",
-            }}
+            style={{ cursor: "pointer" }}
           >
             {isRegisterMade ? "Fechar" : "Não"}
           </Button>
