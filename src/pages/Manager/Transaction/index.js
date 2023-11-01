@@ -324,7 +324,12 @@ const Transaction = ({ event, user }) => {
   const checkDivgs = async () => {
 
     const allTransactions = await (await Api.get(generateUrl())).data.orders
-    const empties = allTransactions.filter(t => t.payments.length < 1)
+    const empties = allTransactions.filter(t => {
+      const emptyPayment = t.payments.length < 1
+      const isCourtesy = t.products.some(prod => prod.price_unit === 0)
+
+      return emptyPayment && !isCourtesy
+    })
 
     if (empties.length > 0) {
       let errorsValues = []
