@@ -26,7 +26,6 @@ const Operator = () => {
   const [group, setGroup] = useState('todos');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('todos');
-  const [groupList, setGroupList] = useState([]);
 
   const columns = [
     { title: 'Operador', field: 'name', },
@@ -86,12 +85,6 @@ const Operator = () => {
         }
         return 0;
       }));
-
-      setGroupList([
-        { id: 'todos', name: 'Todos' },
-        { id: 'waiter', name: 'Garçons' },
-        { id: 'status', name: 'Ativo' },
-      ]);
     });
   }, []);
 
@@ -191,16 +184,6 @@ const Operator = () => {
               >
                 Adicionar Operador
               </ButtonRound>
-              <FormControl variant='outlined' size='small' fullWidth id='groupSelect'>
-                <InputLabel>Grupo</InputLabel>
-                <Select value={group} onChange={handleGroup} label='Grupo' variant='outlined' fullWidth>
-                  {groupList.map((groupItem) => (
-                    <MenuItem key={groupItem.id} value={groupItem.id}>
-                      {groupItem.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </div>
           )}
         />
