@@ -80,13 +80,11 @@ export default (props) => {
     try {
       setLoading(true)
       if (event) {
-        const dateIniFormatted = formatDateTimeToDB(dateIni)
-        const dateEndFormatted = formatDateTimeToDB(dateEnd)
+        const dI = dateIni.getTime()
+        const dE = dateEnd.getTime()
 
-        const dateURL =
-          selected !== 1
-            ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
-            : ""
+        const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
+
         const groupURL = group && group !== "all" ? `&group_id=${group}` : ""
         const courtesiesURL =
           courtesies && courtesies != "all" ? `&courtesies=1` : ""
@@ -94,14 +92,13 @@ export default (props) => {
 
         console.log("grupo: ", group)
         if (groupURL.length === 0) {
-
           const { data: overview } = await Api.get(
             `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
             { cancelToken: cancelTokenSource.current.token }
           )
 
           const total = overview.cardInfo.total
-          
+
           const totalRecipe = total
           const balanceCashless = overview.cardInfo.total_park
           const sales = overview.cardInfo.total
@@ -139,7 +136,7 @@ export default (props) => {
             `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
             { cancelToken: cancelTokenSource.current.token }
           )
-          
+
           const total = data.cardInfo.total
 
           const totalRecipe = total
@@ -155,7 +152,7 @@ export default (props) => {
           const topListMap = data.productInfo.topList.map((item) => {
             return { label: item.name, value: item.quantity }
           })
-          
+
           setCardInfo({
             totalRecipe,
             balanceCashless,
@@ -179,10 +176,10 @@ export default (props) => {
             data.paymentInfo.pix
 
           const percents = {
-            money: (data.paymentInfo.money / tPayments),
-            credit: (data.paymentInfo.credit / tPayments),
-            debit: (data.paymentInfo.debit / tPayments),
-            pix: (data.paymentInfo.pix / tPayments),
+            money: data.paymentInfo.money / tPayments,
+            credit: data.paymentInfo.credit / tPayments,
+            debit: data.paymentInfo.debit / tPayments,
+            pix: data.paymentInfo.pix / tPayments,
           }
 
           const vals = {

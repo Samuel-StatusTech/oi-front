@@ -21,10 +21,12 @@ export const Between = memo(
     const [selected, selectType] = useState(props.selected || 0)
     const [openIni, setOpenIni] = useState(false)
     const [openEnd, setOpenEnd] = useState(false)
+
     const onToday = () => {
       selectType(0)
       const init = new Date().setHours(0, 0, 0, 0)
       const end = new Date().setHours(23, 59, 59, 999)
+
       onChangeIni(init)
       onChangeEnd(end)
 
