@@ -82,7 +82,8 @@ export default (props) => {
         const courtesiesURL = (courtesies && courtesies != 'all') ? `&courtesies=1` : '';
         cancelTokenSource.current = axios.CancelToken.source();
 
-        if(groupURL.length === 0) {
+        if(productType.length === 0) {
+          console.log("grupo: ", group)
 
           const { data } = await Api.get(
             `/statistical/resume/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
@@ -335,9 +336,10 @@ export default (props) => {
               <CardValue productType={productType} infos={cardInfo} />
             </Grid>
             <Grid item xl={productType !== 'all' ? 3 : 6} lg={6} md={12} sm={12} xs={12}>
-              <Card>
-                {payment &&
-                  ((payment.credit / 100 > 0) || (payment.debit / 100 > 0) || (payment.money / 100 > 0) || (payment.pix / 100 > 0)) &&
+              <Card style={{
+                display: 'flex',
+                height: '100%'
+              }}>
                   <Bar
                     money={payment.money / 100}
                     debit={payment.debit / 100}
@@ -347,7 +349,6 @@ export default (props) => {
                     others={0}
                     loading={false}
                   />
-                }
               </Card>
             </Grid>
             {productType !== 'all' && (

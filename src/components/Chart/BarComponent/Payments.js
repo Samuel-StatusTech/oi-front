@@ -122,18 +122,36 @@ const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, oth
   }
 
   return (
-    <Card>
+    <div style={total === 0 ? customStyles.textWrapper : customStyles.normal}>
       <Typography className={styles.h2} style={{ textAlign: 'center', }}>
         {loading ? <Skeleton animation='wave' width='80%' /> : 'Formas de Pagamento'}
       </Typography>
       {loading ? (
         <Skeleton animation='wave' variant='rect' height={100} />
-      ) : (
+      ) : total > 0 ? (
         <Chart options={mockData.options} series={mockData.series} type='bar' height={170} />
-      )}
-    </Card>
+      ) : null}
+    </div>
   );
 
 };
+
+const base = {
+  height: '100%',
+  padding: 8,
+  width: '100%'
+}
+
+const customStyles = {
+  normal: {
+    ...base
+  },
+  textWrapper: {
+    ...base,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+
+}
 
 export default Payments;
