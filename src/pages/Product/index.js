@@ -550,17 +550,19 @@ const Product = () => {
 
   const parseDataToDownload = () => {
     let rows = []
+    console.log(data)
     data.forEach((d) => {
       rows.push([
         d.name ?? "Não definido",
         d.type ?? "Não definido",
         d.group && d.group.name ? d.group.name : "Não definido",
+        `R$ ${(d.price_sell / 100).toFixed(2)}` ?? "Não definido"
       ])
     })
 
     const csvContent =
       "data:text/csv;charset=UTF-8," +
-      `${["Nome", "Tipo", "Grupo"].join(";")}\n` +
+      `${["Nome", "Tipo", "Grupo", "Preço"].join(";")}\n` +
       rows.map((r) => r.join(";")).join("\n")
 
     return encodeURI(csvContent)
