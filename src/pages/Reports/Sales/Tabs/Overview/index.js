@@ -80,8 +80,8 @@ export default (props) => {
     try {
       setLoading(true)
       if (event) {
-        const dI = dateIni.getTime()
-        const dE = dateEnd.getTime()
+        const dI = new Date(dateIni).getTime()
+        const dE = new Date(dateEnd).getTime()
 
         const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
 
@@ -90,7 +90,6 @@ export default (props) => {
           courtesies && courtesies != "all" ? `&courtesies=1` : ""
         cancelTokenSource.current = axios.CancelToken.source()
 
-        console.log("grupo: ", group)
         if (groupURL.length === 0) {
           const { data: overview } = await Api.get(
             `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,

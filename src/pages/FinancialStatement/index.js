@@ -5,9 +5,11 @@ import Overview from './Tabs/Overview';
 
 const FinancialStatement = ({ event }) => {
   return (
-    <>
+    <div style={{
+      height: "100%"
+    }}>
        <Overview event={event} />
-    </>
+    </div>
   );
 };
 

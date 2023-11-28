@@ -139,7 +139,13 @@ const Payments = ({ money = 0, debit = 0, credit = 0, pix = 0, webstore = 0, oth
 const base = {
   height: '100%',
   padding: 8,
-  width: '100%'
+  width: '100%',
+  backgroundColor: '#FFF',
+  boxShadow: `
+    0px 2px 1px -1px rgba(0,0,0,0.2),
+    0px 1px 1px 0px rgba(0,0,0,0.14),
+    0px 1px 3px 0px rgba(0,0,0,0.12)`,
+  borderRadius: 4
 }
 
 const customStyles = {
