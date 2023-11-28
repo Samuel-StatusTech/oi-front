@@ -27,7 +27,7 @@ import othersIcon from "../../../../assets/icons/ic_outrasdespesas.svg"
 import Bar from "../../../../components/Chart/Bar"
 import EaseGrid from "../../../../components/EaseGrid"
 
-const CardValue = ({ infos }) => {
+const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
 
   const {
@@ -71,6 +71,9 @@ const CardValue = ({ infos }) => {
 }
 
 export default (props) => {
+
+  const { toggleModal, editSingle } = props
+  
   const [loading, setLoading] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
   const styles = useStyles()
@@ -78,7 +81,20 @@ export default (props) => {
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
-  const [releases, setReleases] = useState([])
+  const [releases, setReleases] = useState([
+    {
+      name: 'Lançamento 1',
+      description: "Algum gasto importante",
+      tax: 10,
+      value: -1000,
+    },
+    {
+      name: 'Lançamento 2',
+      description: "Descrição do lançamento",
+      tax: 10,
+      value: 1000,
+    },
+  ])
 
   const [cardInfo, setCardInfo] = useState({})
   const [payment, setPayment] = useState({
@@ -217,33 +233,24 @@ export default (props) => {
     ],
   }
 
-  const exportPdfReport = async () => {
+  const addRelease = async () => {
+    toggleModal()
+  }
+
+  const exportPdfReleases = async () => {
     if (loadingReport) return
     setLoadingReport(true)
-    Api.post(`/reportPDF/product`, {
-      event,
-      dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",
-      dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : "",
-    })
-      .then(({}) => {
-        firebase
-          .storage()
-          .ref(`reports/${event}/all.pdf`)
-          .getDownloadURL()
-          .then(function (url) {
-            setLoadingReport(false)
-            window.open(url, "_blank")
-          })
-      })
-      .catch((error) => {
-        setLoadingReport(false)
-        console.log({ error })
-      })
+
+    setTimeout(() => {
+      setLoadingReport(false)
+    }, 1000)
   }
 
   const sendWhatsapp = async () => {}
 
-  const editRelease = async () => {}
+  const editRelease = async (info) => {
+    editSingle(info)
+  }
 
   const deleteRelease = async () => {}
 
@@ -255,13 +262,13 @@ export default (props) => {
         </Typography>
       ),
       field: "status",
-      render: ({ status }) => {
+      render: ({ value }) => {
         // const { status } = name
 
         return (
           <td
             class="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall"
-            value={status}
+            value={value}
             style={{
               color: "inherit",
               boxSizing: "border-box",
@@ -284,7 +291,7 @@ export default (props) => {
                   width: 15,
                   height: 15,
                   borderRadius: 20,
-                  background: status ? "#E7345B" : "#0097FF",
+                  background: value < 0 ? "#E7345B" : "#0097FF",
                   justifySelf: "center",
                   position: "absolute",
                   transform: "translate(-20px)",
@@ -318,16 +325,22 @@ export default (props) => {
     {
       title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
       field: "value",
-      render: ({ value }) => format(value / 100, { code: "BRL" }),
+      render: ({ value }) => (
+        <td>
+          <span style={{color: value < 0 ? "#E7345B" : "#70E080"}}>
+            {format(value / 100, { code: "BRL" })}
+          </span>
+        </td>
+      ),
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
       field: "value",
-      render: ({ id }) => (
+      render: (info) => (
         <td>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Button
-              onClick={editRelease}
+              onClick={() => editRelease(info)}
               style={{ color: "#FEC87D", border: "1px solid #FEC87D" }}
             >
               Editar
@@ -352,6 +365,7 @@ export default (props) => {
         spacing={24}
         style={{
           height: "100%",
+          gap: 24,
         }}
       >
         <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -455,7 +469,7 @@ export default (props) => {
                         }}
                       >
                         <Button
-                          onClick={exportPdfReport}
+                          onClick={exportPdfReleases}
                           style={{
                             color: "#0097FF",
                             border: "1px solid #0097FF",
@@ -484,6 +498,15 @@ export default (props) => {
                           }}
                         >
                           Enviar WhatsApp
+                        </Button>
+                        <Button
+                          onClick={addRelease}
+                          style={{
+                            color: "#0097FF",
+                            border: "1px solid #0097FF",
+                          }}
+                        >
+                          Registrar Lançamento
                         </Button>
                       </div>
                     </div>
