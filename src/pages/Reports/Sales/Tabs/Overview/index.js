@@ -123,7 +123,6 @@ export default (props) => {
 
               const total = overview.cardInfo.total
 
-              const totalRecipe = total
               const balanceCashless = overview.cardInfo.total_park
               const sales = overview.cardInfo.total
               const balance =
@@ -133,11 +132,14 @@ export default (props) => {
               const salesItems = overview.cardInfo.sales_items
 
               const topListMap = overview.productInfo.topList.map((item) => {
-                return { label: item.name, value: item.quantity }
+                return {
+                  label: item.name,
+                  value: Number(item.price_total) / 100,
+                }
               })
 
               const cInfo = {
-                totalRecipe,
+                totalRecipe: total,
                 balanceCashless,
                 sales,
                 balance,
@@ -152,10 +154,10 @@ export default (props) => {
                 balance: totals.cardInfo.balance + cInfo.balance,
                 salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
               }
-              console.log(totals, newCardInfo)
+
               totals.cardInfo = newCardInfo
 
-              setTopList(topListMap) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+              setTopList(topListMap)
               if (overview.productInfo.productList)
                 setProducts(
                   overview.productInfo.productList.sort((a, b) =>
@@ -176,17 +178,6 @@ export default (props) => {
             } else {
               // selected groups
 
-
-
-
-
-
-
-
-
-
-
-              
               cancelTokenSource.current = axios.CancelToken.source()
               const { data } = await Api.get(
                 `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
@@ -195,18 +186,11 @@ export default (props) => {
 
               const total = data.cardInfo.total
 
-              const totalRecipe = total
-              const balanceCashless = data.cardInfo.total_park
-              const sales = total
-
-              const balance =
-                productType !== "all"
-                  ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
-                  : data.cardInfo.total_park
-              const salesItems = data.cardInfo.sales_items
-
               const topListMap = data.productInfo.topList.map((item) => {
-                return { label: item.name, value: item.quantity }
+                return {
+                  label: item.name,
+                  value: Number(item.price_total) / 100,
+                }
               })
 
               const bar = data.cardInfo.total_bar
@@ -232,25 +216,6 @@ export default (props) => {
                 salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
               }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               setTopList(topListMap)
               if (data.productInfo.productList)
                 setProducts(
@@ -273,10 +238,10 @@ export default (props) => {
               }
 
               const vals = {
-                money: totalRecipe * percents.money,
-                credit: totalRecipe * percents.credit,
-                debit: totalRecipe * percents.debit,
-                pix: totalRecipe * percents.pix,
+                money: total * percents.money,
+                credit: total * percents.credit,
+                debit: total * percents.debit,
+                pix: total * percents.pix,
               }
 
               totals.payments = {
@@ -289,7 +254,7 @@ export default (props) => {
               }
             }
 
-            if(selectedGroups.length > 0) {
+            if (selectedGroups.length > 0) {
               if (i === selectedGroups.length - 1) {
                 setCardInfo(totals.cardInfo)
                 setPayment(totals.payments)
@@ -316,13 +281,8 @@ export default (props) => {
 
             const total = overview.cardInfo.total
 
-            const balance =
-              productType !== "all"
-                ? (total / overview.cardInfo.sales_items) * 100
-                : overview.cardInfo.total_ticket
-
             const topListMap = overview.productInfo.topList.map((item) => {
-              return { label: item.name, value: item.quantity }
+              return { label: item.name, value: Number(item.price_total) / 100 }
             })
 
             const bar = overview.cardInfo.total_bar
@@ -345,8 +305,6 @@ export default (props) => {
                   a.name.localeCompare(b.name)
                 )
               )
-
-            console.log("ÇADJÇALSKDJ", overview.paymentInfo)
 
             // payments
             const tPayments =
@@ -372,7 +330,6 @@ export default (props) => {
             setPayment(vals)
           } else {
             cancelTokenSource.current = axios.CancelToken.source()
-            console.log(productType)
             const { data } = await Api.get(
               `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
               { cancelToken: cancelTokenSource.current.token }
@@ -380,25 +337,11 @@ export default (props) => {
 
             const total = data.cardInfo.total
             const bar = data.cardInfo.total_bar
-            const park = data.cardInfo.total_park
-            const tickets = data.cardInfo.total_ticket
-            const others = data.cardInfo.sales_items
-
-            const totalRecipe = total
-            const balanceCashless = data.cardInfo.total_park
-            const sales = data.cardInfo.total_bar
-
-            const balance =
-              productType !== "all"
-                ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
-                : data.cardInfo.total_park
-            const salesItems = data.cardInfo.sales_items
 
             const topListMap = data.productInfo.topList.map((item) => {
-              return { label: item.name, value: item.quantity }
+              return { label: item.name, value: Number(item.price_total) / 100 }
             })
 
-            console.log("HERE")
             setCardInfo({
               totalRecipe: total,
               balanceCashless: bar,
@@ -429,10 +372,10 @@ export default (props) => {
             }
 
             const vals = {
-              money: (totalRecipe * percents.money).toFixed(2),
-              credit: (totalRecipe * percents.credit).toFixed(2),
-              debit: (totalRecipe * percents.debit).toFixed(2),
-              pix: (totalRecipe * percents.pix).toFixed(2),
+              money: (total * percents.money).toFixed(2),
+              credit: (total * percents.credit).toFixed(2),
+              debit: (total * percents.debit).toFixed(2),
+              pix: (total * percents.pix).toFixed(2),
             }
 
             setPayment(vals)
@@ -450,7 +393,7 @@ export default (props) => {
     if (selected != 2) {
       onSearch()
     }
-  }, [event, selected, productType, selectedGroups])
+  }, [event, selected, productType, selectedGroups, courtesies])
 
   const onSearch = () => {
     if (cancelTokenSource && cancelTokenSource.current) {

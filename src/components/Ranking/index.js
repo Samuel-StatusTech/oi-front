@@ -28,7 +28,7 @@ export default memo(({ title, ranking }) => {
         }
       })
 
-      setTotal(newInfo.series.reduce((a, b) => a + b))
+      setTotal(newInfo.series.length > 0 ? newInfo.series.reduce((a, b) => a + b) : 0)
       setSeriesData(newInfo.series)
       setCategories(newInfo.categories)
     }
