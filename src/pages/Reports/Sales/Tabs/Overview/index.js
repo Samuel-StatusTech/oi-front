@@ -14,6 +14,7 @@ import firebase from "../../../../../firebase"
 import axios from "axios"
 import { format } from "currency-formatter"
 
+import {ReactComponent as CloseIcon} from "../../../../../assets/icons/close.svg"
 import { Between } from "../../../../../components/Input/DateTime"
 import Tooltip from "../../../../../components/Tooltip"
 import Ranking from "../../../../../components/Ranking"
@@ -30,6 +31,7 @@ export default (props) => {
   const styles = useStyles()
   const { type: productType, event, selected, onSelectType } = props
   const [groupList, setGroupList] = useState([])
+  const [selectedGroups, setSelectedGroups] = useState([])
   const columns = [
     { title: "Grupo", field: "group_name" },
     { title: "Produto", field: "name" },
@@ -85,110 +87,278 @@ export default (props) => {
 
         const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
 
-        const groupURL = group && group !== "all" ? `&group_id=${group}` : ""
-        const courtesiesURL =
-          courtesies && courtesies != "all" ? `&courtesies=1` : ""
-        cancelTokenSource.current = axios.CancelToken.source()
 
-        if (groupURL.length === 0) {
-          const { data: overview } = await Api.get(
-            `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
-            { cancelToken: cancelTokenSource.current.token }
-          )
+        if(productType && productType === "bar") {      // bar
 
-          const total = overview.cardInfo.total
-
-          const totalRecipe = total
-          const balanceCashless = overview.cardInfo.total_park
-          const sales = overview.cardInfo.total
-          const balance =
-            productType !== "all"
-              ? (total / overview.cardInfo.sales_items) * 100
-              : overview.cardInfo.total_ticket
-          const salesItems = overview.cardInfo.sales_items
-
-          const topListMap = overview.productInfo.topList.map((item) => {
-            return { label: item.name, value: item.quantity }
-          })
-
-          const cInfo = {
-            totalRecipe,
-            balanceCashless,
-            sales,
-            balance,
-            salesItems,
+          let totals = {
+            cardInfo: {
+              totalRecipe: 0,
+              balanceCashless: 0,
+              sales: 0,
+              balance: 0,
+              salesItems: 0,
+            },
+            payments: {
+              money: 0,
+              credit: 0,
+              debit: 0,
+              pix: 0,
+            },
           }
-          setCardInfo(cInfo)
-          setTopList(topListMap)
-          if (overview.productInfo.productList)
-            setProducts(
-              overview.productInfo.productList.sort((a, b) =>
-                a.name.localeCompare(b.name)
+          
+          for (let i = 0; i < selectedGroups.length; i++) {
+            const grp = selectedGroups[i]
+  
+            const groupURL = grp && grp !== "all" ? `&group_id=${grp.id}` : ""
+            const courtesiesURL =
+              courtesies && courtesies != "all" ? `&courtesies=1` : ""
+            cancelTokenSource.current = axios.CancelToken.source()
+  
+  
+            if (groupURL.length === 0) {
+              const { data: overview } = await Api.get(
+                `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+                { cancelToken: cancelTokenSource.current.token }
               )
-            )
-
-          setPayment(overview.paymentInfo)
+  
+              const total = overview.cardInfo.total
+  
+              const totalRecipe = total
+              const balanceCashless = overview.cardInfo.total_park
+              const sales = overview.cardInfo.total
+              const balance =
+                productType !== "all"
+                  ? (total / overview.cardInfo.sales_items) * 100
+                  : overview.cardInfo.total_ticket
+              const salesItems = overview.cardInfo.sales_items
+  
+              const topListMap = overview.productInfo.topList.map((item) => {
+                return { label: item.name, value: item.quantity }
+              })
+  
+              const cInfo = {
+                totalRecipe,
+                balanceCashless,
+                sales,
+                balance,
+                salesItems,
+              }
+  
+              const newCardInfo = {
+                totalRecipe: totals.cardInfo.totalRecipe + cInfo.totalRecipe,
+                balanceCashless: totals.cardInfo.balanceCashless + cInfo.balanceCashless,
+                sales: totals.cardInfo.sales + cInfo.sales,
+                balance: totals.cardInfo.balance + cInfo.balance,
+                salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
+              }
+              console.log(totals, newCardInfo)
+              totals.cardInfo = newCardInfo
+              // setCardInfo(cInfo)
+              setTopList(topListMap)                                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+              if (overview.productInfo.productList)
+                setProducts(
+                  overview.productInfo.productList.sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                  )
+                )
+  
+              const newPayments = {
+                money: totals.cardInfo.money + overview.paymentInfo.money,
+                credit: totals.cardInfo.credit + overview.paymentInfo.credit,
+                debit: totals.cardInfo.debit + overview.paymentInfo.debit,
+                pix: totals.cardInfo.pix + overview.paymentInfo.pix,
+              }
+              totals.payments = newPayments
+              // setPayment(overview.paymentInfo)
+            } else {
+              cancelTokenSource.current = axios.CancelToken.source()
+              console.log(productType)
+              const { data } = await Api.get(
+                `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+                { cancelToken: cancelTokenSource.current.token }
+              )
+  
+              const total = data.cardInfo.total
+  
+              const totalRecipe = total
+              const balanceCashless = data.cardInfo.total_park
+              const sales = total
+  
+              const balance =
+                productType !== "all"
+                  ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
+                  : data.cardInfo.total_park
+              const salesItems = data.cardInfo.sales_items
+  
+              const topListMap = data.productInfo.topList.map((item) => {
+                return { label: item.name, value: item.quantity }
+              })
+  
+              const cInfo = {
+                totalRecipe,
+                balanceCashless,
+                sales,
+                balance,
+                salesItems,
+              }
+              
+              totals.cardInfo = {
+                totalRecipe: totals.cardInfo.totalRecipe + cInfo.totalRecipe,
+                balanceCashless: totals.cardInfo.balanceCashless + cInfo.balanceCashless,
+                sales: totals.cardInfo.sales + cInfo.sales,
+                balance: Number(totals.cardInfo.balance) + Number(cInfo.balance),
+                salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
+              }
+  
+              setTopList(topListMap)
+              if (data.productInfo.productList)
+                setProducts(
+                  data.productInfo.productList.sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                  )
+                )
+  
+              const tPayments =
+                data.paymentInfo.money +
+                data.paymentInfo.credit +
+                data.paymentInfo.debit +
+                data.paymentInfo.pix
+  
+              const percents = {
+                money: data.paymentInfo.money / tPayments,
+                credit: data.paymentInfo.credit / tPayments,
+                debit: data.paymentInfo.debit / tPayments,
+                pix: data.paymentInfo.pix / tPayments,
+              }
+  
+              const vals = {
+                money: totalRecipe * percents.money,
+                credit: totalRecipe * percents.credit,
+                debit: totalRecipe * percents.debit,
+                pix: totalRecipe * percents.pix,
+              }
+  
+  
+              totals.payments = {
+                money: (Number(totals.payments.money) + vals.money).toFixed(2),
+                credit: (Number(totals.payments.credit) + vals.credit).toFixed(2),
+                debit: (Number(totals.payments.debit) + vals.debit).toFixed(2),
+                pix: (Number(totals.payments.pix) + vals.pix).toFixed(2),
+              }
+            }
+  
+            if(i === selectedGroups.length - 1) {
+              console.log('totals', totals)
+              setCardInfo(totals.cardInfo)
+              setPayment(totals.payments)
+            }
+          }
         } else {
+          const groupURL = group && group !== "all" ? `&group_id=${group}` : ""
+          const courtesiesURL =
+            courtesies && courtesies != "all" ? `&courtesies=1` : ""
           cancelTokenSource.current = axios.CancelToken.source()
-          console.log(productType)
-          const { data } = await Api.get(
-            `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
-            { cancelToken: cancelTokenSource.current.token }
-          )
-
-          const total = data.cardInfo.total
-
-          const totalRecipe = total
-          const balanceCashless = data.cardInfo.total_park
-          const sales = total
-
-          const balance =
-            productType !== "all"
-              ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
-              : data.cardInfo.total_park
-          const salesItems = data.cardInfo.sales_items
-
-          const topListMap = data.productInfo.topList.map((item) => {
-            return { label: item.name, value: item.quantity }
-          })
-
-          setCardInfo({
-            totalRecipe,
-            balanceCashless,
-            sales,
-            balance,
-            salesItems,
-          })
-          setTopList(topListMap)
-          if (data.productInfo.productList)
-            setProducts(
-              data.productInfo.productList.sort((a, b) =>
-                a.name.localeCompare(b.name)
-              )
+  
+          if (groupURL.length === 0) {
+            const { data: overview } = await Api.get(
+              `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+              { cancelToken: cancelTokenSource.current.token }
             )
-
-          // payments
-          const tPayments =
-            data.paymentInfo.money +
-            data.paymentInfo.credit +
-            data.paymentInfo.debit +
-            data.paymentInfo.pix
-
-          const percents = {
-            money: data.paymentInfo.money / tPayments,
-            credit: data.paymentInfo.credit / tPayments,
-            debit: data.paymentInfo.debit / tPayments,
-            pix: data.paymentInfo.pix / tPayments,
+  
+            const total = overview.cardInfo.total
+  
+            const totalRecipe = total
+            const balanceCashless = overview.cardInfo.total_park
+            const sales = overview.cardInfo.total
+            const balance =
+              productType !== "all"
+                ? (total / overview.cardInfo.sales_items) * 100
+                : overview.cardInfo.total_ticket
+            const salesItems = overview.cardInfo.sales_items
+  
+            const topListMap = overview.productInfo.topList.map((item) => {
+              return { label: item.name, value: item.quantity }
+            })
+  
+            const cInfo = {
+              totalRecipe,
+              balanceCashless,
+              sales,
+              balance,
+              salesItems,
+            }
+            setCardInfo(cInfo)
+            setTopList(topListMap)
+            if (overview.productInfo.productList)
+              setProducts(
+                overview.productInfo.productList.sort((a, b) =>
+                  a.name.localeCompare(b.name)
+                )
+              )
+  
+            setPayment(overview.paymentInfo)
+          } else {
+            cancelTokenSource.current = axios.CancelToken.source()
+            console.log(productType)
+            const { data } = await Api.get(
+              `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+              { cancelToken: cancelTokenSource.current.token }
+            )
+  
+            const total = data.cardInfo.total
+  
+            const totalRecipe = total
+            const balanceCashless = data.cardInfo.total_park
+            const sales = total
+  
+            const balance =
+              productType !== "all"
+                ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
+                : data.cardInfo.total_park
+            const salesItems = data.cardInfo.sales_items
+  
+            const topListMap = data.productInfo.topList.map((item) => {
+              return { label: item.name, value: item.quantity }
+            })
+  
+            setCardInfo({
+              totalRecipe,
+              balanceCashless,
+              sales,
+              balance,
+              salesItems,
+            })
+            setTopList(topListMap)
+            if (data.productInfo.productList)
+              setProducts(
+                data.productInfo.productList.sort((a, b) =>
+                  a.name.localeCompare(b.name)
+                )
+              )
+  
+            // payments
+            const tPayments =
+              data.paymentInfo.money +
+              data.paymentInfo.credit +
+              data.paymentInfo.debit +
+              data.paymentInfo.pix
+  
+            const percents = {
+              money: data.paymentInfo.money / tPayments,
+              credit: data.paymentInfo.credit / tPayments,
+              debit: data.paymentInfo.debit / tPayments,
+              pix: data.paymentInfo.pix / tPayments,
+            }
+  
+            const vals = {
+              money: (totalRecipe * percents.money).toFixed(2),
+              credit: (totalRecipe * percents.credit).toFixed(2),
+              debit: (totalRecipe * percents.debit).toFixed(2),
+              pix: (totalRecipe * percents.pix).toFixed(2),
+            }
+  
+            setPayment(vals)
           }
-
-          const vals = {
-            money: (totalRecipe * percents.money).toFixed(2),
-            credit: (totalRecipe * percents.credit).toFixed(2),
-            debit: (totalRecipe * percents.debit).toFixed(2),
-            pix: (totalRecipe * percents.pix).toFixed(2),
-          }
-
-          setPayment(vals)
         }
       }
     } catch (error) {
@@ -202,7 +372,7 @@ export default (props) => {
     if (selected != 2) {
       onSearch()
     }
-  }, [event, productType, group, selected, courtesies])
+  }, [event, selected, productType, selectedGroups])
 
   const onSearch = () => {
     if (cancelTokenSource && cancelTokenSource.current) {
@@ -266,6 +436,23 @@ export default (props) => {
       })
   }
 
+  const handleGrupoSelect = (groupId) => {
+    const grp = groupList.find((g) => g.id === groupId)
+    if (grp) {
+      if (selectedGroups.findIndex((g) => g.id === grp.id) < 0) {
+        const newList = [...selectedGroups, grp]
+        console.log(newList)
+        setSelectedGroups(newList)
+      } else {
+        setSelectedGroups([...selectedGroups.filter((g) => g.id !== grp.id)])
+      }
+    }
+  }
+
+  const unselectGroup = (groupId) => {
+    setSelectedGroups([...selectedGroups.filter((g) => g.id !== groupId)])
+  }
+
   return (
     <Grid container direction="column" spacing={2}>
       <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -275,15 +462,17 @@ export default (props) => {
               <Grid container spacing={2} alignItems="center">
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
                   <TextField
-                    value={group}
-                    onChange={(e) => setGroup(e.target.value)}
+                    value={"all"}
+                    onChange={(e) => handleGrupoSelect(e.target.value)}
                     label="Grupo"
                     variant="outlined"
                     size="small"
                     select
                     fullWidth
                   >
-                    <MenuItem value="all">Todos</MenuItem>
+                    <MenuItem value="all" style={{ display: "none" }}>
+                      Todos
+                    </MenuItem>
                     {groupList
                       .filter((group) => {
                         if (group.type === productType) return true
@@ -330,6 +519,21 @@ export default (props) => {
                       )}
                     </Button>
                   )}
+                </Grid>
+              </Grid>
+              <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xl={2} lg={2} md={4} sm={6} xs={12} style={{
+                  display: 'flex',
+                  gap: 12
+                }}>
+                    {selectedGroups.map((sg, k) => (
+                      <button key={k} className="groupSelected" onClick={() => unselectGroup(sg.id)}>
+                        <span>{sg.name}</span>
+                        <CloseIcon width={16} height={16} />
+                      </button>
+                    ))}
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>

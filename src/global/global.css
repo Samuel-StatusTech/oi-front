@@ -5,3 +5,31 @@
 iframe {
 	display: none;
 }
+
+.groupSelected {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+	border: none;
+	padding: 4px;
+	background-color: transparent;
+	transition: background-color .3s;;
+}
+
+.groupSelected span {
+	font-size: 16px;
+}
+
+.groupSelected svg {
+	opacity: 0;
+	transition: opacity .3s;
+}
+
+.groupSelected:hover {
+	background-color: white;
+}
+
+.groupSelected:hover svg {
+	opacity: 1;
+}
