@@ -12,7 +12,7 @@ iframe {
 	gap: 6px;
 	cursor: pointer;
 	border: none;
-	padding: 4px;
+	padding: 4px 6px;
 	background-color: transparent;
 	transition: background-color .3s;;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useMemo } from "react"
 import {
   Grid,
   TextField,
@@ -14,7 +14,8 @@ import firebase from "../../../../../firebase"
 import axios from "axios"
 import { format } from "currency-formatter"
 
-import {ReactComponent as CloseIcon} from "../../../../../assets/icons/close.svg"
+import { ReactComponent as CloseIcon } from "../../../../../assets/icons/close.svg"
+import { ReactComponent as CheckIcon } from "../../../../../assets/icons/check.svg"
 import { Between } from "../../../../../components/Input/DateTime"
 import Tooltip from "../../../../../components/Tooltip"
 import Ranking from "../../../../../components/Ranking"
@@ -87,42 +88,41 @@ export default (props) => {
 
         const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
 
+        let totals = {
+          cardInfo: {
+            totalRecipe: 0,
+            balanceCashless: 0,
+            sales: 0,
+            balance: 0,
+            salesItems: 0,
+          },
+          payments: {
+            money: 0,
+            credit: 0,
+            debit: 0,
+            pix: 0,
+          },
+        }
 
-        if(productType && productType === "bar") {      // bar
+        if (productType && productType === "bar") {
+          // bar
 
-          let totals = {
-            cardInfo: {
-              totalRecipe: 0,
-              balanceCashless: 0,
-              sales: 0,
-              balance: 0,
-              salesItems: 0,
-            },
-            payments: {
-              money: 0,
-              credit: 0,
-              debit: 0,
-              pix: 0,
-            },
-          }
-          
-          for (let i = 0; i < selectedGroups.length; i++) {
+          for (let i = 0; i <= selectedGroups.length; i++) {
             const grp = selectedGroups[i]
-  
-            const groupURL = grp && grp !== "all" ? `&group_id=${grp.id}` : ""
+
+            const groupURL = grp ? `&group_id=${grp.id}` : ""
             const courtesiesURL =
               courtesies && courtesies != "all" ? `&courtesies=1` : ""
             cancelTokenSource.current = axios.CancelToken.source()
-  
-  
-            if (groupURL.length === 0) {
+
+            if (groupURL.length === 0 && grp) {
               const { data: overview } = await Api.get(
                 `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
                 { cancelToken: cancelTokenSource.current.token }
               )
-  
+
               const total = overview.cardInfo.total
-  
+
               const totalRecipe = total
               const balanceCashless = overview.cardInfo.total_park
               const sales = overview.cardInfo.total
@@ -131,11 +131,11 @@ export default (props) => {
                   ? (total / overview.cardInfo.sales_items) * 100
                   : overview.cardInfo.total_ticket
               const salesItems = overview.cardInfo.sales_items
-  
+
               const topListMap = overview.productInfo.topList.map((item) => {
                 return { label: item.name, value: item.quantity }
               })
-  
+
               const cInfo = {
                 totalRecipe,
                 balanceCashless,
@@ -143,73 +143,114 @@ export default (props) => {
                 balance,
                 salesItems,
               }
-  
+
               const newCardInfo = {
                 totalRecipe: totals.cardInfo.totalRecipe + cInfo.totalRecipe,
-                balanceCashless: totals.cardInfo.balanceCashless + cInfo.balanceCashless,
+                balanceCashless:
+                  totals.cardInfo.balanceCashless + cInfo.balanceCashless,
                 sales: totals.cardInfo.sales + cInfo.sales,
                 balance: totals.cardInfo.balance + cInfo.balance,
                 salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
               }
               console.log(totals, newCardInfo)
               totals.cardInfo = newCardInfo
-              // setCardInfo(cInfo)
-              setTopList(topListMap)                                                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+              setTopList(topListMap) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
               if (overview.productInfo.productList)
                 setProducts(
                   overview.productInfo.productList.sort((a, b) =>
                     a.name.localeCompare(b.name)
                   )
                 )
-  
+
               const newPayments = {
-                money: totals.cardInfo.money + overview.paymentInfo.money,
-                credit: totals.cardInfo.credit + overview.paymentInfo.credit,
-                debit: totals.cardInfo.debit + overview.paymentInfo.debit,
-                pix: totals.cardInfo.pix + overview.paymentInfo.pix,
+                money: totals.payments.money + overview.paymentInfo.money,
+                credit: totals.payments.credit + overview.paymentInfo.credit,
+                debit: totals.payments.debit + overview.paymentInfo.debit,
+                pix: totals.payments.pix + overview.paymentInfo.pix,
               }
               totals.payments = newPayments
-              // setPayment(overview.paymentInfo)
+
+              setCardInfo(totals.cardInfo)
+              setPayment(totals.payments)
             } else {
+              // selected groups
+
+
+
+
+
+
+
+
+
+
+
+              
               cancelTokenSource.current = axios.CancelToken.source()
-              console.log(productType)
               const { data } = await Api.get(
                 `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
                 { cancelToken: cancelTokenSource.current.token }
               )
-  
+
               const total = data.cardInfo.total
-  
+
               const totalRecipe = total
               const balanceCashless = data.cardInfo.total_park
               const sales = total
-  
+
               const balance =
                 productType !== "all"
                   ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
                   : data.cardInfo.total_park
               const salesItems = data.cardInfo.sales_items
-  
+
               const topListMap = data.productInfo.topList.map((item) => {
                 return { label: item.name, value: item.quantity }
               })
-  
+
+              const bar = data.cardInfo.total_bar
+              const park = data.cardInfo.total_park
+              const tickets = data.cardInfo.total_ticket
+              const others = data.cardInfo.sales_items
+
               const cInfo = {
-                totalRecipe,
-                balanceCashless,
-                sales,
-                balance,
-                salesItems,
+                totalRecipe: total,
+                balanceCashless: park,
+                sales: bar,
+                balance: tickets,
+                salesItems: others,
               }
-              
+
               totals.cardInfo = {
                 totalRecipe: totals.cardInfo.totalRecipe + cInfo.totalRecipe,
-                balanceCashless: totals.cardInfo.balanceCashless + cInfo.balanceCashless,
+                balanceCashless:
+                  totals.cardInfo.balanceCashless + cInfo.balanceCashless,
                 sales: totals.cardInfo.sales + cInfo.sales,
-                balance: Number(totals.cardInfo.balance) + Number(cInfo.balance),
+                balance:
+                  Number(totals.cardInfo.balance) + Number(cInfo.balance),
                 salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
               }
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               setTopList(topListMap)
               if (data.productInfo.productList)
                 setProducts(
@@ -217,75 +258,84 @@ export default (props) => {
                     a.name.localeCompare(b.name)
                   )
                 )
-  
+
               const tPayments =
                 data.paymentInfo.money +
                 data.paymentInfo.credit +
                 data.paymentInfo.debit +
                 data.paymentInfo.pix
-  
+
               const percents = {
                 money: data.paymentInfo.money / tPayments,
                 credit: data.paymentInfo.credit / tPayments,
                 debit: data.paymentInfo.debit / tPayments,
                 pix: data.paymentInfo.pix / tPayments,
               }
-  
+
               const vals = {
                 money: totalRecipe * percents.money,
                 credit: totalRecipe * percents.credit,
                 debit: totalRecipe * percents.debit,
                 pix: totalRecipe * percents.pix,
               }
-  
-  
+
               totals.payments = {
                 money: (Number(totals.payments.money) + vals.money).toFixed(2),
-                credit: (Number(totals.payments.credit) + vals.credit).toFixed(2),
+                credit: (Number(totals.payments.credit) + vals.credit).toFixed(
+                  2
+                ),
                 debit: (Number(totals.payments.debit) + vals.debit).toFixed(2),
                 pix: (Number(totals.payments.pix) + vals.pix).toFixed(2),
               }
             }
-  
-            if(i === selectedGroups.length - 1) {
-              console.log('totals', totals)
-              setCardInfo(totals.cardInfo)
-              setPayment(totals.payments)
+
+            if(selectedGroups.length > 0) {
+              if (i === selectedGroups.length - 1) {
+                setCardInfo(totals.cardInfo)
+                setPayment(totals.payments)
+              }
+            } else {
+              if (i === selectedGroups.length) {
+                setCardInfo(totals.cardInfo)
+                setPayment(totals.payments)
+              }
             }
           }
         } else {
+          // geral
           const groupURL = group && group !== "all" ? `&group_id=${group}` : ""
           const courtesiesURL =
             courtesies && courtesies != "all" ? `&courtesies=1` : ""
           cancelTokenSource.current = axios.CancelToken.source()
-  
+
           if (groupURL.length === 0) {
             const { data: overview } = await Api.get(
               `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
               { cancelToken: cancelTokenSource.current.token }
             )
-  
+
             const total = overview.cardInfo.total
-  
-            const totalRecipe = total
-            const balanceCashless = overview.cardInfo.total_park
-            const sales = overview.cardInfo.total
+
             const balance =
               productType !== "all"
                 ? (total / overview.cardInfo.sales_items) * 100
                 : overview.cardInfo.total_ticket
-            const salesItems = overview.cardInfo.sales_items
-  
+
             const topListMap = overview.productInfo.topList.map((item) => {
               return { label: item.name, value: item.quantity }
             })
-  
+
+            const bar = overview.cardInfo.total_bar
+            const park = overview.cardInfo.total_park
+            const tickets = overview.cardInfo.total_ticket
+            const others = overview.cardInfo.sales_items
+
             const cInfo = {
-              totalRecipe,
-              balanceCashless,
-              sales,
-              balance,
-              salesItems,
+              totalRecipe: total,
+              balanceCashless: park,
+              sales: bar,
+              balance: tickets,
+              salesItems: others,
             }
             setCardInfo(cInfo)
             setTopList(topListMap)
@@ -295,8 +345,31 @@ export default (props) => {
                   a.name.localeCompare(b.name)
                 )
               )
-  
-            setPayment(overview.paymentInfo)
+
+            console.log("ÇADJÇALSKDJ", overview.paymentInfo)
+
+            // payments
+            const tPayments =
+              overview.paymentInfo.money +
+              overview.paymentInfo.credit +
+              overview.paymentInfo.debit +
+              overview.paymentInfo.pix
+
+            const percents = {
+              money: overview.paymentInfo.money / tPayments,
+              credit: overview.paymentInfo.credit / tPayments,
+              debit: overview.paymentInfo.debit / tPayments,
+              pix: overview.paymentInfo.pix / tPayments,
+            }
+
+            const vals = {
+              money: (total * percents.money).toFixed(2),
+              credit: (total * percents.credit).toFixed(2),
+              debit: (total * percents.debit).toFixed(2),
+              pix: (total * percents.pix).toFixed(2),
+            }
+
+            setPayment(vals)
           } else {
             cancelTokenSource.current = axios.CancelToken.source()
             console.log(productType)
@@ -304,29 +377,34 @@ export default (props) => {
               `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
               { cancelToken: cancelTokenSource.current.token }
             )
-  
+
             const total = data.cardInfo.total
-  
+            const bar = data.cardInfo.total_bar
+            const park = data.cardInfo.total_park
+            const tickets = data.cardInfo.total_ticket
+            const others = data.cardInfo.sales_items
+
             const totalRecipe = total
             const balanceCashless = data.cardInfo.total_park
-            const sales = total
-  
+            const sales = data.cardInfo.total_bar
+
             const balance =
               productType !== "all"
                 ? ((total / data.cardInfo.sales_items) * 100).toFixed(2)
                 : data.cardInfo.total_park
             const salesItems = data.cardInfo.sales_items
-  
+
             const topListMap = data.productInfo.topList.map((item) => {
               return { label: item.name, value: item.quantity }
             })
-  
+
+            console.log("HERE")
             setCardInfo({
-              totalRecipe,
-              balanceCashless,
-              sales,
-              balance,
-              salesItems,
+              totalRecipe: total,
+              balanceCashless: bar,
+              sales: 0,
+              balance: 0,
+              salesItems: 0,
             })
             setTopList(topListMap)
             if (data.productInfo.productList)
@@ -335,28 +413,28 @@ export default (props) => {
                   a.name.localeCompare(b.name)
                 )
               )
-  
+
             // payments
             const tPayments =
               data.paymentInfo.money +
               data.paymentInfo.credit +
               data.paymentInfo.debit +
               data.paymentInfo.pix
-  
+
             const percents = {
               money: data.paymentInfo.money / tPayments,
               credit: data.paymentInfo.credit / tPayments,
               debit: data.paymentInfo.debit / tPayments,
               pix: data.paymentInfo.pix / tPayments,
             }
-  
+
             const vals = {
               money: (totalRecipe * percents.money).toFixed(2),
               credit: (totalRecipe * percents.credit).toFixed(2),
               debit: (totalRecipe * percents.debit).toFixed(2),
               pix: (totalRecipe * percents.pix).toFixed(2),
             }
-  
+
             setPayment(vals)
           }
         }
@@ -437,20 +515,23 @@ export default (props) => {
   }
 
   const handleGrupoSelect = (groupId) => {
+    setPayment({
+      money: 0,
+      credit: 0,
+      debit: 0,
+      pix: 0,
+    })
+
     const grp = groupList.find((g) => g.id === groupId)
     if (grp) {
       if (selectedGroups.findIndex((g) => g.id === grp.id) < 0) {
-        const newList = [...selectedGroups, grp]
-        console.log(newList)
-        setSelectedGroups(newList)
+        setSelectedGroups([...selectedGroups, grp])
+        // setGroupList([...groupList].filter((g) => g.id !== grp.id))
       } else {
         setSelectedGroups([...selectedGroups.filter((g) => g.id !== grp.id)])
+        // setGroupList([...groupList].filter((g) => g.id !== grp.id))
       }
     }
-  }
-
-  const unselectGroup = (groupId) => {
-    setSelectedGroups([...selectedGroups.filter((g) => g.id !== groupId)])
   }
 
   return (
@@ -471,16 +552,55 @@ export default (props) => {
                     fullWidth
                   >
                     <MenuItem value="all" style={{ display: "none" }}>
-                      Todos
+                      Selecione os grupos
+                      {`${
+                        selectedGroups.length > 0
+                          ? ` (${selectedGroups.length})`
+                          : ""
+                      }`}
                     </MenuItem>
                     {groupList
                       .filter((group) => {
                         if (group.type === productType) return true
                         return false
                       })
-                      .map((group) => (
-                        <MenuItem value={group.id}>{group.name}</MenuItem>
-                      ))}
+                      .sort((a, b) =>
+                        a.name > b.name ? 1 : a.name < b.name ? -1 : 0
+                      )
+                      .map((group, k) => {
+                        return (
+                          <MenuItem
+                            key={k}
+                            value={group.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              paddingVertical: 4,
+                              paddingHorizontal: 6,
+                            }}
+                          >
+                            <span style={{ fontSize: 16 }}>{group.name}</span>
+                            <div
+                              style={{
+                                borderRadius: 4,
+                                border: 2,
+                                borderStyle: "solid",
+                                borderColor: "#121212",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 24,
+                                height: 24,
+                              }}
+                            >
+                              {selectedGroups.includes(group) ? (
+                                <CheckIcon width={18} height={18} />
+                              ) : null}
+                            </div>
+                          </MenuItem>
+                        )
+                      })}
                   </TextField>
                 </Grid>
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
@@ -519,21 +639,6 @@ export default (props) => {
                       )}
                     </Button>
                   )}
-                </Grid>
-              </Grid>
-              <Grid item lg={12} md={12} sm={12} xs={12}>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xl={2} lg={2} md={4} sm={6} xs={12} style={{
-                  display: 'flex',
-                  gap: 12
-                }}>
-                    {selectedGroups.map((sg, k) => (
-                      <button key={k} className="groupSelected" onClick={() => unselectGroup(sg.id)}>
-                        <span>{sg.name}</span>
-                        <CloseIcon width={16} height={16} />
-                      </button>
-                    ))}
-                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
