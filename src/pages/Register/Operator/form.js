@@ -659,7 +659,7 @@ const Operator = ({ user }) => {
                 </Grid>
               </Grid>
 
-              <Grid item lg={12} md={12} sm={12} xs={12}>
+              <Grid item container spacing={2} lg={12} md={12} sm={12} xs={12}>
                 <Grid container spacing={2}>
                   <Grid item>
                     <FormControlLabel
@@ -669,7 +669,9 @@ const Operator = ({ user }) => {
                       control={<GreenSwitch checked={isWaiter} onChange={(e) => setIsWaiter(e.target.checked)} />}
                     />
                   </Grid>
-                  <Grid item justify='center' hidden={!isWaiter}>
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid item justify='center'>
                     <FormControlLabel
                       label='Comissão'
                       name='hasCommission'
@@ -679,7 +681,7 @@ const Operator = ({ user }) => {
                       }
                     />
                   </Grid>
-                  <Grid item lg md sm xs hidden={!isWaiter}>
+                  <Grid item lg md sm xs>
                     <TextField
                       label='%'
                       name='commission'
