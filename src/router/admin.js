@@ -61,6 +61,7 @@ import ReconcileData from "../pages/Manager/ReconcileData"
 /*              RELATORIOS                */
 import { Icon as ReportIcon } from "../pages/Reports/Icon"
 import SalesReport from "../pages/Reports/Sales"
+import TaxesReport from "../pages/Reports/Taxes"
 import CashlessReport from "../pages/Reports/Cashless"
 import ValidationReport from "../pages/Reports/Validation"
 import WaiterReport from "../pages/Reports/Waiters"
@@ -222,6 +223,21 @@ export default [
           {
             title: "Listas",
             route: "/list",
+          },
+        ],
+      },
+      {
+        title: "Taxas de serviço",
+        path: "/report/taxes",
+        content: <TaxesReport />,
+        paths: [
+          {
+            title: "Relatórios",
+            route: "/report",
+          },
+          {
+            title: "Taxas de serviço",
+            route: "/sales",
           },
         ],
       },
