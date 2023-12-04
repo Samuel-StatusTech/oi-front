@@ -21,6 +21,7 @@ export default memo(({ title, ranking }) => {
         series: [],
         categories: []
       }
+
       ranking.forEach(r => {
         if (r.value > 0) {
           newInfo.series = [...newInfo.series, r.value]
@@ -32,7 +33,7 @@ export default memo(({ title, ranking }) => {
       setSeriesData(newInfo.series)
       setCategories(newInfo.categories)
     }
-  }, [])
+  }, [ranking])
 
   const data = {
 

@@ -79,27 +79,51 @@ export default (props) => {
     })
   }, [])
 
+  const calcRanking = () => {
+    let ranking = []
+
+    products.forEach((p) => {
+      if (
+        ranking.findIndex(
+          (rankingItem) =>
+            rankingItem.id === p.id &&
+            rankingItem.quantity === p.quantity &&
+            rankingItem.price_total === p.price_total
+        ) < 0
+      )
+        ranking.push({
+          label: p.name,
+          quantity: p.quantity,
+          value: Number(p.price_total) / 100,
+        })
+    })
+
+    ranking.sort((a, b) => {
+      if (a.quantity > b.quantity) return -1
+      if (a.quantity < b.quantity) return 1
+      return 0
+    })
+
+    const podium = ranking.length > 5 ? ranking.slice(0, 5) : ranking
+    setTopList && setTopList(podium)
+  }
+
+  useEffect(() => {
+    if (productType !== "all") calcRanking()
+  }, [products])
+
   const searchWithoutGroups = async (dateURL, totals) => {
     let prods = []
 
-    const groupURL = group && group !== "all" ? `&group_id=${group}` : ""
     const courtesiesURL =
       courtesies && courtesies != "all" ? `&courtesies=1` : ""
     cancelTokenSource.current = axios.CancelToken.source()
     const { data } = await Api.get(
-      `/statistical/salesOverview/${event}?type=${productType}${dateURL}${groupURL}${courtesiesURL}`,
+      `/statistical/salesOverview/${event}?type=${productType}${dateURL}${courtesiesURL}`,
       { cancelToken: cancelTokenSource.current.token }
     )
 
     const total = data.cardInfo.total
-
-    const topListMap = data.productInfo.topList.map((item) => {
-      return {
-        label: item.name,
-        value: Number(item.price_total) / 100,
-      }
-    })
-    setTopList(topListMap)
 
     const bar = data.cardInfo.total_bar
     const park = data.cardInfo.total_park
@@ -121,7 +145,6 @@ export default (props) => {
       balance: Number(totals.cardInfo.balance) + Number(cInfo.balance),
       salesItems: totals.cardInfo.salesItems + cInfo.salesItems,
     }
-
 
     if (data.productInfo.productList)
       prods = [...prods, ...data.productInfo.productList]
@@ -169,7 +192,6 @@ export default (props) => {
         filteredProds.push(p)
     })
 
-    // calcRanking(filteredProds)
     setProducts(filteredProds)
   }
 
@@ -200,10 +222,6 @@ export default (props) => {
           : overview.cardInfo.total_ticket
       const salesItems = overview.cardInfo.sales_items
 
-      const topListMap = overview.productInfo.topList
-      setTopList(topListMap)
-      // topLists.push(...topListMap)
-
       const cInfo = {
         totalRecipe: total,
         balanceCashless,
@@ -223,7 +241,6 @@ export default (props) => {
 
       totals.cardInfo = newCardInfo
 
-
       if (overview.productInfo.productList)
         prods = [...prods, ...overview.productInfo.productList]
 
@@ -235,7 +252,6 @@ export default (props) => {
       }
       totals.payments = newPayments
 
-      // last group to seach by
       if (i === selectedGroups.length) {
         setCardInfo(totals.cardInfo)
         setPayment(totals.payments)
@@ -253,17 +269,17 @@ export default (props) => {
             filteredProds.push(p)
         })
 
-        // calcRanking(filteredProds)
         setProducts(filteredProds)
       }
     }
   }
 
   const handleSearch = async () => {
-    
     try {
       setLoading(true)
       if (event) {
+        cancelTokenSource.current = axios.CancelToken.source()
+
         const dI = new Date(dateIni).getTime()
         const dE = new Date(dateEnd).getTime()
         const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
@@ -284,12 +300,12 @@ export default (props) => {
           },
         }
 
-        cancelTokenSource.current = axios.CancelToken.source()
-
-        if (productType && productType !== "all") {
+        if (productType && productType === "all") {
+          searchWithoutGroups(dateURL, totals)
+        } else {
           if (selectedGroups.length === 0) searchWithoutGroups(dateURL, totals)
           else searchByGroups(dateURL, totals)
-        } else searchWithoutGroups(dateURL, totals)
+        }
       }
     } catch (error) {
       console.log(error)
@@ -378,10 +394,8 @@ export default (props) => {
     if (grp) {
       if (selectedGroups.findIndex((g) => g.id === grp.id) < 0) {
         setSelectedGroups([...selectedGroups, grp])
-        // setGroupList([...groupList].filter((g) => g.id !== grp.id))
       } else {
         setSelectedGroups([...selectedGroups.filter((g) => g.id !== grp.id)])
-        // setGroupList([...groupList].filter((g) => g.id !== grp.id))
       }
     }
   }
