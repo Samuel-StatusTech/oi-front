@@ -197,7 +197,6 @@ export default (props) => {
 
   const searchByGroups = async (dateURL, totals) => {
     let prods = []
-    let topLists = []
 
     for (let i = 1; i <= selectedGroups.length; i++) {
       const grp = selectedGroups[i - 1]
@@ -244,11 +243,31 @@ export default (props) => {
       if (overview.productInfo.productList)
         prods = [...prods, ...overview.productInfo.productList]
 
+      const tPayments =
+        overview.paymentInfo.money +
+        overview.paymentInfo.credit +
+        overview.paymentInfo.debit +
+        overview.paymentInfo.pix
+
+      const percents = {
+        money: overview.paymentInfo.money / tPayments,
+        credit: overview.paymentInfo.credit / tPayments,
+        debit: overview.paymentInfo.debit / tPayments,
+        pix: overview.paymentInfo.pix / tPayments,
+      }
+
+      const vals = {
+        money: total * percents.money,
+        credit: total * percents.credit,
+        debit: total * percents.debit,
+        pix: total * percents.pix,
+      }
+
       const newPayments = {
-        money: totals.payments.money + overview.paymentInfo.money,
-        credit: totals.payments.credit + overview.paymentInfo.credit,
-        debit: totals.payments.debit + overview.paymentInfo.debit,
-        pix: totals.payments.pix + overview.paymentInfo.pix,
+        money: (Number(totals.payments.money) + vals.money).toFixed(2),
+        credit: (Number(totals.payments.credit) + vals.credit).toFixed(2),
+        debit: (Number(totals.payments.debit) + vals.debit).toFixed(2),
+        pix: (Number(totals.payments.pix) + vals.pix).toFixed(2),
       }
       totals.payments = newPayments
 
