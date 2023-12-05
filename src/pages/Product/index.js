@@ -122,10 +122,10 @@ const Product = () => {
           { id: "todos", name: "Todos" },
           { id: "combo", name: "Combos" },
           ...groups.sort((a, b) => {
-          if (a.name < b.name) return -1
-          if (a.name > b.name) return 1
-          return 0
-        }),
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+          }),
         ])
       } else {
         alert("Erro ao carregar os grupos")
@@ -182,7 +182,7 @@ const Product = () => {
       const selectedStatus = props.status ? props.status : status
       const url = `/product/getList?type=${props.type ? props.type : type}${
         selectedGroup !== "todos" ? "&group=" + selectedGroup : ""
-      }&search=${searchText}${
+      }${searchText && searchText.length > 0 ? `&search=${searchText}` : ""}${
         selectedStatus !== "todos" ? `&status=${selectedStatus}` : ""
       }`
 
@@ -341,52 +341,57 @@ const Product = () => {
     await data.forEach(async (p) => {
       if (!isEmpty(p.Nome) && !isEmpty(p.Grupo)) {
         let matchedGroup = groupList.find(
-          (g) => String(g.name).trim().toLowerCase() === String(p.Grupo).trim().toLowerCase()
+          (g) =>
+            String(g.name).trim().toLowerCase() ===
+            String(p.Grupo).trim().toLowerCase()
         )
-        
-        if (matchedGroup === undefined) {
+
+        if (!matchedGroup) {
           await Api.post("/group/createGroup", {
+            // await Api.post("lalala", {
             name: p.Grupo,
             type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
             status: true,
           })
-          .then(({ category: newGroup }) => {
-            arr.push({
-              name: capitalizeWords(p.Nome),
-              type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
-              group_id: newGroup.id,
-            })
-
-            setGroupList(
-              [ ...groupList, newGroup ]
-              .sort((a, b) => {
-                if (a.name < b.name) return -1
-                if (a.name > b.name) return 1
-                return 0
+            .then(({ category: newGroup }) => {
+              arr.push({
+                name: capitalizeWords(p.Nome),
+                type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
+                group_id: newGroup.id,
+                price_sell: p.Preco ?? 100,
               })
-            )
-            return
-          })
-          .catch((err)=>{
-            err.push({
-              name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
-              type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
-              group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
+
+              setGroupList(
+                [...groupList, newGroup].sort((a, b) => {
+                  if (a.name < b.name) return -1
+                  if (a.name > b.name) return 1
+                  return 0
+                })
+              )
+              return
             })
-          })
+            .catch((err) => {
+              err.push({
+                name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
+                type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
+                group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
+                price_sell: p.Preco ?? "Não definido",
+              })
+            })
         } else {
           arr.push({
             name: capitalizeWords(p.Nome),
             type: p.Tipo,
             group_id: matchedGroup.id,
+            price_sell: p.Preco ?? 100,
           })
         }
-
       } else {
         err.push({
           name: p.Nome ?? "Não definido",
           type: p.Tipo ?? "Não definida",
           group_id: p.Grupo ?? "Não definido",
+          price_sell: p.Preco ?? "Não definido",
         })
       }
     })
@@ -405,11 +410,11 @@ const Product = () => {
     fd.append("name", item.name)
     fd.append("group_id", item.group_id)
     fd.append("type", itemType)
-    
+
     fd.append("image", "")
     fd.append("description1", "")
     fd.append("description2", "")
-    fd.append("price_sell", 100)
+    fd.append("price_sell", item.price_sell)
     fd.append("price_cost", 0)
     fd.append("has_variable", false)
     fd.append("has_courtesy", false)
@@ -495,17 +500,33 @@ const Product = () => {
     }
   }
 
+  const extractCashValue = (valueStr) => {
+    const realValue = valueStr.substring(3, valueStr.length).replace(",", ".")
+
+    const cleanedNumber = `${realValue
+      .substring(0, realValue.length - 3)
+      .replace(".", "")}${realValue.substring(realValue.length - 3, realValue.length)}`
+    const readableValue = Number(cleanedNumber) * 100
+    console.log(
+      "extracted",
+      cleanedNumber,
+      readableValue
+    )
+    return readableValue
+  }
+
   const getOnlyNeeded = (arr) => {
     let parsed = []
 
-    arr.forEach(item=>{
+    arr.forEach((item) => {
       parsed.push({
-        "Nome": item.Nome,
-        "Tipo": item.Tipo,
-        "Grupo": item.Grupo
+        Nome: item.Nome,
+        Tipo: item.Tipo,
+        Grupo: item.Grupo,
+        Preco: extractCashValue(item.Preco),
       })
     })
-    
+
     return parsed
   }
 
@@ -516,7 +537,7 @@ const Product = () => {
     reader.onload = async (f) => {
       const text = f.target.result
       const data = await csvtojson({
-        delimiter: [";", ","],
+        delimiter: [";", "\t"],
         encoding: "utf-8",
       }).fromString(text)
       const neededInfo = getOnlyNeeded(data)
@@ -550,19 +571,19 @@ const Product = () => {
 
   const parseDataToDownload = () => {
     let rows = []
-    console.log(data)
     data.forEach((d) => {
       rows.push([
         d.name ?? "Não definido",
         d.type ?? "Não definido",
         d.group && d.group.name ? d.group.name : "Não definido",
-        `R$ ${(d.price_sell / 100).toFixed(2)}` ?? "Não definido"
+        `${format(d.price_sell / 100, { code: "BRL" })}` ??
+          "Não definido",
       ])
     })
 
     const csvContent =
       "data:text/csv;charset=UTF-8," +
-      `${["Nome", "Tipo", "Grupo", "Preço"].join(";")}\n` +
+      `${["Nome", "Tipo", "Grupo", "Preco"].join(";")}\n` +
       rows.map((r) => r.join(";")).join("\n")
 
     return encodeURI(csvContent)
@@ -579,7 +600,7 @@ const Product = () => {
   const handleCloseBtn = () => {
     setConfirmDialogShow(false)
     setNewData(null)
-    if(isRegisterMade) window.location.reload()
+    if (isRegisterMade) window.location.reload()
   }
 
   return (
