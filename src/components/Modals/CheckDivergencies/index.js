@@ -166,11 +166,23 @@ const ModalCheck = ({
 
   const filterBackData = (log) => {
     return log.filter((transaction) => {
-      return (
-        !transaction.payments.some((p) =>
+      const isValidated = transaction.status === "validado"
+
+      if(isValidated) {
+        const hasCashPay = transaction.payments.some((p) =>
           "dinheiro".includes(p.payment_type.toLowerCase())
-        ) && transaction.status === "validado"
-      )
+        )
+        const hasMultiplus = transaction.payments.length > 1
+        const hasAnotherPayment =
+          transaction.payments.filter(
+            (p) => !p.payment_type.toLowerCase().includes("dinheiro")
+          ).length > 0
+  
+        if (isValidated && !hasMultiplus && !hasCashPay) return true
+        if (isValidated && hasMultiplus && hasAnotherPayment) return true
+
+        return false
+      } else return false
     })
   }
 
