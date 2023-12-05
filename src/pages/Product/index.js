@@ -335,20 +335,26 @@ const Product = () => {
   const isEmpty = (str) => str.trim().length === 0
 
   const filterData = async (data) => {
-    let arr = [],
-      err = []
+    let arr = []
+    let err = []
+    let groupsArr = [...groupList]
 
-    await data.forEach(async (p) => {
+    await data.forEach(async (p, id) => {
       if (!isEmpty(p.Nome) && !isEmpty(p.Grupo)) {
-        let matchedGroup = groupList.find(
+        let matchedGroup = groupsArr.find(
           (g) =>
             String(g.name).trim().toLowerCase() ===
             String(p.Grupo).trim().toLowerCase()
         )
 
-        if (!matchedGroup) {
+        if (!matchedGroup || typeof matchedGroup === "undefined") {
+          groupsArr = [...groupsArr, { name: p.Grupo }].sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+          })
+
           await Api.post("/group/createGroup", {
-            // await Api.post("lalala", {
             name: p.Grupo,
             type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
             status: true,
@@ -358,16 +364,13 @@ const Product = () => {
                 name: capitalizeWords(p.Nome),
                 type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
                 group_id: newGroup.id,
-                price_sell: p.Preco ?? 100,
+                price_sell: p.Preco > 0 ? p.Preco : 100,
               })
 
-              setGroupList(
-                [...groupList, newGroup].sort((a, b) => {
-                  if (a.name < b.name) return -1
-                  if (a.name > b.name) return 1
-                  return 0
-                })
+              const newGrpK = groupsArr.findIndex(
+                (g) => g.name === newGroup.name
               )
+              groupsArr[newGrpK] = newGroup
               return
             })
             .catch((err) => {
@@ -383,7 +386,7 @@ const Product = () => {
             name: capitalizeWords(p.Nome),
             type: p.Tipo,
             group_id: matchedGroup.id,
-            price_sell: p.Preco ?? 100,
+            price_sell: p.Preco > 0 ? p.Preco : 100,
           })
         }
       } else {
@@ -394,6 +397,8 @@ const Product = () => {
           price_sell: p.Preco ?? "Não definido",
         })
       }
+
+      if (id === data.length - 1) setGroupList(groupsArr)
     })
 
     return {
@@ -505,13 +510,11 @@ const Product = () => {
 
     const cleanedNumber = `${realValue
       .substring(0, realValue.length - 3)
-      .replace(".", "")}${realValue.substring(realValue.length - 3, realValue.length)}`
+      .replace(".", "")}${realValue.substring(
+      realValue.length - 3,
+      realValue.length
+    )}`
     const readableValue = Number(cleanedNumber) * 100
-    console.log(
-      "extracted",
-      cleanedNumber,
-      readableValue
-    )
     return readableValue
   }
 
@@ -576,8 +579,7 @@ const Product = () => {
         d.name ?? "Não definido",
         d.type ?? "Não definido",
         d.group && d.group.name ? d.group.name : "Não definido",
-        `${format(d.price_sell / 100, { code: "BRL" })}` ??
-          "Não definido",
+        `${format(d.price_sell / 100, { code: "BRL" })}` ?? "Não definido",
       ])
     })
 

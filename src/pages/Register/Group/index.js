@@ -117,7 +117,7 @@ const Group = () => {
 
         if (data.success) {
           resolve({
-            data: data.groups.map((item) => {return {...item, type: `${item.type.charAt(0).toUpperCase()}${item.type.slice(1)}`}}),
+            data: data.groups,
             page: data.page - 1,
             totalCount: data.totalCount,
           });
