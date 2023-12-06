@@ -164,8 +164,6 @@ export default (props) => {
         value: payment.gross.money,
         smallLabel: (
           <>
-            Bruto: {format(payment.gross.money / 100, { code: "BRL" })}
-            <br />
             Líquido: {format(payment.gross.money / 100, { code: "BRL" })}
           </>
         ),
@@ -176,8 +174,6 @@ export default (props) => {
         value: payment.gross.debit,
         smallLabel: (
           <>
-            Bruto: {format(payment.gross.debit / 100, { code: "BRL" })}
-            <br />
             Líquido: {format(payment.net.debit / 100, { code: "BRL" })}
           </>
         ),
@@ -188,8 +184,6 @@ export default (props) => {
         value: payment.gross.credit,
         smallLabel: (
           <>
-            Bruto: {format(payment.gross.credit / 100, { code: "BRL" })}
-            <br />
             Líquido: {format(payment.net.credit / 100, { code: "BRL" })}
           </>
         ),
@@ -200,8 +194,6 @@ export default (props) => {
         value: payment.gross.pix,
         smallLabel: (
           <>
-            Bruto: {format(payment.gross.pix / 100, { code: "BRL" })}
-            <br />
             Líquido: {format(payment.net.pix / 100, { code: "BRL" })}
           </>
         ),
@@ -212,8 +204,6 @@ export default (props) => {
         value: 0,
         smallLabel: (
           <>
-            Bruto: {format(0, { code: "BRL" })}
-            <br />
             Líquido: {format(0, { code: "BRL" })}
           </>
         ),
@@ -224,8 +214,6 @@ export default (props) => {
         value: 0,
         smallLabel: (
           <>
-            Bruto: {format(0, { code: "BRL" })}
-            <br />
             Líquido: {format(0, { code: "BRL" })}
           </>
         ),

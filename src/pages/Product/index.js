@@ -53,6 +53,7 @@ const Product = () => {
     "Deseja realmente cadastrar esses produtos?"
   )
   const [isRegisterMade, setIsRegisterMade] = useState(false)
+  const [hasImportedGroup, setHasImportedGroup] = useState(false)
 
   const columns = [
     {
@@ -339,55 +340,71 @@ const Product = () => {
     let err = []
     let groupsArr = [...groupList]
 
-    await data.forEach(async (p, id) => {
+    for (let id = 0; id < data.length; id++) {
+      const p = data[id]
+
       if (!isEmpty(p.Nome) && !isEmpty(p.Grupo)) {
-        let matchedGroup = groupsArr.find(
-          (g) =>
-            String(g.name).trim().toLowerCase() ===
-            String(p.Grupo).trim().toLowerCase()
-        )
-
-        if (!matchedGroup || typeof matchedGroup === "undefined") {
-          groupsArr = [...groupsArr, { name: p.Grupo }].sort((a, b) => {
-            if (a.name < b.name) return -1
-            if (a.name > b.name) return 1
-            return 0
+        if (p.Grupo.toLowerCase().includes("combo")) {
+          err.push({
+            name: p.Nome ?? "Não definido",
+            type: p.Tipo ?? "Não definida",
+            group_id: p.Grupo ?? "Não definido",
+            price_sell: p.Preco ?? "Não definido",
           })
-
-          await Api.post("/group/createGroup", {
-            name: p.Grupo,
-            type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
-            status: true,
-          })
-            .then(({ category: newGroup }) => {
-              arr.push({
-                name: capitalizeWords(p.Nome),
-                type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
-                group_id: newGroup.id,
-                price_sell: p.Preco > 0 ? p.Preco : 100,
-              })
-
-              const newGrpK = groupsArr.findIndex(
-                (g) => g.name === newGroup.name
-              )
-              groupsArr[newGrpK] = newGroup
-              return
-            })
-            .catch((err) => {
-              err.push({
-                name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
-                type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
-                group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
-                price_sell: p.Preco ?? "Não definido",
-              })
-            })
         } else {
-          arr.push({
-            name: capitalizeWords(p.Nome),
-            type: p.Tipo,
-            group_id: matchedGroup.id,
-            price_sell: p.Preco > 0 ? p.Preco : 100,
-          })
+          // is not combo
+
+          let matchedGroup =
+            groupsArr.find(
+              (g) =>
+                String(g.name).trim().toLowerCase() ===
+                String(p.Grupo).trim().toLowerCase()
+            ) ??
+            groupList.find(
+              (g) =>
+                String(g.name).trim().toLowerCase() ===
+                String(p.Grupo).trim().toLowerCase()
+            )
+
+          if (!matchedGroup || typeof matchedGroup === "undefined") {
+            groupsArr = [...groupsArr, { name: p.Grupo, id }]
+
+            await Api.post("/group/createGroup", {
+              name: p.Grupo,
+              type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
+              status: true,
+            })
+              .then(({ category: newGroup }) => {
+                let obj = {
+                  name: capitalizeWords(p.Nome),
+                  type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
+                  group_id: newGroup.id,
+                  price_sell: p.Preco > 0 ? p.Preco : 100,
+                }
+                arr.push(obj)
+
+                const newGrpK = groupsArr.findIndex(
+                  (g) => g.name === newGroup.name
+                )
+                groupsArr[newGrpK] = newGroup
+              })
+              .catch((error) => {
+                err.push({
+                  name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
+                  type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
+                  group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
+                  price_sell: p.Preco ?? "Não definido",
+                })
+              })
+          } else {
+            let obj = {
+              name: capitalizeWords(p.Nome),
+              type: p.Tipo,
+              group_id: matchedGroup.id,
+              price_sell: p.Preco > 0 ? p.Preco : 100,
+            }
+            arr.push(obj)
+          }
         }
       } else {
         err.push({
@@ -398,12 +415,98 @@ const Product = () => {
         })
       }
 
-      if (id === data.length - 1) setGroupList(groupsArr)
-    })
+      if (id === data.length - 1) {
+        setGroupList(
+          groupsArr.sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+          })
+        )
+      }
+    }
 
     return {
       arr,
       err,
+    }
+  }
+
+  const createGroup = async (name, type) => {
+    const { category: newGroup } = await Api.post("/group/createGroup", {
+      name,
+      type,
+      status: true,
+    })
+
+    return newGroup ?? { id: "" }
+  }
+
+  const getComboGroup = async (newCombo) => {
+    return new Promise(async (resolve) => {
+      const combosGroup = groupList.find(
+        (g) =>
+          (g.name.trim().toLowerCase().includes("combos importados") ||
+            g.name.trim().toLowerCase() === newCombo.group_id) &&
+          g.id !== "combo"
+      )
+
+      if (combosGroup) resolve(combosGroup)
+      else {
+        if (!hasImportedGroup) {
+          const newGroup = await createGroup("Combos importados", newCombo.type)
+          setHasImportedGroup(true)
+          setGroupList([...groupList, newGroup])
+          resolve(newGroup)
+        }
+      }
+    })
+  }
+
+  const getProductsInName = (comboName) => {
+    let list = []
+
+    const prodsNames = comboName.split("+").map((p) => p.trim())
+
+    prodsNames.forEach((pn) => {
+      const pData = data.find((dItem) =>
+        dItem.name.trim().toLowerCase().includes(pn.toLowerCase())
+      )
+      if (pData) {
+        list.push(pData)
+      }
+    })
+
+    return list
+  }
+
+  const getComboFormData = async (newCombo, comboGroup) => {
+    const formData = new FormData()
+
+    const group = comboGroup ?? (await getComboGroup(newCombo))
+    const prods = getProductsInName(newCombo.name)
+
+    formData.append("status", true)
+    formData.append("name", newCombo.name)
+    formData.append("image", "")
+    formData.append("direction", newCombo.type)
+    formData.append("favorite", false)
+    formData.append("description1", "")
+    formData.append("description2", "")
+    formData.append("group_id", group.id ?? "")
+    formData.append("product_list", JSON.stringify(prods))
+    formData.append("ticket_type", "unica")
+    formData.append("price_sell", newCombo.price_sell)
+    formData.append("price_cost", 0)
+    formData.append("print_qrcode", false)
+    formData.append("print_ticket", true)
+    formData.append("print_local", true)
+    formData.append("print_date", true)
+    formData.append("print_value", true)
+
+    return {
+      formData,
+      registeredComboGroup: group && !comboGroup ? group : null,
     }
   }
 
@@ -458,29 +561,53 @@ const Product = () => {
       await new Promise(async (resolve) => {
         let noAdded = fData.err
         let added = 0
-        fData.arr.forEach(async (i, k) => {
-          const formData = getFormData(i)
+        let importedCombos = null
+        let combos = []
 
-          await Api.post("/product/createProduct", formData, {
+        for (let k = 0; k < fData.arr.length; k++) {
+          const i = fData.arr[k]
+
+          if (!i.isCombo) {
+            const formData = getFormData(i)
+
+            await Api.post(`/product/createProduct`, formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            })
+              .then(() => {
+                added = added + 1
+              })
+              .catch(() => {
+                noAdded.push(i)
+              })
+          } else {
+            combos.push(i)
+          }
+        }
+
+        /* Combos insertions
+        for (let k = 0; k < combos.length; k++) {
+          const i = combos[k]
+
+          const { formData, registeredComboGroup } = await getComboFormData(
+            i,
+            importedCombos
+          )
+
+          if (registeredComboGroup) importedCombos = registeredComboGroup
+
+          await Api.post(`/product/createCombo`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           })
             .then(() => {
-              if (k === fData.arr.length - 1) {
-                resolve({
-                  added: added + 1,
-                  noAdded,
-                })
-              } else added = added + 1
+              added = added + 1
             })
             .catch(() => {
-              if (k === fData.arr.length - 1) {
-                resolve({
-                  added,
-                  noAdded: [...noAdded, i],
-                })
-              } else noAdded.push(i)
+              noAdded.push(i)
             })
-        })
+        }
+        */
+
+        resolve({ added, noAdded })
       }).then((result) => {
         setErrData(result.noAdded)
         setDialogMessage(
