@@ -4,9 +4,13 @@ import {
   DialogContent,
   DialogTitle,
   Button,
+  FormControl,
   FormControlLabel,
   CircularProgress,
   DialogActions,
+  FormLabel,
+  RadioGroup,
+  Radio,
 } from "@material-ui/core"
 
 import useStyles from "../../../global/styles"
@@ -14,10 +18,18 @@ import { GreenSwitch } from "../../../components/Switch"
 
 const DECIMAL_SIZE = 2
 
-const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
+const ModalNewRelease = ({
+  show,
+  closeFn,
+  singleInfo,
+  insertRelease,
+  updateRelease,
+}) => {
   const styles = useStyles()
 
   const [isCreating, setIsCreating] = useState(false)
+  const [isTaxQnt, setIsTaxQnt] = useState("tax")
+  const [isInOut, setIsInOut] = useState("in")
   const [isTax, setIsTax] = useState(false)
   const [isDebt, setIsDebt] = useState(false)
   const [finishMessage, setFinishMessage] = useState(null)
@@ -27,21 +39,30 @@ const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
   const [taxQnt, setTaxQnt] = useState(0)
   const [currentVal, setCurrentVal] = useState("0,00")
 
-  const handleEdit = () => {
-    // edit
-  }
-
-  const handleInsert = () => {
-    console.log(currentVal)
-    insertRelease({
+  const generateObj = () => {
+    let obj = {
       name,
       description,
       tax: taxQnt,
       isTax,
       isDebt,
-      value: Number.parseFloat(currentVal.replace(',', '.')) * 100,
-    })
+      value: Number.parseFloat(currentVal.replace(",", ".")) * 100,
+    }
 
+    if (singleInfo && singleInfo.id) obj.id = singleInfo.id
+
+    return obj
+  }
+
+  const handleEdit = () => {
+    const data = generateObj()
+    updateRelease(data)
+    closeModal()
+  }
+
+  const handleInsert = () => {
+    const data = generateObj()
+    insertRelease(data)
     closeModal()
   }
 
@@ -50,6 +71,8 @@ const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
     setDescription("")
     setTaxQnt(0)
     setCurrentVal("0,00")
+    setIsTaxQnt("qnt")
+    setIsTaxQnt("in")
     setIsTax(false)
     setIsDebt(false)
 
@@ -68,25 +91,52 @@ const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
     const newStr = [
       unccomaStr.slice(0, sizeSlice),
       ".",
-      unccomaStr.slice(sizeSlice),
+      unccomaStr.slice(sizeSlice).padStart(2, "0"),
     ].join("")
 
-    return Number.parseFloat(newStr).toFixed(2).replace(".", ",")
+    const n = Number.parseFloat(newStr).toFixed(2).replace(".", ",")
+
+    return n
   }
 
   const handleValue = (val) => {
-    const masked = getMaskedValue(val)
-    setCurrentVal(masked)
+    if (val.length > 0) {
+      const masked = getMaskedValue(val)
+      setCurrentVal(masked)
+    } else {
+      setCurrentVal("0,00")
+    }
   }
 
   useEffect(() => {
     if (singleInfo) {
+      let treatedValue = 0
+      if (singleInfo.value > 0) {
+        treatedValue = parseFloat(singleInfo.value / 100)
+          .toFixed(2)
+          .replace(".", ",")
+      } else {
+        treatedValue = "0,00"
+      }
+
       setName(singleInfo.name)
       setDescription(singleInfo.description)
       setTaxQnt(singleInfo.tax)
-      setCurrentVal(`${singleInfo.value}`)
+      setIsTaxQnt(singleInfo.isTax ? "tax" : "qnt")
+      setIsInOut(singleInfo.isDebt ? "out" : "in")
+      setIsTax(singleInfo.isTax)
+      setIsDebt(singleInfo.isDebt)
+      setCurrentVal(treatedValue)
     }
   }, [singleInfo])
+
+  useEffect(() => {
+    setIsTax(isTaxQnt === "tax")
+  }, [isTaxQnt])
+
+  useEffect(() => {
+    setIsDebt(isInOut === "out")
+  }, [isInOut])
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="md">
@@ -159,28 +209,61 @@ const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
               </div>
             </div>
             <div style={customStyles.togglersArea}>
-              <FormControlLabel
-                label="É taxa?"
-                name="isTax"
-                value={isTax}
-                control={
-                  <GreenSwitch
-                    checked={isTax}
-                    onChange={(e) => setIsTax(e.target.checked)}
+              <FormControl>
+                <FormLabel id="demo-controlled-radio-buttons-group">
+                  Taxa ou Quantidade
+                </FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-controlled-radio-buttons-group"
+                  name="controlled-radio-buttons-group"
+                  value={isTaxQnt}
+                  onChange={(e) => setIsTaxQnt(e.target.value)}
+                >
+                  <FormControlLabel
+                    value={"tax"}
+                    control={
+                      <Radio color="primary" checked={isTaxQnt === "tax"} />
+                    }
+                    label="Taxa"
                   />
-                }
-              />
-              <FormControlLabel
-                label="É saída?"
-                name="isDebt"
-                value={isDebt}
-                control={
-                  <GreenSwitch
-                    checked={isDebt}
-                    onChange={(e) => setIsDebt(e.target.checked)}
+                  <FormControlLabel
+                    value={"qnt"}
+                    control={
+                      <Radio color="primary" checked={isTaxQnt === "qnt"} />
+                    }
+                    label="Quantidade"
                   />
-                }
-              />
+                </RadioGroup>
+              </FormControl>
+
+              <FormControl>
+                <FormLabel id="demo-controlled-radio-buttons-group">
+                  Entrada ou saída
+                </FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-controlled-radio-buttons-group"
+                  name="controlled-radio-buttons-group"
+                  value={isInOut}
+                  onChange={(e) => setIsInOut(e.target.value)}
+                >
+                  <FormControlLabel
+                    value={"in"}
+                    control={
+                      <Radio color="primary" checked={isInOut === "in"} />
+                    }
+                    label="Entrada"
+                  />
+                  <FormControlLabel
+                    value={"out"}
+                    control={
+                      <Radio color="primary" checked={isInOut === "out"} />
+                    }
+                    label="saida"
+                  />
+                </RadioGroup>
+              </FormControl>
             </div>
           </div>
 

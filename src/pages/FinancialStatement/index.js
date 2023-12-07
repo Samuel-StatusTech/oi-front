@@ -9,8 +9,20 @@ const FinancialStatement = ({ event }) => {
   const [releases, setReleases] = useState([])
 
   const insertRelease = (rInfo) => {
-    const newArr = [...releases, {...rInfo, id: releases.length}]
+    const obj = {...rInfo, id: `${releases.length}`}
+    const newArr = [...releases, obj]
     setReleases(newArr)
+  }
+
+  const updateRelease = (rInfo) => {
+
+    const idx = releases.findIndex(r => r.id === rInfo.id)
+    
+    if(idx > -1) {
+      let newArr = [...releases]
+      newArr[idx] = rInfo
+      setReleases(newArr)
+    }
   }
 
   const deleteRelease = (rInfo) => {
@@ -24,9 +36,7 @@ const FinancialStatement = ({ event }) => {
   }
 
   const editSingle = (info) => {
-    setSingleInfo({
-      ...info, value: info.value/100
-    })
+    setSingleInfo(info)
     setShowReleaseModal(true)
   }
 
@@ -44,6 +54,7 @@ const FinancialStatement = ({ event }) => {
         }}
         singleInfo={singleInfo}
         insertRelease={insertRelease}
+        updateRelease={updateRelease}
       />
       <div
         style={{
