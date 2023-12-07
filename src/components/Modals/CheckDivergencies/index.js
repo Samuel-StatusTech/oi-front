@@ -168,7 +168,7 @@ const ModalCheck = ({
     return log.filter((transaction) => {
       const isValidated = transaction.status === "validado"
 
-      if(isValidated) {
+      if (isValidated) {
         const hasCashPay = transaction.payments.some((p) =>
           "dinheiro".includes(p.payment_type.toLowerCase())
         )
@@ -177,7 +177,7 @@ const ModalCheck = ({
           transaction.payments.filter(
             (p) => !p.payment_type.toLowerCase().includes("dinheiro")
           ).length > 0
-  
+
         if (isValidated && !hasMultiplus && !hasCashPay) return true
         if (isValidated && hasMultiplus && hasAnotherPayment) return true
 

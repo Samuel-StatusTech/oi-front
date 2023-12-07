@@ -6,6 +6,17 @@ import ModalNewRelease from "../../components/Modals/NewRelease"
 const FinancialStatement = ({ event }) => {
   const [showReleaseModal, setShowReleaseModal] = useState(false)
   const [singleInfo, setSingleInfo] = useState(null)
+  const [releases, setReleases] = useState([])
+
+  const insertRelease = (rInfo) => {
+    const newArr = [...releases, {...rInfo, id: releases.length}]
+    setReleases(newArr)
+  }
+
+  const deleteRelease = (rInfo) => {
+    const newArr = releases.filter(r => r.id !== rInfo.id)
+    setReleases(newArr)
+  }
 
   const toggleModal = () => {
     if (showReleaseModal) setShowReleaseModal(false)
@@ -13,7 +24,9 @@ const FinancialStatement = ({ event }) => {
   }
 
   const editSingle = (info) => {
-    setSingleInfo(info)
+    setSingleInfo({
+      ...info, value: info.value/100
+    })
     setShowReleaseModal(true)
   }
 
@@ -30,6 +43,7 @@ const FinancialStatement = ({ event }) => {
           concludeSingle()
         }}
         singleInfo={singleInfo}
+        insertRelease={insertRelease}
       />
       <div
         style={{
@@ -40,6 +54,8 @@ const FinancialStatement = ({ event }) => {
           event={event}
           toggleModal={toggleModal}
           editSingle={editSingle}
+          deleteRelease={deleteRelease}
+          releases={releases}
         />
       </div>
     </>

@@ -1,60 +1,90 @@
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   Button,
-  Typography,
+  FormControlLabel,
   CircularProgress,
   DialogActions,
 } from "@material-ui/core"
 
-import Api from "../../../api"
 import useStyles from "../../../global/styles"
-import csvtojson from "csvtojson"
+import { GreenSwitch } from "../../../components/Switch"
 
-const ModalNewRelease = ({ show, closeFn, singleInfo }) => {
+const DECIMAL_SIZE = 2
+
+const ModalNewRelease = ({ show, closeFn, singleInfo, insertRelease }) => {
   const styles = useStyles()
 
   const [isCreating, setIsCreating] = useState(false)
   const [isTax, setIsTax] = useState(false)
+  const [isDebt, setIsDebt] = useState(false)
   const [finishMessage, setFinishMessage] = useState(null)
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [taxQnt, setTaxQnt] = useState(0)
-  const [value, setValue] = useState(0)
+  const [currentVal, setCurrentVal] = useState("0,00")
+
+  const handleEdit = () => {
+    // edit
+  }
+
+  const handleInsert = () => {
+    console.log(currentVal)
+    insertRelease({
+      name,
+      description,
+      tax: taxQnt,
+      isTax,
+      isDebt,
+      value: Number.parseFloat(currentVal.replace(',', '.')) * 100,
+    })
+
+    closeModal()
+  }
 
   const closeModal = () => {
     setName("")
     setDescription("")
     setTaxQnt(0)
-    setValue(0)
+    setCurrentVal("0,00")
+    setIsTax(false)
+    setIsDebt(false)
 
     closeFn()
   }
 
-  const handleTaxQnt = (value) => {
-    const filtered = value
-      // .replace(/\D+/g, "")
+  const handleTaxQnt = (val) => {
+    const filtered = val.replace(/\D/g, "")
     setTaxQnt(filtered)
   }
 
-  const handleValue = (value) => {
-    const isNegative = Number(value) < 0
+  const getMaskedValue = (val) => {
+    const unccomaStr = val.replace(",", "").replace(".", "")
 
-    const filtered = value.replace(/\D+/g, "")
+    const sizeSlice = unccomaStr.length - DECIMAL_SIZE
+    const newStr = [
+      unccomaStr.slice(0, sizeSlice),
+      ".",
+      unccomaStr.slice(sizeSlice),
+    ].join("")
 
-    setValue(`${isNegative ? "-" : ""}${filtered}`)
+    return Number.parseFloat(newStr).toFixed(2).replace(".", ",")
+  }
+
+  const handleValue = (val) => {
+    const masked = getMaskedValue(val)
+    setCurrentVal(masked)
   }
 
   useEffect(() => {
-
     if (singleInfo) {
       setName(singleInfo.name)
       setDescription(singleInfo.description)
       setTaxQnt(singleInfo.tax)
-      setValue(singleInfo.value)
+      setCurrentVal(`${singleInfo.value}`)
     }
   }, [singleInfo])
 
@@ -112,15 +142,45 @@ const ModalNewRelease = ({ show, closeFn, singleInfo }) => {
                 <label style={customStyles.label} htmlFor={"newValue"}>
                   Valor
                 </label>
-                <input
-                  style={customStyles.input}
-                  type="text"
-                  name="value"
-                  value={value}
-                  onChange={(e) => handleValue(e.target.value)}
-                  placeholder="Valor do lançamento"
-                />
+                <div style={customStyles.moneyInputArea}>
+                  <div style={customStyles.currencyBox}>
+                    <span>R$</span>
+                  </div>
+                  <input
+                    style={customStyles.currencyInput}
+                    type="text"
+                    name="value"
+                    // value={format(value, { code: 'BRL' })}
+                    value={currentVal}
+                    onChange={(e) => handleValue(e.target.value)}
+                    placeholder="Valor do lançamento"
+                  />
+                </div>
               </div>
+            </div>
+            <div style={customStyles.togglersArea}>
+              <FormControlLabel
+                label="É taxa?"
+                name="isTax"
+                value={isTax}
+                control={
+                  <GreenSwitch
+                    checked={isTax}
+                    onChange={(e) => setIsTax(e.target.checked)}
+                  />
+                }
+              />
+              <FormControlLabel
+                label="É saída?"
+                name="isDebt"
+                value={isDebt}
+                control={
+                  <GreenSwitch
+                    checked={isDebt}
+                    onChange={(e) => setIsDebt(e.target.checked)}
+                  />
+                }
+              />
             </div>
           </div>
 
@@ -142,9 +202,7 @@ const ModalNewRelease = ({ show, closeFn, singleInfo }) => {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => {
-              //
-            }}
+            onClick={singleInfo ? handleEdit : handleInsert}
             style={{
               cursor: "pointer",
             }}
@@ -188,6 +246,8 @@ const customStyles = {
     flexDirection: "column",
     gap: 24,
     maxHeight: "60vh",
+    paddingBottom: 24,
+    borderBottom: "1px solid #CECECE",
   },
   inputContainer: {
     display: "flex",
@@ -199,6 +259,18 @@ const customStyles = {
     fontSize: 16,
     fontWeight: 500,
   },
+  moneyInputArea: {
+    boxShadow: "0 2px 4px 1px rgba(0, 0, 0, 0.2)",
+    borderRadius: 4,
+    overflow: "hidden",
+    width: 300,
+    display: "flex",
+  },
+  currencyBox: {
+    padding: 8,
+    backgroundColor: "#F1F1F1",
+    borderRight: "1px solid #CECECE",
+  },
   input: {
     padding: 8,
     borderRadius: 4,
@@ -207,6 +279,17 @@ const customStyles = {
     border: "none",
     outline: "none",
     boxShadow: "0 2px 4px 1px rgba(0, 0, 0, 0.2)",
+  },
+  currencyInput: {
+    padding: 8,
+    fontSize: 16,
+    flex: 1,
+    border: "none",
+    outline: "none",
+  },
+  togglersArea: {
+    display: "flex",
+    gap: 24,
   },
 }
 

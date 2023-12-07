@@ -71,9 +71,8 @@ const CardValue = ({ infos, editSingle }) => {
 }
 
 export default (props) => {
+  const { toggleModal, editSingle, deleteRelease, releases } = props
 
-  const { toggleModal, editSingle } = props
-  
   const [loading, setLoading] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
   const styles = useStyles()
@@ -81,20 +80,6 @@ export default (props) => {
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
-  const [releases, setReleases] = useState([
-    {
-      name: 'Lançamento 1',
-      description: "Algum gasto importante",
-      tax: 10,
-      value: -1000,
-    },
-    {
-      name: 'Lançamento 2',
-      description: "Descrição do lançamento",
-      tax: 10,
-      value: 1000,
-    },
-  ])
 
   const [cardInfo, setCardInfo] = useState({})
   const [payment, setPayment] = useState({
@@ -163,9 +148,7 @@ export default (props) => {
         icon: { src: returnsTotalIcon, alt: "Ícone dinheiro" },
         value: payment.gross.money,
         smallLabel: (
-          <>
-            Líquido: {format(payment.gross.money / 100, { code: "BRL" })}
-          </>
+          <>Líquido: {format(payment.gross.money / 100, { code: "BRL" })}</>
         ),
       },
       {
@@ -173,9 +156,7 @@ export default (props) => {
         icon: { src: debitTotalIcon, alt: "Ícone vendas débito" },
         value: payment.gross.debit,
         smallLabel: (
-          <>
-            Líquido: {format(payment.net.debit / 100, { code: "BRL" })}
-          </>
+          <>Líquido: {format(payment.net.debit / 100, { code: "BRL" })}</>
         ),
       },
       {
@@ -183,9 +164,7 @@ export default (props) => {
         icon: { src: creditTotalIcon, alt: "Ícone vendas crédito" },
         value: payment.gross.credit,
         smallLabel: (
-          <>
-            Líquido: {format(payment.net.credit / 100, { code: "BRL" })}
-          </>
+          <>Líquido: {format(payment.net.credit / 100, { code: "BRL" })}</>
         ),
       },
       {
@@ -193,30 +172,20 @@ export default (props) => {
         icon: { src: pixTotalIcon, alt: "Ícone vendas pix" },
         value: payment.gross.pix,
         smallLabel: (
-          <>
-            Líquido: {format(payment.net.pix / 100, { code: "BRL" })}
-          </>
+          <>Líquido: {format(payment.net.pix / 100, { code: "BRL" })}</>
         ),
       },
       {
         title: "Loja Virtual",
         icon: { src: virtualIcon, alt: "Ícone loja virtual" },
         value: 0,
-        smallLabel: (
-          <>
-            Líquido: {format(0, { code: "BRL" })}
-          </>
-        ),
+        smallLabel: <>Líquido: {format(0, { code: "BRL" })}</>,
       },
       {
         title: "Outras Receitas",
         icon: { src: othersIcon, alt: "Ícone outras receitas" },
         value: 0,
-        smallLabel: (
-          <>
-            Líquido: {format(0, { code: "BRL" })}
-          </>
-        ),
+        smallLabel: <>Líquido: {format(0, { code: "BRL" })}</>,
       },
     ],
   }
@@ -240,23 +209,21 @@ export default (props) => {
     editSingle(info)
   }
 
-  const deleteRelease = async () => {}
-
   const columns = [
     {
       title: (
         <Typography style={{ fontWeight: "bold", marginLeft: 15 }}>
-          Lançamento
+          Entrada / Saída
         </Typography>
       ),
       field: "status",
-      render: ({ value }) => {
+      render: ({ isDebt }) => {
         // const { status } = name
 
         return (
           <td
             class="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall"
-            value={value}
+            value={isDebt}
             style={{
               color: "inherit",
               boxSizing: "border-box",
@@ -279,7 +246,7 @@ export default (props) => {
                   width: 15,
                   height: 15,
                   borderRadius: 20,
-                  background: value < 0 ? "#E7345B" : "#0097FF",
+                  background: isDebt ? "#E7345B" : "#0097FF",
                   justifySelf: "center",
                   position: "absolute",
                   transform: "translate(-20px)",
@@ -289,6 +256,15 @@ export default (props) => {
           </td>
         )
       },
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Lançamento</Typography>,
+      field: "name",
+      render: ({ name }) => (
+        <td>
+          <span>{name}</span>
+        </td>
+      ),
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Descrição</Typography>,
@@ -304,26 +280,26 @@ export default (props) => {
         <Typography style={{ fontWeight: "bold" }}>Taxa / Qtde</Typography>
       ),
       field: "tax",
-      render: ({ tax }) => (
+      render: ({ tax, isTax }) => (
         <td>
-          <span>{tax}</span>
+          <span>{`${tax}${isTax ? "%" : ""}`}</span>
         </td>
       ),
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
       field: "value",
-      render: ({ value }) => (
+      render: ({ value, isDebt }) => (
         <td>
-          <span style={{color: value < 0 ? "#E7345B" : "#70E080"}}>
+          <span style={{ color: isDebt ? "#E7345B" : "#70E080" }}>
             {format(value / 100, { code: "BRL" })}
           </span>
         </td>
       ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
-      field: "value",
+      title: <Typography style={{ fontWeight: "bold" }}>Ações</Typography>,
+      field: "actions",
       render: (info) => (
         <td>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -334,7 +310,7 @@ export default (props) => {
               Editar
             </Button>
             <Button
-              onClick={deleteRelease}
+              onClick={() => deleteRelease(info)}
               style={{ color: "#E7345B", border: "1px solid #E7345B" }}
             >
               Excluir
@@ -437,75 +413,75 @@ export default (props) => {
             </Grid>
             <Grid container style={{ flex: 1 }}>
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <EaseGrid
-                  className={styles.paddingT30}
-                  title={
-                    <div
-                      className={styles.flexRow}
-                      style={{
-                        gap: 24,
-                      }}
-                    >
-                      <Typography className={styles.h2}>
-                        Extrato de lançamentos
-                      </Typography>
+                {releases && (
+                  <EaseGrid
+                    className={styles.paddingT30}
+                    title={
                       <div
+                        className={styles.flexRow}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
                           gap: 24,
                         }}
                       >
-                        <Button
-                          onClick={exportPdfReleases}
+                        <Typography className={styles.h2}>
+                          Extrato de lançamentos
+                        </Typography>
+                        <div
                           style={{
-                            color: "#0097FF",
-                            border: "1px solid #0097FF",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 24,
                           }}
                         >
-                          {loadingReport ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                flexDirection: "row",
-                                flex: 1,
-                                justifyContent: "center",
-                              }}
-                            >
-                              <CircularProgress size={20} color="#0097FF" />
-                            </div>
-                          ) : (
-                            "Gerar PDF"
-                          )}
-                        </Button>
-                        <Button
-                          onClick={sendWhatsapp}
-                          style={{
-                            color: "#0097FF",
-                            border: "1px solid #0097FF",
-                          }}
-                        >
-                          Enviar WhatsApp
-                        </Button>
-                        <Button
-                          onClick={addRelease}
-                          style={{
-                            color: "#0097FF",
-                            border: "1px solid #0097FF",
-                          }}
-                        >
-                          Registrar Lançamento
-                        </Button>
+                          <Button
+                            onClick={exportPdfReleases}
+                            style={{
+                              color: "#0097FF",
+                              border: "1px solid #0097FF",
+                            }}
+                          >
+                            {loadingReport ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "row",
+                                  flex: 1,
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <CircularProgress size={20} color="#0097FF" />
+                              </div>
+                            ) : (
+                              "Gerar PDF"
+                            )}
+                          </Button>
+                          <Button
+                            onClick={sendWhatsapp}
+                            style={{
+                              color: "#0097FF",
+                              border: "1px solid #0097FF",
+                            }}
+                          >
+                            Enviar WhatsApp
+                          </Button>
+                          <Button
+                            onClick={addRelease}
+                            style={{
+                              color: "#0097FF",
+                              border: "1px solid #0097FF",
+                            }}
+                          >
+                            Registrar Lançamento
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  }
-                  data={releases}
-                  columns={columns}
-                  loading={loading}
-                  pageSize={releases.length}
-                  pageSizeOptions={setSizeOptions(releases.length)}
-                  paging={true}
-                />
+                    }
+                    data={releases}
+                    columns={columns}
+                    loading={loading}
+                    paging={false}
+                  />
+                )}
               </Grid>
             </Grid>
           </Grid>
