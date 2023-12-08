@@ -14,9 +14,37 @@ import {
 } from "@material-ui/core"
 
 import useStyles from "../../../global/styles"
-import { GreenSwitch } from "../../../components/Switch"
+
+import { ReactComponent as Arrow } from "../../../assets/icons/arrow.svg"
 
 const DECIMAL_SIZE = 2
+
+const defaultReleaseTypes = [
+  {
+    id: "0",
+    name: "Serviços",
+  },
+  {
+    id: "1",
+    name: "Vendas",
+  },
+  {
+    id: "2",
+    name: "Pagamentos",
+  },
+  {
+    id: "3",
+    name: "Antecipação",
+  },
+  {
+    id: "4",
+    name: "Descontos",
+  },
+  {
+    id: "5",
+    name: "Outros",
+  },
+]
 
 const ModalNewRelease = ({
   show,
@@ -30,22 +58,25 @@ const ModalNewRelease = ({
   const [isCreating, setIsCreating] = useState(false)
   const [isTaxQnt, setIsTaxQnt] = useState("tax")
   const [isInOut, setIsInOut] = useState("in")
-  const [isTax, setIsTax] = useState(false)
-  const [isDebt, setIsDebt] = useState(false)
   const [finishMessage, setFinishMessage] = useState(null)
 
-  const [name, setName] = useState("")
+  const [dropdownView, setDropdownView] = useState(false)
+
+  const [releaseType, setReleaseType] = useState(defaultReleaseTypes[0])
   const [description, setDescription] = useState("")
   const [taxQnt, setTaxQnt] = useState(0)
   const [currentVal, setCurrentVal] = useState("0,00")
 
+  const toggleDropdown = () => {
+    setDropdownView(!dropdownView)
+  }
+
   const generateObj = () => {
     let obj = {
-      name,
+      releaseType,
       description,
       tax: taxQnt,
-      isTax,
-      isDebt,
+      isDebt: isInOut === "out",
       value: Number.parseFloat(currentVal.replace(",", ".")) * 100,
     }
 
@@ -67,14 +98,11 @@ const ModalNewRelease = ({
   }
 
   const closeModal = () => {
-    setName("")
+    setReleaseType(defaultReleaseTypes[0])
     setDescription("")
     setTaxQnt(0)
-    setCurrentVal("0,00")
-    setIsTaxQnt("qnt")
     setIsTaxQnt("in")
-    setIsTax(false)
-    setIsDebt(false)
+    setCurrentVal("0,00")
 
     closeFn()
   }
@@ -108,35 +136,28 @@ const ModalNewRelease = ({
     }
   }
 
+  const handleDropdown = (relItem) => {
+    setReleaseType(relItem)
+    setDropdownView(false)
+  }
+
   useEffect(() => {
     if (singleInfo) {
       let treatedValue = 0
+
       if (singleInfo.value > 0) {
         treatedValue = parseFloat(singleInfo.value / 100)
           .toFixed(2)
           .replace(".", ",")
-      } else {
-        treatedValue = "0,00"
-      }
+      } else treatedValue = "0,00"
 
-      setName(singleInfo.name)
+      setReleaseType(singleInfo.releaseType)
       setDescription(singleInfo.description)
       setTaxQnt(singleInfo.tax)
-      setIsTaxQnt(singleInfo.isTax ? "tax" : "qnt")
       setIsInOut(singleInfo.isDebt ? "out" : "in")
-      setIsTax(singleInfo.isTax)
-      setIsDebt(singleInfo.isDebt)
       setCurrentVal(treatedValue)
     }
   }, [singleInfo])
-
-  useEffect(() => {
-    setIsTax(isTaxQnt === "tax")
-  }, [isTaxQnt])
-
-  useEffect(() => {
-    setIsDebt(isInOut === "out")
-  }, [isInOut])
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="md">
@@ -151,16 +172,32 @@ const ModalNewRelease = ({
             <div style={customStyles.inputsArea}>
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newName"}>
-                  Nome
+                  Tipo
                 </label>
-                <input
-                  style={customStyles.input}
-                  type="text"
-                  name="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Nome do lançamento"
-                />
+                <div style={customStyles.selectWrapper}>
+                  <button style={customStyles.select} onClick={toggleDropdown}>
+                    <span>{releaseType.name}</span>
+                    <Arrow className={dropdownView ? "flipped" : ""} />
+                  </button>
+                  <div
+                    style={{
+                      ...customStyles.optionsList,
+                      ...{ display: dropdownView ? "flex" : "none" },
+                    }}
+                  >
+                    {defaultReleaseTypes.map((rt, k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        style={customStyles.option}
+                        onClick={() => handleDropdown(rt)}
+                        className="typeOptionItem"
+                      >
+                        {rt.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newDescription"}>
@@ -172,7 +209,7 @@ const ModalNewRelease = ({
                   name="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="De onde veio ou para onde vai"
+                  placeholder="Locação Sistema/Maq"
                 />
               </div>
               <div style={customStyles.inputContainer}>
@@ -210,37 +247,6 @@ const ModalNewRelease = ({
             </div>
             <div style={customStyles.togglersArea}>
               <FormControl>
-                <FormLabel id="demo-controlled-radio-buttons-group">
-                  Taxa ou Quantidade
-                </FormLabel>
-                <RadioGroup
-                  row
-                  aria-labelledby="demo-controlled-radio-buttons-group"
-                  name="controlled-radio-buttons-group"
-                  value={isTaxQnt}
-                  onChange={(e) => setIsTaxQnt(e.target.value)}
-                >
-                  <FormControlLabel
-                    value={"tax"}
-                    control={
-                      <Radio color="primary" checked={isTaxQnt === "tax"} />
-                    }
-                    label="Taxa"
-                  />
-                  <FormControlLabel
-                    value={"qnt"}
-                    control={
-                      <Radio color="primary" checked={isTaxQnt === "qnt"} />
-                    }
-                    label="Quantidade"
-                  />
-                </RadioGroup>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel id="demo-controlled-radio-buttons-group">
-                  Entrada ou saída
-                </FormLabel>
                 <RadioGroup
                   row
                   aria-labelledby="demo-controlled-radio-buttons-group"
@@ -253,14 +259,14 @@ const ModalNewRelease = ({
                     control={
                       <Radio color="primary" checked={isInOut === "in"} />
                     }
-                    label="Entrada"
+                    label="Debitar"
                   />
                   <FormControlLabel
                     value={"out"}
                     control={
                       <Radio color="primary" checked={isInOut === "out"} />
                     }
-                    label="saida"
+                    label="Creditar"
                   />
                 </RadioGroup>
               </FormControl>
@@ -341,6 +347,42 @@ const customStyles = {
   label: {
     fontSize: 16,
     fontWeight: 500,
+  },
+  select: {
+    padding: 8,
+    borderRadius: 4,
+    fontSize: 16,
+    width: 300,
+    border: "none",
+    outline: "none",
+    boxShadow: "0 2px 4px 1px rgba(0, 0, 0, 0.2)",
+    backgroundColor: "#FFF",
+    cursor: "pointer",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  selectWrapper: {
+    position: "relative",
+  },
+  optionsList: {
+    borderRadius: 4,
+    overflow: "hidden",
+    width: "100%",
+    flexDirection: "column",
+    position: "absolute",
+    top: "calc(100% + 8px)",
+    boxShadow: "0 2px 6px 1px rgba(0, 0, 0, 0.4)",
+  },
+  option: {
+    padding: 8,
+    borderRadius: 4,
+    fontSize: 16,
+    width: "100%",
+    cursor: "pointer",
+    border: "none",
+    outline: "none",
+    display: "flex",
   },
   moneyInputArea: {
     boxShadow: "0 2px 4px 1px rgba(0, 0, 0, 0.2)",

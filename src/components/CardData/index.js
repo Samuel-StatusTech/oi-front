@@ -17,7 +17,7 @@ const CardData = ({ title, value = 0, icon, info = null, styleLabel = {}, smallL
               <Typography className={styles.h2} >{title}</Typography>
               <Typography className={styles.label} style={{...styleLabel}}>{value}</Typography>
             
-                {smallLabel && <Typography className={styles.labelSmallBold}> {smallLabel}
+                {smallLabel && <Typography className={styles.label} style={{fontSize: 12}}> {smallLabel}
                 </Typography> }
             </div>
             

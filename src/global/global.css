@@ -33,3 +33,16 @@ iframe {
 .groupSelected:hover svg {
 	opacity: 1;
 }
+
+.typeOptionItem {
+	background-color: #FFF;
+	transition: background-color .3s;
+}
+
+.typeOptionItem:hover {
+	background-color: #E9E9E9;
+}
+
+svg.flipped {
+	transform: rotate(180deg);
+}

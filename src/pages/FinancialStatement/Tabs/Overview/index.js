@@ -260,9 +260,9 @@ export default (props) => {
     {
       title: <Typography style={{ fontWeight: "bold" }}>Lançamento</Typography>,
       field: "name",
-      render: ({ name }) => (
+      render: ({ releaseType }) => (
         <td>
-          <span>{name}</span>
+          <span>{releaseType.name}</span>
         </td>
       ),
     },
@@ -280,9 +280,9 @@ export default (props) => {
         <Typography style={{ fontWeight: "bold" }}>Taxa / Qtde</Typography>
       ),
       field: "tax",
-      render: ({ tax, isTax }) => (
+      render: ({ tax }) => (
         <td>
-          <span>{`${tax}${isTax ? "%" : ""}`}</span>
+          <span>{`${tax}`}</span>
         </td>
       ),
     },
@@ -384,6 +384,10 @@ export default (props) => {
                         title={item.title}
                         smallLabel={item.smallLabel}
                         value={format(item.value / 100, { code: "BRL" })}
+                        styleLabel={{
+                          fontSize: 14,
+                          fontWeight: 600,
+                        }}
                         icon={item.icon}
                       />
                     </Grid>
