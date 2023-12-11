@@ -56,15 +56,15 @@ const ModalNewRelease = ({
   const styles = useStyles()
 
   const [isCreating, setIsCreating] = useState(false)
-  const [isTaxQnt, setIsTaxQnt] = useState("tax")
-  const [isInOut, setIsInOut] = useState("in")
   const [finishMessage, setFinishMessage] = useState(null)
 
   const [dropdownView, setDropdownView] = useState(false)
 
   const [releaseType, setReleaseType] = useState(defaultReleaseTypes[0])
-  const [description, setDescription] = useState("")
+  const [description, setDescription] = useState("Locação Sistema/Maq")
   const [taxQnt, setTaxQnt] = useState(0)
+  const [isInOut, setIsInOut] = useState("out")
+  const [unVal, setUnVal] = useState("0,00")
   const [currentVal, setCurrentVal] = useState("0,00")
 
   const toggleDropdown = () => {
@@ -77,6 +77,7 @@ const ModalNewRelease = ({
       description,
       tax: taxQnt,
       isDebt: isInOut === "out",
+      unitaryValue: Number.parseFloat(unVal.replace(",", ".")) * 100,
       value: Number.parseFloat(currentVal.replace(",", ".")) * 100,
     }
 
@@ -99,9 +100,10 @@ const ModalNewRelease = ({
 
   const closeModal = () => {
     setReleaseType(defaultReleaseTypes[0])
-    setDescription("")
+    setDescription("Locação Sistema/Maq")
     setTaxQnt(0)
-    setIsTaxQnt("in")
+    setIsInOut("out")
+    setUnVal("0,00")
     setCurrentVal("0,00")
 
     closeFn()
@@ -109,7 +111,7 @@ const ModalNewRelease = ({
 
   const handleTaxQnt = (val) => {
     const filtered = val.replace(/\D/g, "")
-    setTaxQnt(filtered)
+    setTaxQnt(Number(filtered))
   }
 
   const getMaskedValue = (val) => {
@@ -127,12 +129,17 @@ const ModalNewRelease = ({
     return n
   }
 
-  const handleValue = (val) => {
+  const changeField = (field, val) => {
+    if (field === "total") setCurrentVal(val)
+    if (field === "un") setUnVal(val)
+  }
+
+  const handleValue = (val, field) => {
     if (val.length > 0) {
       const masked = getMaskedValue(val)
-      setCurrentVal(masked)
+      changeField(field, masked)
     } else {
-      setCurrentVal("0,00")
+      setCurrentVal(field, "0,00")
     }
   }
 
@@ -143,18 +150,26 @@ const ModalNewRelease = ({
 
   useEffect(() => {
     if (singleInfo) {
+      let treatedUnValue = 0
       let treatedValue = 0
 
       if (singleInfo.value > 0) {
+        treatedUnValue = parseFloat(singleInfo.unVal / 100)
+          .toFixed(2)
+          .replace(".", ",")
         treatedValue = parseFloat(singleInfo.value / 100)
           .toFixed(2)
           .replace(".", ",")
-      } else treatedValue = "0,00"
+      } else {
+        treatedUnValue = "0,00"
+        treatedValue = "0,00"
+      }
 
       setReleaseType(singleInfo.releaseType)
       setDescription(singleInfo.description)
       setTaxQnt(singleInfo.tax)
       setIsInOut(singleInfo.isDebt ? "out" : "in")
+      setUnVal(treatedUnValue)
       setCurrentVal(treatedValue)
     }
   }, [singleInfo])
@@ -209,7 +224,7 @@ const ModalNewRelease = ({
                   name="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Locação Sistema/Maq"
+                  placeholder="Descreva o lançamento"
                 />
               </div>
               <div style={customStyles.inputContainer}>
@@ -225,9 +240,27 @@ const ModalNewRelease = ({
                   placeholder="Taxa / Quantidade"
                 />
               </div>
+              {/* valor un */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newValue"}>
-                  Valor
+                  Valor Unitário
+                </label>
+                <div style={customStyles.moneyInputArea}>
+                  <div style={customStyles.currencyBox}>
+                    <span>R$</span>
+                  </div>
+                  <input
+                    style={customStyles.currencyInput}
+                    type="text"
+                    name="unvalue"
+                    value={unVal}
+                    onChange={(e) => handleValue(e.target.value, "un")}
+                  />
+                </div>
+              </div>
+              <div style={customStyles.inputContainer}>
+                <label style={customStyles.label} htmlFor={"newValue"}>
+                  Valor Total
                 </label>
                 <div style={customStyles.moneyInputArea}>
                   <div style={customStyles.currencyBox}>
@@ -237,10 +270,8 @@ const ModalNewRelease = ({
                     style={customStyles.currencyInput}
                     type="text"
                     name="value"
-                    // value={format(value, { code: 'BRL' })}
                     value={currentVal}
-                    onChange={(e) => handleValue(e.target.value)}
-                    placeholder="Valor do lançamento"
+                    onChange={(e) => handleValue(e.target.value, "total")}
                   />
                 </div>
               </div>
@@ -255,16 +286,16 @@ const ModalNewRelease = ({
                   onChange={(e) => setIsInOut(e.target.value)}
                 >
                   <FormControlLabel
-                    value={"in"}
+                    value={"out"}
                     control={
-                      <Radio color="primary" checked={isInOut === "in"} />
+                      <Radio color="primary" checked={isInOut === "out"} />
                     }
                     label="Debitar"
                   />
                   <FormControlLabel
-                    value={"out"}
+                    value={"in"}
                     control={
-                      <Radio color="primary" checked={isInOut === "out"} />
+                      <Radio color="primary" checked={isInOut === "in"} />
                     }
                     label="Creditar"
                   />
@@ -360,7 +391,7 @@ const customStyles = {
     cursor: "pointer",
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   selectWrapper: {
     position: "relative",
