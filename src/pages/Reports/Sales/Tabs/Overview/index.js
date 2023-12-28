@@ -377,9 +377,14 @@ export default (props) => {
   const exportPdfReportByType = async () => {
     if (loadingReport) return
     setLoadingReport(true)
+
+    const groupsStr = `${
+      selectedGroups.length > 0 ? selectedGroups[0].id : "all"
+    }`
+
     Api.post(`/reportPDF/product`, {
       event,
-      group,
+      group: selectedGroups.length > 0 ? groupsStr : "all",
       productType,
       courtesies: courtesies && courtesies != "all" ? courtesies : 0,
       dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",

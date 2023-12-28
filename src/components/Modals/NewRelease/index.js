@@ -276,37 +276,31 @@ const ModalNewRelease = ({
                 </div>
               </div>
             </div>
-            <div style={customStyles.togglersArea}>
-              <FormControl>
-                <RadioGroup
-                  row
-                  aria-labelledby="demo-controlled-radio-buttons-group"
-                  name="controlled-radio-buttons-group"
-                  value={isInOut}
-                  onChange={(e) => setIsInOut(e.target.value)}
-                >
-                  <FormControlLabel
-                    value={"out"}
-                    control={
-                      <Radio color="primary" checked={isInOut === "out"} />
-                    }
-                    label="Debitar"
-                  />
-                  <FormControlLabel
-                    value={"in"}
-                    control={
-                      <Radio color="primary" checked={isInOut === "in"} />
-                    }
-                    label="Creditar"
-                  />
-                </RadioGroup>
-              </FormControl>
-            </div>
           </div>
-
-          {finishMessage && (
-            <span style={{ textAlign: "center" }}>{finishMessage}</span>
-          )}
+          <div style={customStyles.togglersArea}>
+            <FormControl>
+              <RadioGroup
+                row
+                aria-labelledby="demo-controlled-radio-buttons-group"
+                name="controlled-radio-buttons-group"
+                value={isInOut}
+                onChange={(e) => setIsInOut(e.target.value)}
+              >
+                <FormControlLabel
+                  value={"out"}
+                  control={
+                    <Radio color="primary" checked={isInOut === "out"} />
+                  }
+                  label="Debitar"
+                />
+                <FormControlLabel
+                  value={"in"}
+                  control={<Radio color="primary" checked={isInOut === "in"} />}
+                  label="Creditar"
+                />
+              </RadioGroup>
+            </FormControl>
+          </div>
         </div>
       </DialogContent>
       <DialogActions>
