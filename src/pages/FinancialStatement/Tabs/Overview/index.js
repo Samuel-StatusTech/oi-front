@@ -8,10 +8,11 @@ import {
   Button,
 } from "@material-ui/core"
 
-import firebase from "firebase"
 import Api from "../../../../api"
 import axios from "axios"
 import { format } from "currency-formatter"
+
+import { releasesPerPage } from "../../index"
 
 import { Between } from "../../../../components/Input/DateTime"
 import { formatDateTimeToDB, formatDatetime } from "../../../../utils/date"
@@ -292,7 +293,7 @@ export default (props) => {
       title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
       field: "value",
       render: ({ total_value, operation }) => {
-        const isDebt = operation === 'debitar'
+        const isDebt = operation === "debitar"
 
         return (
           <td>
@@ -489,7 +490,9 @@ export default (props) => {
                     data={releases}
                     columns={columns}
                     loading={loading}
-                    paging={false}
+                    paging={releases.length > releasesPerPage}
+                    pageSize={releasesPerPage}
+                    pageSizeOptions={releasesPerPage}
                   />
                 )}
               </Grid>

@@ -4,16 +4,17 @@ import Overview from "./Tabs/Overview"
 import ModalNewRelease from "../../components/Modals/NewRelease"
 import Api from "../../api"
 
+export const releasesPerPage = 100
+
 const FinancialStatement = ({ event }) => {
   const [showReleaseModal, setShowReleaseModal] = useState(false)
   const [singleInfo, setSingleInfo] = useState(null)
   const [releases, setReleases] = useState([])
-  const [page] = useState(1)
 
   const insertRelease = async (rInfo) => {
     const add = await Api.post("/financialops", rInfo)
     if (add.status === 200) {
-      const newArr = [...releases, add.data.financialop]
+      const newArr = [add.data.financialop, ...releases]
       setReleases(newArr)
       return true
     } else {
@@ -57,8 +58,8 @@ const FinancialStatement = ({ event }) => {
     const req = await Api.get("/financialops", {
       params: {
         type: "todos",
-        per_page: 20,
-        page: page,
+        per_page: 100000,
+        page: 1,
       },
     })
 

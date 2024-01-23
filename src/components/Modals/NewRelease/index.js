@@ -307,14 +307,14 @@ const ModalNewRelease = ({
                 onChange={(e) => setOperation(e.target.value)}
               >
                 <FormControlLabel
-                  value={"out"}
+                  value={"debitar"}
                   control={
                     <Radio color="primary" checked={operation === "debitar"} />
                   }
                   label="Debitar"
                 />
                 <FormControlLabel
-                  value={"in"}
+                  value={"creditar"}
                   control={
                     <Radio color="primary" checked={operation === "creditar"} />
                   }
