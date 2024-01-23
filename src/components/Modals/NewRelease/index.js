@@ -22,26 +22,32 @@ const types = [
   {
     id: "0",
     name: "Serviços",
+    parsed: "Servicos",
   },
   {
     id: "1",
     name: "Vendas",
+    parsed: "Vendas",
   },
   {
     id: "2",
     name: "Pagamentos",
+    parsed: "Pagamentos",
   },
   {
     id: "3",
     name: "Antecipação",
+    parsed: "Antecipacao",
   },
   {
     id: "4",
     name: "Descontos",
+    parsed: "Descontos",
   },
   {
     id: "5",
     name: "Outros",
+    parsed: "Outros",
   },
 ]
 
@@ -162,27 +168,14 @@ const ModalNewRelease = ({
 
   useEffect(() => {
     if (singleInfo) {
-      let treatedUnValue = 0
-      let treatedValue = 0
+      const t = types.find((t) => t.parsed === singleInfo.type) ?? types[0]
 
-      if (singleInfo.total_value > 0) {
-        treatedUnValue = parseFloat(singleInfo.unitary_value / 100)
-          .toFixed(2)
-          .replace(".", ",")
-        treatedValue = parseFloat(singleInfo.total_value / 100)
-          .toFixed(2)
-          .replace(".", ",")
-      } else {
-        treatedUnValue = "0,00"
-        treatedValue = "0,00"
-      }
-
-      setType(types.find((t) => t.name === singleInfo.type))
+      setType(t)
       setDescription(singleInfo.description)
       setTaxQnt(singleInfo.tax_quantity)
       setOperation(singleInfo.operation)
-      setUnVal(treatedUnValue)
-      setCurrentVal(treatedValue)
+      setUnVal(singleInfo.unitary_value)
+      setCurrentVal(singleInfo.total_value)
     }
   }, [singleInfo])
 
