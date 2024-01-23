@@ -8,7 +8,6 @@ import {
   FormControlLabel,
   CircularProgress,
   DialogActions,
-  FormLabel,
   RadioGroup,
   Radio,
 } from "@material-ui/core"
@@ -19,7 +18,7 @@ import { ReactComponent as Arrow } from "../../../assets/icons/arrow.svg"
 
 const DECIMAL_SIZE = 2
 
-const defaultReleaseTypes = [
+const types = [
   {
     id: "0",
     name: "Serviços",
@@ -55,15 +54,14 @@ const ModalNewRelease = ({
 }) => {
   const styles = useStyles()
 
-  const [isCreating, setIsCreating] = useState(false)
-  const [finishMessage, setFinishMessage] = useState(null)
+  const [isSending, setIsSending] = useState(false)
 
   const [dropdownView, setDropdownView] = useState(false)
 
-  const [releaseType, setReleaseType] = useState(defaultReleaseTypes[0])
+  const [type, setType] = useState(types[0])
   const [description, setDescription] = useState("Locação Sistema/Maq")
   const [taxQnt, setTaxQnt] = useState(0)
-  const [isInOut, setIsInOut] = useState("out")
+  const [operation, setOperation] = useState("debitar")
   const [unVal, setUnVal] = useState("0,00")
   const [currentVal, setCurrentVal] = useState("0,00")
 
@@ -73,12 +71,14 @@ const ModalNewRelease = ({
 
   const generateObj = () => {
     let obj = {
-      releaseType,
+      type: type.name,
       description,
-      tax: taxQnt,
-      isDebt: isInOut === "out",
-      unitaryValue: Number.parseFloat(unVal.replace(",", ".")) * 100,
-      value: Number.parseFloat(currentVal.replace(",", ".")) * 100,
+      tax_quantity: String(taxQnt),
+      unitary_value: String(Number.parseFloat(unVal.replace(",", ".")) * 100),
+      total_value: String(
+        Number.parseFloat(currentVal.replace(",", ".")) * 100
+      ),
+      operation,
     }
 
     if (singleInfo && singleInfo.id) obj.id = singleInfo.id
@@ -86,23 +86,35 @@ const ModalNewRelease = ({
     return obj
   }
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
+    setIsSending(true)
     const data = generateObj()
-    updateRelease(data)
-    closeModal()
+    const res = await updateRelease(data)
+    setIsSending(false)
+
+    if (res) closeModal()
+    else {
+      alert("Por favor, preencha todos os campos")
+    }
   }
 
-  const handleInsert = () => {
+  const handleInsert = async () => {
+    setIsSending(true)
     const data = generateObj()
-    insertRelease(data)
-    closeModal()
+    const res = await insertRelease(data)
+    setIsSending(false)
+
+    if (res) closeModal()
+    else {
+      alert("Por favor, preencha todos os campos")
+    }
   }
 
   const closeModal = () => {
-    setReleaseType(defaultReleaseTypes[0])
+    setType(types[0])
     setDescription("Locação Sistema/Maq")
     setTaxQnt(0)
-    setIsInOut("out")
+    setOperation("debitar")
     setUnVal("0,00")
     setCurrentVal("0,00")
 
@@ -144,7 +156,7 @@ const ModalNewRelease = ({
   }
 
   const handleDropdown = (relItem) => {
-    setReleaseType(relItem)
+    setType(relItem)
     setDropdownView(false)
   }
 
@@ -153,11 +165,11 @@ const ModalNewRelease = ({
       let treatedUnValue = 0
       let treatedValue = 0
 
-      if (singleInfo.value > 0) {
-        treatedUnValue = parseFloat(singleInfo.unVal / 100)
+      if (singleInfo.total_value > 0) {
+        treatedUnValue = parseFloat(singleInfo.unitary_value / 100)
           .toFixed(2)
           .replace(".", ",")
-        treatedValue = parseFloat(singleInfo.value / 100)
+        treatedValue = parseFloat(singleInfo.total_value / 100)
           .toFixed(2)
           .replace(".", ",")
       } else {
@@ -165,10 +177,10 @@ const ModalNewRelease = ({
         treatedValue = "0,00"
       }
 
-      setReleaseType(singleInfo.releaseType)
+      setType(types.find((t) => t.name === singleInfo.type))
       setDescription(singleInfo.description)
-      setTaxQnt(singleInfo.tax)
-      setIsInOut(singleInfo.isDebt ? "out" : "in")
+      setTaxQnt(singleInfo.tax_quantity)
+      setOperation(singleInfo.operation)
       setUnVal(treatedUnValue)
       setCurrentVal(treatedValue)
     }
@@ -185,13 +197,14 @@ const ModalNewRelease = ({
         <div>
           <div className={styles.modalInputsArea}>
             <div style={customStyles.inputsArea}>
+              {/* type */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newName"}>
                   Tipo
                 </label>
                 <div style={customStyles.selectWrapper}>
                   <button style={customStyles.select} onClick={toggleDropdown}>
-                    <span>{releaseType.name}</span>
+                    <span>{type.name}</span>
                     <Arrow className={dropdownView ? "flipped" : ""} />
                   </button>
                   <div
@@ -200,7 +213,7 @@ const ModalNewRelease = ({
                       ...{ display: dropdownView ? "flex" : "none" },
                     }}
                   >
-                    {defaultReleaseTypes.map((rt, k) => (
+                    {types.map((rt, k) => (
                       <button
                         key={k}
                         type="button"
@@ -214,6 +227,8 @@ const ModalNewRelease = ({
                   </div>
                 </div>
               </div>
+
+              {/* description */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newDescription"}>
                   Descrição
@@ -227,6 +242,8 @@ const ModalNewRelease = ({
                   placeholder="Descreva o lançamento"
                 />
               </div>
+
+              {/* tax */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newTax"}>
                   Taxa / Quantidade
@@ -240,7 +257,8 @@ const ModalNewRelease = ({
                   placeholder="Taxa / Quantidade"
                 />
               </div>
-              {/* valor un */}
+
+              {/* un value */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newValue"}>
                   Valor Unitário
@@ -258,6 +276,8 @@ const ModalNewRelease = ({
                   />
                 </div>
               </div>
+
+              {/* total value */}
               <div style={customStyles.inputContainer}>
                 <label style={customStyles.label} htmlFor={"newValue"}>
                   Valor Total
@@ -283,19 +303,21 @@ const ModalNewRelease = ({
                 row
                 aria-labelledby="demo-controlled-radio-buttons-group"
                 name="controlled-radio-buttons-group"
-                value={isInOut}
-                onChange={(e) => setIsInOut(e.target.value)}
+                value={operation}
+                onChange={(e) => setOperation(e.target.value)}
               >
                 <FormControlLabel
                   value={"out"}
                   control={
-                    <Radio color="primary" checked={isInOut === "out"} />
+                    <Radio color="primary" checked={operation === "debitar"} />
                   }
                   label="Debitar"
                 />
                 <FormControlLabel
                   value={"in"}
-                  control={<Radio color="primary" checked={isInOut === "in"} />}
+                  control={
+                    <Radio color="primary" checked={operation === "creditar"} />
+                  }
                   label="Creditar"
                 />
               </RadioGroup>
@@ -321,7 +343,7 @@ const ModalNewRelease = ({
               cursor: "pointer",
             }}
           >
-            {isCreating ? (
+            {isSending ? (
               <div
                 style={{
                   position: "absolute",

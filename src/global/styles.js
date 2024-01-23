@@ -225,6 +225,7 @@ export default makeStyles((theme) => ({
   modalInputsArea: {
     display: 'flex',
     flexDirection: 'column',
+    overflowY: 'auto',
     gap: 12
   },
   inpArea: {

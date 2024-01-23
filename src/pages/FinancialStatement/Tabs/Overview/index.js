@@ -203,7 +203,9 @@ export default (props) => {
     }, 1000)
   }
 
-  const sendWhatsapp = async () => {}
+  const sendWhatsapp = async () => {
+    // ...
+  }
 
   const editRelease = async (info) => {
     editSingle(info)
@@ -217,12 +219,12 @@ export default (props) => {
         </Typography>
       ),
       field: "status",
-      render: ({ isDebt }) => {
-        // const { status } = name
+      render: ({ operation }) => {
+        const isDebt = operation === "debitar"
 
         return (
           <td
-            class="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall"
+            className="MuiTableCell-body MuiTableCell-alignLeft MuiTableCell-sizeSmall"
             value={isDebt}
             style={{
               color: "inherit",
@@ -260,9 +262,9 @@ export default (props) => {
     {
       title: <Typography style={{ fontWeight: "bold" }}>Lançamento</Typography>,
       field: "name",
-      render: ({ releaseType }) => (
+      render: ({ type }) => (
         <td>
-          <span>{releaseType.name}</span>
+          <span>{type}</span>
         </td>
       ),
     },
@@ -280,22 +282,26 @@ export default (props) => {
         <Typography style={{ fontWeight: "bold" }}>Taxa / Qtde</Typography>
       ),
       field: "tax",
-      render: ({ tax }) => (
+      render: ({ tax_quantity }) => (
         <td>
-          <span>{`${tax}`}</span>
+          <span>{`${tax_quantity}`}</span>
         </td>
       ),
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
       field: "value",
-      render: ({ value, isDebt }) => (
-        <td>
-          <span style={{ color: isDebt ? "#E7345B" : "#70E080" }}>
-            {format(value / 100, { code: "BRL" })}
-          </span>
-        </td>
-      ),
+      render: ({ total_value, operation }) => {
+        const isDebt = operation === 'debitar'
+
+        return (
+          <td>
+            <span style={{ color: isDebt ? "#E7345B" : "#70E080" }}>
+              {format(total_value / 100, { code: "BRL" })}
+            </span>
+          </td>
+        )
+      },
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Ações</Typography>,
