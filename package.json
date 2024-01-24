@@ -27,6 +27,7 @@
     "material-table": "^1.69.2",
     "material-ui-dropzone": "^3.0.0",
     "moment": "^2.25.3",
+    "pdfmake": "^0.2.9",
     "react": "^16.13.1",
     "react-apexcharts": "^1.3.7",
     "react-chartjs-2": "^2.9.0",

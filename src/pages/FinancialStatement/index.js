@@ -7,12 +7,15 @@ import Api from "../../api"
 export const releasesPerPage = 100
 
 const FinancialStatement = ({ event }) => {
+  const [eventData, setEventData] = useState(null)
+
   const [showReleaseModal, setShowReleaseModal] = useState(false)
   const [singleInfo, setSingleInfo] = useState(null)
   const [releases, setReleases] = useState([])
 
   const insertRelease = async (rInfo) => {
     const add = await Api.post("/financialops", rInfo)
+    console.log(rInfo)
     if (add.status === 200) {
       const newArr = [add.data.financialop, ...releases]
       setReleases(newArr)
@@ -68,6 +71,12 @@ const FinancialStatement = ({ event }) => {
 
   useEffect(() => {
     getReleases().then((ops) => setReleases(ops))
+
+    Api.get("/event/getSelect?status=todos").then(({ data }) => {
+      const eData = data.events.find((ev) => ev.id === event)
+      console.log("EDATA", eData, data.events, event)
+      if (eData) setEventData(eData)
+    })
   }, [])
 
   return (
@@ -89,6 +98,7 @@ const FinancialStatement = ({ event }) => {
       >
         <Overview
           event={event}
+          eventData={eventData}
           toggleModal={toggleModal}
           editSingle={editSingle}
           deleteRelease={deleteRelease}

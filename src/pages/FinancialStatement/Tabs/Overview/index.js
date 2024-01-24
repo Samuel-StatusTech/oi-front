@@ -16,7 +16,6 @@ import { releasesPerPage } from "../../index"
 
 import { Between } from "../../../../components/Input/DateTime"
 import { formatDateTimeToDB, formatDatetime } from "../../../../utils/date"
-import { setSizeOptions } from "../../../../utils/tablerows"
 import useStyles from "../../../../global/styles"
 import CardData from "../../../../components/CardData"
 import returnsTotalIcon from "../../../../assets/icons/ic_total-extornos.svg"
@@ -27,6 +26,7 @@ import virtualIcon from "../../../../assets/icons/ic_loja.svg"
 import othersIcon from "../../../../assets/icons/ic_outrasdespesas.svg"
 import Bar from "../../../../components/Chart/Bar"
 import EaseGrid from "../../../../components/EaseGrid"
+import releasePDF from "../../../../utils/releasePdf"
 
 const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
@@ -72,12 +72,13 @@ const CardValue = ({ infos, editSingle }) => {
 }
 
 export default (props) => {
-  const { toggleModal, editSingle, deleteRelease, releases } = props
+  const { event, eventData, toggleModal, editSingle, deleteRelease, releases } =
+    props
+
+  const styles = useStyles()
 
   const [loading, setLoading] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
-  const styles = useStyles()
-  const { event } = props
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
@@ -199,9 +200,9 @@ export default (props) => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    setTimeout(() => {
-      setLoadingReport(false)
-    }, 1000)
+    if (eventData) releasePDF(eventData, releases)
+
+    setLoadingReport(false)
   }
 
   const sendWhatsapp = async () => {
@@ -285,7 +286,7 @@ export default (props) => {
       field: "tax",
       render: ({ tax_quantity }) => (
         <td>
-          <span>{`${tax_quantity}`}</span>
+          <span>{`${parseFloat(tax_quantity)}`}</span>
         </td>
       ),
     },

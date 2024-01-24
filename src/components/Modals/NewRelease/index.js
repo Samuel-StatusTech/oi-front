@@ -15,6 +15,7 @@ import {
 import useStyles from "../../../global/styles"
 
 import { ReactComponent as Arrow } from "../../../assets/icons/arrow.svg"
+import { format } from "currency-formatter"
 
 const DECIMAL_SIZE = 2
 
@@ -80,7 +81,7 @@ const ModalNewRelease = ({
       type: type.name,
       description,
       tax_quantity: String(taxQnt),
-      unitary_value: String(Number.parseFloat(unVal.replace(",", ".")) * 100),
+      unitary_value: String(parseFloat(unVal.replace(",", ".")) * 100),
       total_value: String(
         Number.parseFloat(currentVal.replace(",", ".")) * 100
       ),
@@ -172,10 +173,12 @@ const ModalNewRelease = ({
 
       setType(t)
       setDescription(singleInfo.description)
-      setTaxQnt(singleInfo.tax_quantity)
+      setTaxQnt(parseFloat(singleInfo.tax_quantity))
       setOperation(singleInfo.operation)
-      setUnVal(singleInfo.unitary_value)
-      setCurrentVal(singleInfo.total_value)
+      setUnVal(format(singleInfo.unitary_value / 100, { code: "BRL" }).slice(2))
+      setCurrentVal(
+        format(singleInfo.total_value / 100, { code: "BRL" }).slice(2)
+      )
     }
   }, [singleInfo])
 
