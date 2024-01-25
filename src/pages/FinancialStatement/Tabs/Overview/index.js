@@ -79,11 +79,36 @@ export default (props) => {
 
   const [loading, setLoading] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
+  const [loadingWhats, setLoadingWhats] = useState(false)
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
 
-  const [cardInfo, setCardInfo] = useState({})
+  // const [cardInfo, setCardInfo] = useState({})
+  const [cardInfo, setCardInfo] = useState({
+    paymentInfo: {
+      gross: {
+        money: 859300,
+        credit: 0,
+        debit: 264100,
+        pix: 0,
+      },
+      net: {
+        credit: 0,
+        debit: 264100,
+        pix: 0,
+      },
+    },
+    cardInfo: {
+      totalRecipe: 1123400,
+      cardPixGross: 264100,
+      cardPixNet: 264100,
+      virtualGross: 0,
+      virtualNet: 0,
+      withdrawal: 0,
+      balance: 0,
+    },
+  })
   const [payment, setPayment] = useState({
     gross: {
       money: 0,
@@ -200,13 +225,39 @@ export default (props) => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    if (eventData) releasePDF(eventData, releases)
+    if (eventData) releasePDF(eventData, releases, cardInfo, true)
 
     setLoadingReport(false)
   }
 
+  const generatePDFb64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+
+      reader.onload = () => {
+        const base64 = reader.result.split(",")[1]
+        resolve(base64)
+      }
+
+      reader.onerror = (error) => reject(error)
+
+      reader.readAsDataURL(file)
+    })
+  }
+
   const sendWhatsapp = async () => {
-    // ...
+    if (loadingWhats) return
+
+    setLoadingWhats(true)
+
+    const shareLink = `whatsapp://send?text=Segue o resumo financeiro:`
+    const a = document.createElement("a")
+    a.href = shareLink
+    a.target = "_blank"
+
+    a.click()
+
+    setLoadingWhats(false)
   }
 
   const editRelease = async (info) => {
@@ -328,6 +379,10 @@ export default (props) => {
       ),
     },
   ]
+
+  useEffect(() => {
+    if (eventData) releasePDF(eventData, releases, cardInfo, true)
+  }, [eventData])
 
   return (
     <>

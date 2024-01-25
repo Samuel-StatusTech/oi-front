@@ -19,7 +19,7 @@ import { format } from "currency-formatter"
 
 const DECIMAL_SIZE = 2
 
-const types = [
+export const types = [
   {
     id: "0",
     name: "Serviços",
