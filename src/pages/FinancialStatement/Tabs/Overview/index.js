@@ -380,10 +380,6 @@ export default (props) => {
     },
   ]
 
-  useEffect(() => {
-    if (eventData) releasePDF(eventData, releases, cardInfo, true)
-  }, [eventData])
-
   return (
     <>
       <Grid
