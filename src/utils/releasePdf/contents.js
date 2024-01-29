@@ -106,6 +106,7 @@ export const content = (event, releases, releasesList, receiptList, total) => {
               text: getTotal(releases, total),
               fontSize: 11,
               bold: true,
+              style: total < 0 ? "debitValue" : "",
             },
           ],
           ["", "", ""],

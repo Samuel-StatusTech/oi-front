@@ -241,43 +241,24 @@ export default (props) => {
   const genFile = (blob) => {
     const filename = parseDateDash(new Date())
 
-    return new File([blob], `Relatório financeiro ${eventData.name} ${filename}.pdf`, {
-      type: "application/pdf",
-      endings: "native",
-      lastModified: new Date().getTime(),
-    })
+    return new File(
+      [blob],
+      `Relatório financeiro ${eventData.name} ${filename}.pdf`,
+      {
+        type: "application/pdf",
+        endings: "native",
+        lastModified: new Date().getTime(),
+      }
+    )
   }
 
   const exportPdfReleases = async () => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    // if (eventData) releasePDF(eventData, releases, cardInfo, true)
-    if (eventData) {
-      const blob = await releasePDF(eventData, releases, cardInfo)
-      const file = genFile(blob)
-    }
+    if (eventData) releasePDF(eventData, releases, cardInfo, true)
 
     setLoadingReport(false)
-  }
-
-  const generatePDFb64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-
-      reader.onload = () => {
-        const base64 = reader.result.split(",")[1]
-        resolve(base64)
-      }
-
-      reader.onerror = (error) => reject(error)
-
-      reader.readAsDataURL(file)
-    })
-  }
-
-  const openNumberDialog = () => {
-    setNumberDialog(false)
   }
 
   const sendWhatsapp = () => {

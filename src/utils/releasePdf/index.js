@@ -2,6 +2,7 @@ import pdfMake from "pdfmake/build/pdfmake"
 import pdfFonts from "pdfmake/build/vfs_fonts"
 import { styles } from "./styles"
 import { getLists } from "./utils"
+import { parseDateDash } from "../date"
 import { reportTitle, content, footer } from "./contents"
 
 const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {
@@ -14,6 +15,8 @@ const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {
     const releasesList = getLists.releases(releases)
     const receiptList = getLists.receipt(cardsInfo.paymentInfo.gross, total)
 
+    const filename = parseDateDash(new Date())
+
     const docDefs = {
       pageSize: "A4",
       pageMargins: [38, 68, 38, 40],
@@ -25,7 +28,7 @@ const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {
 
     const pdf = pdfMake.createPdf(docDefs)
 
-    if (mustDownload) pdf.download()
+    if (mustDownload) pdf.download(`Relatório financeiro ${event.name} ${filename}.pdf`)
     else pdf.getBlob((blob) => resolve(blob))
   })
 }

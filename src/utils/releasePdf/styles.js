@@ -13,6 +13,9 @@ export const styles = {
   },
   contentTableHeader: {
     color: "#000",
-    bold: true
+    bold: true,
+  },
+  debitValue: {
+    color: "#B22222",
   },
 }

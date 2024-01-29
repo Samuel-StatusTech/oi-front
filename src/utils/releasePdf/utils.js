@@ -27,13 +27,20 @@ export const getTotal = (releases, totalGross) => {
 
 export const getLists = {
   releases: (rels) => {
-    return rels.map((r) => [
-      // types.find((t) => t.parsed === r.type).name ?? types[0].name,
-      r.type,
-      r.description,
-      Number(r.tax_quantity),
-      format(Number.parseFloat(Number(r.total_value) / 100), { code: "BRL" }),
-    ])
+    return rels.map((r) => {
+      const val = Number.parseFloat(Number(r.total_value) / 100)
+
+      return [
+        // types.find((t) => t.parsed === r.type).name ?? types[0].name,
+        r.type,
+        r.description,
+        Number(r.tax_quantity),
+        {
+          text: format(val, { code: "BRL" }),
+          style: r.operation === "debitar" ? "debitValue" : "",
+        },
+      ]
+    })
   },
   receipt: ({ money, pix, debit, credit }, total) => {
 
