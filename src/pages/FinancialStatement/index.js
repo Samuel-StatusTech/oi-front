@@ -74,7 +74,6 @@ const FinancialStatement = ({ event }) => {
 
     Api.get("/event/getSelect?status=todos").then(({ data }) => {
       const eData = data.events.find((ev) => ev.id === event)
-      console.log("EDATA", eData, data.events, event)
       if (eData) setEventData(eData)
     })
   }, [])

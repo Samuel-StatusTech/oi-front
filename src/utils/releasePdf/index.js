@@ -1,7 +1,7 @@
 import pdfMake from "pdfmake/build/pdfmake"
 import pdfFonts from "pdfmake/build/vfs_fonts"
 import { styles } from "./styles"
-import { getLists, getTotal, logo } from "./utils"
+import { getLists } from "./utils"
 import { reportTitle, content, footer } from "./contents"
 
 const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {

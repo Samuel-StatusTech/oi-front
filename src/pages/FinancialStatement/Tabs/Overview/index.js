@@ -8,25 +8,39 @@ import {
   Button,
 } from "@material-ui/core"
 
+import useStyles from "../../../../global/styles"
 import Api from "../../../../api"
 import axios from "axios"
 import { format } from "currency-formatter"
+import {
+  formatDateTimeToDB,
+  formatDatetime,
+  parseDateDash,
+} from "../../../../utils/date"
+import releasePDF from "../../../../utils/releasePdf"
 
 import { releasesPerPage } from "../../index"
 
-import { Between } from "../../../../components/Input/DateTime"
-import { formatDateTimeToDB, formatDatetime } from "../../../../utils/date"
-import useStyles from "../../../../global/styles"
-import CardData from "../../../../components/CardData"
 import returnsTotalIcon from "../../../../assets/icons/ic_total-extornos.svg"
 import creditTotalIcon from "../../../../assets/icons/ic_total-credito.svg"
 import debitTotalIcon from "../../../../assets/icons/ic_total-debito.svg"
 import pixTotalIcon from "../../../../assets/icons/ic_total-pix.svg"
 import virtualIcon from "../../../../assets/icons/ic_loja.svg"
 import othersIcon from "../../../../assets/icons/ic_outrasdespesas.svg"
+
+import WhatsappNumberModal from "../../../../components/Modals/GetWhatsappNumber"
+import { Between } from "../../../../components/Input/DateTime"
+import CardData from "../../../../components/CardData"
 import Bar from "../../../../components/Chart/Bar"
 import EaseGrid from "../../../../components/EaseGrid"
-import releasePDF from "../../../../utils/releasePdf"
+
+const defaultNumber = "+15551292939"
+
+const sendDomain = "https://graph.facebook.com/"
+const sendVersion = "v18.0/"
+const sendID = "236986152823375"
+const wToken =
+  "Bearer EAATn2SqgRXkBO1V43TMh5ZCngQMfBFnrjePuAaIHcoQZC6UKW2gHqcuk8rgi4vPbd0WCEUOOTJBNbFsvMT3sTECnXdEPGkZCFadjXS0aNPuTZAmD1r41dZBFR0YjBdtbSRbgU3NpurwZBeWRnylEQd52ty6x6akwv4GwIVo6zgZCyp95vPqv2g4YZAbpmZBX3tTf89RrLr5iVRhyxkQIKM5F8T2hKtH1Kc0ZCsGJMZD"
 
 const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
@@ -78,11 +92,14 @@ export default (props) => {
   const styles = useStyles()
 
   const [loading, setLoading] = useState(false)
+  const [numberDialog, setNumberDialog] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
   const [loadingWhats, setLoadingWhats] = useState(false)
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
+
+  const [number, setNumber] = useState("")
 
   // const [cardInfo, setCardInfo] = useState({})
   const [cardInfo, setCardInfo] = useState({
@@ -221,11 +238,25 @@ export default (props) => {
     toggleModal()
   }
 
+  const genFile = (blob) => {
+    const filename = parseDateDash(new Date())
+
+    return new File([blob], `Relatório financeiro ${eventData.name} ${filename}.pdf`, {
+      type: "application/pdf",
+      endings: "native",
+      lastModified: new Date().getTime(),
+    })
+  }
+
   const exportPdfReleases = async () => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    if (eventData) releasePDF(eventData, releases, cardInfo, true)
+    // if (eventData) releasePDF(eventData, releases, cardInfo, true)
+    if (eventData) {
+      const blob = await releasePDF(eventData, releases, cardInfo)
+      const file = genFile(blob)
+    }
 
     setLoadingReport(false)
   }
@@ -245,17 +276,58 @@ export default (props) => {
     })
   }
 
-  const sendWhatsapp = async () => {
-    if (loadingWhats) return
+  const openNumberDialog = () => {
+    setNumberDialog(false)
+  }
 
+  const sendWhatsapp = () => {
+    setNumberDialog(true)
+  }
+
+  const unmaskNumber = (masked) => {
+    return (
+      "55" +
+      masked.replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
+    )
+  }
+
+  const sendTo = async (maskedNumber) => {
+    const n = unmaskNumber(maskedNumber)
+
+    if (loadingWhats) return
     setLoadingWhats(true)
 
-    const shareLink = `whatsapp://send?text=Segue o resumo financeiro:`
-    const a = document.createElement("a")
-    a.href = shareLink
-    a.target = "_blank"
+    // 2. Upload file
+    const blob = await releasePDF(eventData, releases, cardInfo)
+    const file = genFile(blob)
 
-    a.click()
+    var fd = new FormData()
+    fd.append("type", "application/pdf")
+    fd.append("messaging_product", "whatsapp")
+    fd.append("file", file)
+
+    const req = await fetch(`${sendDomain}${sendVersion}${sendID}/media`, {
+      method: "POST",
+      body: fd,
+      headers: { Authorization: wToken },
+    })
+
+    const data = await req.json()
+    const fileId = data.id
+
+    // 3. send pdf file
+    await fetch(`${sendDomain}${sendVersion}${sendID}/messages`, {
+      method: "POST",
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: n,
+        type: "document",
+        document: { id: fileId, filename: file.name },
+      }),
+      headers: { "Content-Type": "application/json", Authorization: wToken },
+      redirect: "manual",
+    })
 
     setLoadingWhats(false)
   }
@@ -382,6 +454,14 @@ export default (props) => {
 
   return (
     <>
+      <WhatsappNumberModal
+        show={numberDialog}
+        sendTo={sendTo}
+        closeFn={() => setNumberDialog(false)}
+        number={number}
+        setNumber={setNumber}
+      />
+
       <Grid
         container
         direction="column"

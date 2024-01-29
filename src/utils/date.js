@@ -13,6 +13,21 @@ export const parseDate = (date) => {
   return `${day}/${month}/${formDate.getFullYear()} - ${hours}h${minutes}`
 }
 
+export const parseDateDash = (date) => {
+  const formDate = new Date(new Date(date).getTime() - 10800000)
+  let day = formDate.getDate()
+  let month = formDate.getMonth() + 1
+  let hours = formDate.getHours()
+  let minutes = formDate.getMinutes()
+
+  if (day < 10) day = `0${day}`
+  if (month < 10) month = `0${month}`
+  if (hours < 10) hours = `0${hours}`
+  if (minutes < 10) minutes = `0${minutes}`
+
+  return `${day}-${month}-${formDate.getFullYear()}`
+}
+
 export const returnString = (period) => (period < 10 ? "0" + period : period)
 
 export const formatDate = (timestamp) => {

@@ -12,7 +12,6 @@ export const styles = {
     alignment: "right",
   },
   contentTableHeader: {
-    // fillColor: "#777777",
     color: "#000",
     bold: true
   },
