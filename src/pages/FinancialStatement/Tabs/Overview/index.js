@@ -102,30 +102,7 @@ export default (props) => {
   const [number, setNumber] = useState("")
 
   // const [cardInfo, setCardInfo] = useState({})
-  const [cardInfo, setCardInfo] = useState({
-    paymentInfo: {
-      gross: {
-        money: 859300,
-        credit: 0,
-        debit: 264100,
-        pix: 0,
-      },
-      net: {
-        credit: 0,
-        debit: 264100,
-        pix: 0,
-      },
-    },
-    cardInfo: {
-      totalRecipe: 1123400,
-      cardPixGross: 264100,
-      cardPixNet: 264100,
-      virtualGross: 0,
-      virtualNet: 0,
-      withdrawal: 0,
-      balance: 0,
-    },
-  })
+  const [cardInfo, setCardInfo] = useState()
   const [payment, setPayment] = useState({
     gross: {
       money: 0,
@@ -256,7 +233,7 @@ export default (props) => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    if (eventData) releasePDF(eventData, releases, cardInfo, true)
+    if (eventData) releasePDF(eventData, releases, payment, true)
 
     setLoadingReport(false)
   }
@@ -279,7 +256,7 @@ export default (props) => {
     setLoadingWhats(true)
 
     // 2. Upload file
-    const blob = await releasePDF(eventData, releases, cardInfo)
+    const blob = await releasePDF(eventData, releases, payment)
     const file = genFile(blob)
 
     var fd = new FormData()
@@ -492,7 +469,7 @@ export default (props) => {
             <Grid container spacing={2}>
               {/* total receita */}
               <Grid item xl={2} lg={2} md={12} sm={12} xs={12}>
-                <CardValue infos={cardInfo} />
+                <CardValue infos={cardInfo ?? {}} />
               </Grid>
 
               {/* cards valores pagamentos */}
