@@ -5,15 +5,15 @@ import { getLists } from "./utils"
 import { parseDateDash } from "../date"
 import { reportTitle, content, footer } from "./contents"
 
-const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {
+const releasePDF = async (event, releases, payment, mustDownload = false) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
 
   return new Promise((resolve) => {
-    const { money, pix, debit, credit } = cardsInfo.paymentInfo.gross
+    const { money, pix, debit, credit } = payment.gross
     const total = money + pix + debit + credit
 
     const releasesList = getLists.releases(releases)
-    const receiptList = getLists.receipt(cardsInfo.paymentInfo.gross, total)
+    const receiptList = getLists.receipt(payment.gross, total)
 
     const filename = parseDateDash(new Date())
 
@@ -28,7 +28,8 @@ const releasePDF = async (event, releases, cardsInfo, mustDownload = false) => {
 
     const pdf = pdfMake.createPdf(docDefs)
 
-    if (mustDownload) pdf.download(`Relatório financeiro ${event.name} ${filename}.pdf`)
+    if (mustDownload)
+      pdf.download(`Relatório financeiro ${event.name} ${filename}.pdf`)
     else pdf.getBlob((blob) => resolve(blob))
   })
 }
