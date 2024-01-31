@@ -19,7 +19,7 @@ const releasePDF = async (event, releases, payment, mustDownload = false) => {
 
     const docDefs = {
       pageSize: "A4",
-      pageMargins: [38, 68, 38, 40],
+      pageMargins: [38, 80, 38, 40],
       header: [reportTitle],
       content: [...content(event, releases, releasesList, receiptList, total)],
       footer: [footer],

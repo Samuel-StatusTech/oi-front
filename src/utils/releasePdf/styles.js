@@ -18,4 +18,14 @@ export const styles = {
   debitValue: {
     color: "#B22222",
   },
+  contractTitle: {
+    alignment: "center",
+  },
+  contractText: {
+    color: "#000",
+  },
+  contractFooter: {
+    italics: true,
+    alignment: "center",
+  },
 }

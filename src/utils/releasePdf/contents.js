@@ -1,4 +1,5 @@
-import { getLists, getTotal, logo } from "./utils"
+import { getTotal, logo } from "./utils"
+import { contractTxts } from "./contract"
 
 export const reportTitle = [
   {
@@ -113,8 +114,33 @@ export const content = (event, releases, releasesList, receiptList, total) => {
         ],
         widths: ["*", 280, 100],
       },
-      margin: [0, 70, 0, 0],
+      margin: [0, 50, 0, 0],
       layout: "noBorders",
+    },
+
+    // Contract
+    {
+      text: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS",
+      fontSize: 14,
+      bold: true,
+      style: "contractTitle",
+      margin: [0, 50, 0, 24],
+    },
+    ...contractTxts.map((line) => ({
+      text: line,
+      fontSize: 11,
+      style: "contractText",
+      margin: [0, 0, 0, 12],
+    })),
+    {
+      text: "Oi Tickets é marca de Oi Ingressos Assessoria de Eventos Eireli",
+      style: "contractFooter",
+      margin: [0, 12, 0, 0],
+    },
+    {
+      text: "CNPJ 15.217.618/0001-85  -  Joinville/SC  -  contato@oitickets.com.br",
+      style: "contractFooter",
+      margin: [0, 0, 0, 12],
     },
   ]
 }

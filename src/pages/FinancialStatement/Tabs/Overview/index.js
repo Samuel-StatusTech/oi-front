@@ -233,10 +233,14 @@ export default (props) => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    if (eventData) releasePDF(eventData, releases, payment, true)
+    if (eventData && cardInfo) releasePDF(eventData, releases, payment, true)
 
     setLoadingReport(false)
   }
+
+  useEffect(() => {
+    exportPdfReleases()
+  }, [eventData, cardInfo])
 
   const sendWhatsapp = () => {
     setNumberDialog(true)
