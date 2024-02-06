@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import Api from "../../api"
 import * as txt from "./text"
 
@@ -33,19 +34,42 @@ export const handleQuery = async (
   }
 }
 
-const matchGroup = (groupsArr, groupList, product) => {
-  return (
-    groupsArr.find(
-      (g) =>
-        String(g.name).trim().toLowerCase() ===
-        String(product.Grupo).trim().toLowerCase()
-    ) ??
-    groupList.find(
-      (g) =>
-        String(g.name).trim().toLowerCase() ===
-        String(product.Grupo).trim().toLowerCase()
-    )
+const matchGroup = (groupList, product) => {
+  return groupList.find(
+    (g) =>
+      String(g.name).trim().toLowerCase() ===
+      String(product.Grupo).trim().toLowerCase()
   )
+}
+
+const treatGroups = async (data, groupList) => {
+  return new Promise((resolve) => {
+    let adding = []
+    let news = []
+
+    data.forEach(async (p, k) => {
+      if (!matchGroup([...adding, ...groupList], p)) {
+        adding.push({ name: p.Grupo })
+
+        const { data } = await Api.post("/group/createGroup", {
+          name: p.Grupo,
+          type: !txt.isEmpty(p.Tipo) ? p.Tipo : "bar",
+          status: true,
+        })
+
+        const { category: newGroup } = data
+        news.push({ name: p.Grupo, id: newGroup.id })
+      }
+    })
+
+    setTimeout(() => {
+      if (news.length !== adding.length) {
+        setTimeout(() => {
+          resolve([...groupList, ...news])
+        }, 1500)
+      } else resolve([...groupList, ...news])
+    }, 1500)
+  })
 }
 
 export const filterData = async (data, groupList, setGroupList) => {
@@ -53,38 +77,21 @@ export const filterData = async (data, groupList, setGroupList) => {
   let err = []
   let groupsArr = [...groupList]
 
-  data.forEach(async (p, id) => {
+  const groups = await treatGroups(data, groupList)
+
+  for (let id = 0; id < data.length; id++) {
+    const p = data[id]
 
     if (!txt.isEmpty(p.Nome) && !txt.isEmpty(p.Grupo)) {
-      let matchedGroup = matchGroup(groupsArr, groupList, p)
+      let matchedGroup = matchGroup(groups, p)
 
       if (!matchedGroup || typeof matchedGroup === "undefined") {
-        await Api.post("/group/createGroup", {
-          name: p.Grupo,
-          type: !txt.isEmpty(p.Tipo) ? p.Tipo : "bar",
-          status: true,
+        console.log("erro", groups, {
+          name: !txt.isEmpty(p.Nome) ? p.Nome : "Não definido",
+          type: !txt.isEmpty(p.Tipo) ? p.Tipo : "Não definida",
+          group_id: !txt.isEmpty(p.Grupo) ? p.Grupo : "Não definido",
+          price_sell: p.Preco ?? "Não definido",
         })
-          .then(({ category: newGroup }) => {
-            let obj = {
-              name: txt.capitalizeWords(p.Nome),
-              type: !txt.isEmpty(p.Tipo) ? p.Tipo : "bar",
-              group_id: newGroup.id,
-              price_sell: p.Preco > 0 ? p.Preco : 100,
-            }
-            arr.push(obj)
-
-            // const newGrpK = groupsArr.findIndex((g) => g.name === newGroup.name)
-            // groupsArr[newGrpK] = newGroup
-            groupsArr = [...groupsArr, { name: p.Grupo, id: newGroup.id }]
-          })
-          .catch((error) => {
-            err.push({
-              name: !txt.isEmpty(p.Nome) ? p.Nome : "Não definido",
-              type: !txt.isEmpty(p.Tipo) ? p.Tipo : "Não definida",
-              group_id: !txt.isEmpty(p.Grupo) ? p.Grupo : "Não definido",
-              price_sell: p.Preco ?? "Não definido",
-            })
-          })
       } else {
         let obj = {
           name: txt.capitalizeWords(p.Nome),
@@ -112,7 +119,7 @@ export const filterData = async (data, groupList, setGroupList) => {
         })
       )
     }
-  })
+  }
 
   return {
     arr,
