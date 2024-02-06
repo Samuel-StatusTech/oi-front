@@ -111,11 +111,18 @@ const Operators = ({ type, event }) => {
   const handleSearch = () => {
     setLoading(true)
     if (event) {
+      const dateIniFormatted = formatDateTimeToDB(dateIni)
+      const dateEndFormatted = formatDateTimeToDB(dateEnd)
+      const dateURL =
+        selected !== 1
+          ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
+          : ""
+  
       const groupURL = group && group != "all" ? `&group_id=${group}` : ""
 
       cancelTokenSource.current = axios.CancelToken.source()
 
-      Api.get(`/statistical/saleDetails/${event}?type=${type}${groupURL}`, {
+      Api.get(`/statistical/saleDetails/${event}?type=${type}${groupURL}${dateURL}`, {
         cancelToken: cancelTokenSource.current.token,
       })
         .then(async ({ data: allDetails }) => {
