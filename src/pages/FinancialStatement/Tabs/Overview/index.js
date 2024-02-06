@@ -238,10 +238,6 @@ export default (props) => {
     setLoadingReport(false)
   }
 
-  useEffect(() => {
-    exportPdfReleases()
-  }, [eventData, cardInfo])
-
   const sendWhatsapp = () => {
     setNumberDialog(true)
   }

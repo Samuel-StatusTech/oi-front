@@ -37,8 +37,9 @@ const Operator = ({ user }) => {
   const [buttonLoading, setButtonLoading] = useState(false)
 
   const [status, setStatus] = useState(true)
-  const [image, setImage] = useState("")
-  const [logoFixed, setLogoFixed] = useState("")
+  const [photo, setPhoto] = useState(null)
+  const [image, setImage] = useState(null)
+
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -71,6 +72,7 @@ const Operator = ({ user }) => {
   const [disableOperators, setDisableOperators] = useState(false)
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false)
   const [devices, setDevice] = useState([])
+
   const hasCashlessConf = async (user) => {
     if (user && user.uid) {
       console.log(user.uid)
@@ -89,17 +91,12 @@ const Operator = ({ user }) => {
       setHasCashlessConfig(hasCashlessC)
     }
   }
+
   useEffect(() => {
     loadData()
     firebase.auth().onAuthStateChanged(hasCashlessConf)
     hasCashlessConf()
     // eslint-disable-next-line
-
-    // logo fixed
-    Api.get(`/getLogoFixed`).then(({ data }) => {
-      const { logoFixed } = data
-      setLogoFixed(logoFixed)
-    })
   }, [])
 
   const loadData = () => {
@@ -145,6 +142,8 @@ const Operator = ({ user }) => {
 
       setLoading(false)
     } else if (idOperator !== "new") {
+      // editing
+
       Api.get(`/operator/getData/${idOperator}`)
         .then(({ data }) => {
           const { success, operator, list } = data
@@ -152,7 +151,8 @@ const Operator = ({ user }) => {
           if (success) {
             setName(operator.name)
             setUsername(operator.username)
-            setImage(operator.image)
+            if (operator.photo && operator.photo.length > 0)
+              setPhoto(operator.photo)
             setRawList(list)
             setHasProductList(operator.has_product_list)
             setHasBar(operator.has_bar)
@@ -206,43 +206,106 @@ const Operator = ({ user }) => {
     }
   }
 
+  const returnObjData = () => {
+    return {
+      name,
+      username,
+      password,
+      photo: photo ?? "",
+      status: true,
+      role: "operador",
+      org_id: user.org_id,
+      has_product_list: hasProductList,
+      has_bar: hasBar,
+      has_ticket: hasTicket,
+      has_park: hasPark,
+      pay_money: payMoney,
+      pay_debit: payDebit,
+      pay_credit: payCredit,
+      pay_pix: payPix,
+      pay_cashless: payCashless,
+      pay_multi: payMulti,
+      print_mode: printMode,
+      via_production: viaProduction,
+      allow_cashback: allowCashback,
+      allow_courtesy: allowCourtesy,
+      allow_duplicate: allowDuplicate,
+      is_waiter: isWaiter,
+      has_commission: hasCommission,
+      commission,
+      has_cashless: hasCashless,
+      print_receipt: printReceipt,
+      allow_refound: allowRefound,
+      allow_cashback_cashless: allowCashbackCashless,
+      device_code: deviceCode,
+      products: productList.map((prod) => prod.id),
+    }
+  }
+
+  const returnFormData = () => {
+    const formData = new FormData()
+    formData.append("name", name)
+    formData.append("username", username)
+    formData.append("password", password)
+    formData.append("role", "operador")
+
+    // ... has changed the photo
+    
+    if (image) formData.append("image", image)
+
+    else if ((photo && !image)) {
+      // is doing nothing
+      
+      // is deleting the photo
+      formData.append("photo", "")
+    } else
+    formData.append("org_id", user.org_id)
+    formData.append("status", +status)
+    formData.append("has_product_list", +hasProductList)
+    formData.append("has_bar", +hasBar)
+    formData.append("has_ticket", +hasTicket)
+    formData.append("has_park", +hasPark)
+    formData.append("pay_money", +payMoney)
+    formData.append("pay_debit", +payDebit)
+    formData.append("pay_credit", +payCredit)
+    formData.append("pay_pix", +payPix)
+    formData.append("pay_cashless", +payCashless)
+    formData.append("pay_multi", +payMulti)
+    formData.append("via_production", +viaProduction)
+    formData.append("allow_cashback", +allowCashback)
+    formData.append("allow_courtesy", +allowCourtesy)
+    formData.append("allow_duplicate", +allowDuplicate)
+    formData.append("is_waiter", +isWaiter)
+    formData.append("has_cashless", +hasCashless)
+    formData.append("print_receipt", +printReceipt)
+    formData.append("allow_refound", +allowRefound)
+    formData.append("allow_cashback_cashless", +allowCashbackCashless)
+    formData.append("has_commission", +hasCommission)
+    formData.append("print_mode", printMode)
+    formData.append("commission", commission)
+    formData.append("device_code", deviceCode)
+    formData.append(
+      "products",
+      productList.map((prod) => prod.id)
+    )
+
+    return formData
+  }
+
+  useEffect(() =>{
+    console.log("Image", image)
+  },[image])
+
   const handleSave = async () => {
     try {
       setButtonLoading(true)
-      const data = {
-        name,
-        username,
-        password,
-        status: true,
-        role: "operador",
-        image,
-        org_id: user.org_id,
-        has_product_list: hasProductList,
-        has_bar: hasBar,
-        has_ticket: hasTicket,
-        has_park: hasPark,
-        pay_money: payMoney,
-        pay_debit: payDebit,
-        pay_credit: payCredit,
-        pay_pix: payPix,
-        pay_cashless: payCashless,
-        pay_multi: payMulti,
-        print_mode: printMode,
-        via_production: viaProduction,
-        allow_cashback: allowCashback,
-        allow_courtesy: allowCourtesy,
-        allow_duplicate: allowDuplicate,
-        is_waiter: isWaiter,
-        has_commission: hasCommission,
-        commission,
-        has_cashless: hasCashless,
-        print_receipt: printReceipt,
-        allow_refound: allowRefound,
-        allow_cashback_cashless: allowCashbackCashless,
-        device_code: deviceCode,
-        products: productList.map((prod) => prod.id),
-      }
-      await Api.post("/register", data)
+      const data = returnFormData()
+      await Api.post("/register", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
       handleCancel()
     } catch (e) {
       console.log(e)
@@ -265,39 +328,13 @@ const Operator = ({ user }) => {
   const handleEdit = async () => {
     try {
       setButtonLoading(true)
-      await Api.put(`/operator/updateOperator/${idOperator}`, {
-        name,
-        username,
-        password,
-        image,
-        status,
-        role: "operador",
-        org_id: user.org_id,
-        has_product_list: hasProductList,
-        has_bar: hasBar,
-        has_ticket: hasTicket,
-        has_park: hasPark,
-        pay_money: payMoney,
-        pay_debit: payDebit,
-        pay_credit: payCredit,
-        pay_pix: payPix,
-        pay_cashless: payCashless,
-        pay_multi: payMulti,
-        print_mode: printMode,
-        via_production: viaProduction,
-        allow_cashback: allowCashback,
-        allow_courtesy: allowCourtesy,
-        allow_duplicate: allowDuplicate,
-        is_waiter: isWaiter,
-        has_commission: hasCommission,
-        commission,
-        has_cashless: hasCashless,
-        print_receipt: printReceipt,
-        allow_refound: allowRefound,
-        allow_cashback_cashless: allowCashbackCashless,
-        device_code: deviceCode,
-        products: productList.map((prod) => prod.id),
+      const data = returnFormData()
+      await Api.put(`/operator/updateOperator/${idOperator}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        },
       })
+
       handleCancel()
     } catch (e) {
       console.log(e)
@@ -400,6 +437,14 @@ const Operator = ({ user }) => {
     errorsVerify.commission = null
     return false
   }
+
+  const handleImage = (data) => {
+    console.log("Data no handler: ", data)
+    // if (photo)
+
+    setImage(data)
+  }
+  
   if (loading) {
     return (
       <Grid container spacing={2} justify="center">
@@ -439,10 +484,10 @@ const Operator = ({ user }) => {
                       label="Imagem do operador"
                       name="image"
                       inputRef={register}
-                      image={image}
-                      setImage={setImage}
+                      image={image ?? photo}
+                      setImage={handleImage}
                     />
-                    <small>Tamanho: 512x256 (png)</small>
+                    <small>Tamanho: 262×100 (png)</small>
                   </Grid>
                 </Grid>
               </Grid>

@@ -21,13 +21,15 @@ import csvtojson from "csvtojson"
 import CardProduct from "../../components/Card/product"
 import InputMoney from "../../components/Input/Money"
 import EaseGrid from "../../components/EaseGrid"
+import ButtonRound from "../../components/ButtonRound"
 
 import Api from "../../api"
 import { format } from "currency-formatter"
-import ButtonRound from "../../components/ButtonRound"
-import productsIcon from "../../assets/icons/ic_produtos.svg"
+import * as txt from "./text"
+import * as fn from "./utils"
 
 import { Favorite, FavoriteBorder, FlashOn } from "@material-ui/icons/"
+import productsIcon from "../../assets/icons/ic_produtos.svg"
 import useStyles from "../../global/styles"
 
 const Product = () => {
@@ -178,28 +180,7 @@ const Product = () => {
 
   const handleQuery = async (props) => {
     try {
-      const selectedGroup = props.group ? props.group : group
-      const searchText = props.search !== undefined ? props.search : search
-      const selectedStatus = props.status ? props.status : status
-      const url = `/product/getList?type=${props.type ? props.type : type}${
-        selectedGroup !== "todos" ? "&group=" + selectedGroup : ""
-      }${searchText && searchText.length > 0 ? `&search=${searchText}` : ""}${
-        selectedStatus !== "todos" ? `&status=${selectedStatus}` : ""
-      }`
-
-      const { data } = await Api.get(url)
-
-      if (data.success) {
-        setData(
-          data.products.sort((a, b) =>
-            a.status == b.status
-              ? a.name.localeCompare(b.name)
-              : a.status > b.status
-              ? -1
-              : 1
-          )
-        )
-      }
+      fn.handleQuery(props, setData, group, search, status, type)
     } catch (error) {
       console.log(error)
     }
@@ -294,10 +275,12 @@ const Product = () => {
       : `/dashboard/product/simple/${row.id}`
     history.push(url)
   }
+
   const deleteType = {
     combo: "/product/combo",
     complement: "/product/complement",
   }
+
   const handleDelete = async (row) => {
     if (window.confirm("Tem certeza que deseja excluir?")) {
       if (loading) {
@@ -319,112 +302,8 @@ const Product = () => {
     }
   }
 
-  const capFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1)
-  }
-
-  const capitalizeWords = (string) => {
-    let str = ""
-
-    string.split(" ").forEach((word) => {
-      str += `${capFirstLetter(word)} `
-    })
-
-    return str.trim()
-  }
-
-  const isEmpty = (str) => str.trim().length === 0
-
   const filterData = async (data) => {
-    let arr = []
-    let err = []
-    let groupsArr = [...groupList]
-
-    for (let id = 0; id < data.length; id++) {
-      const p = data[id]
-
-      if (!isEmpty(p.Nome) && !isEmpty(p.Grupo)) {
-        if (p.Grupo.toLowerCase().includes("combo")) {
-          err.push({
-            name: p.Nome ?? "Não definido",
-            type: p.Tipo ?? "Não definida",
-            group_id: p.Grupo ?? "Não definido",
-            price_sell: p.Preco ?? "Não definido",
-          })
-        } else {
-          // is not combo
-
-          let matchedGroup =
-            groupsArr.find(
-              (g) =>
-                String(g.name).trim().toLowerCase() ===
-                String(p.Grupo).trim().toLowerCase()
-            ) ??
-            groupList.find(
-              (g) =>
-                String(g.name).trim().toLowerCase() ===
-                String(p.Grupo).trim().toLowerCase()
-            )
-
-          if (!matchedGroup || typeof matchedGroup === "undefined") {
-            groupsArr = [...groupsArr, { name: p.Grupo, id }]
-
-            await Api.post("/group/createGroup", {
-              name: p.Grupo,
-              type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
-              status: true,
-            })
-              .then(({ category: newGroup }) => {
-                let obj = {
-                  name: capitalizeWords(p.Nome),
-                  type: !isEmpty(p.Tipo) ? p.Tipo : "bar",
-                  group_id: newGroup.id,
-                  price_sell: p.Preco > 0 ? p.Preco : 100,
-                }
-                arr.push(obj)
-
-                const newGrpK = groupsArr.findIndex(
-                  (g) => g.name === newGroup.name
-                )
-                groupsArr[newGrpK] = newGroup
-              })
-              .catch((error) => {
-                err.push({
-                  name: !isEmpty(p.Nome) ? p.Nome : "Não definido",
-                  type: !isEmpty(p.Tipo) ? p.Tipo : "Não definida",
-                  group_id: !isEmpty(p.Grupo) ? p.Grupo : "Não definido",
-                  price_sell: p.Preco ?? "Não definido",
-                })
-              })
-          } else {
-            let obj = {
-              name: capitalizeWords(p.Nome),
-              type: p.Tipo,
-              group_id: matchedGroup.id,
-              price_sell: p.Preco > 0 ? p.Preco : 100,
-            }
-            arr.push(obj)
-          }
-        }
-      } else {
-        err.push({
-          name: p.Nome ?? "Não definido",
-          type: p.Tipo ?? "Não definida",
-          group_id: p.Grupo ?? "Não definido",
-          price_sell: p.Preco ?? "Não definido",
-        })
-      }
-
-      if (id === data.length - 1) {
-        setGroupList(
-          groupsArr.sort((a, b) => {
-            if (a.name < b.name) return -1
-            if (a.name > b.name) return 1
-            return 0
-          })
-        )
-      }
-    }
+    const { arr, err } = await fn.filterData(data, groupList, setGroupList)
 
     return {
       arr,
@@ -432,88 +311,10 @@ const Product = () => {
     }
   }
 
-  const createGroup = async (name, type) => {
-    const { category: newGroup } = await Api.post("/group/createGroup", {
-      name,
-      type,
-      status: true,
-    })
-
-    return newGroup ?? { id: "" }
-  }
-
-  const getComboGroup = async (newCombo) => {
-    return new Promise(async (resolve) => {
-      const combosGroup = groupList.find(
-        (g) =>
-          (g.name.trim().toLowerCase().includes("combos importados") ||
-            g.name.trim().toLowerCase() === newCombo.group_id) &&
-          g.id !== "combo"
-      )
-
-      if (combosGroup) resolve(combosGroup)
-      else {
-        if (!hasImportedGroup) {
-          const newGroup = await createGroup("Combos importados", newCombo.type)
-          setHasImportedGroup(true)
-          setGroupList([...groupList, newGroup])
-          resolve(newGroup)
-        }
-      }
-    })
-  }
-
-  const getProductsInName = (comboName) => {
-    let list = []
-
-    const prodsNames = comboName.split("+").map((p) => p.trim())
-
-    prodsNames.forEach((pn) => {
-      const pData = data.find((dItem) =>
-        dItem.name.trim().toLowerCase().includes(pn.toLowerCase())
-      )
-      if (pData) {
-        list.push(pData)
-      }
-    })
-
-    return list
-  }
-
-  const getComboFormData = async (newCombo, comboGroup) => {
-    const formData = new FormData()
-
-    const group = comboGroup ?? (await getComboGroup(newCombo))
-    const prods = getProductsInName(newCombo.name)
-
-    formData.append("status", true)
-    formData.append("name", newCombo.name)
-    formData.append("image", "")
-    formData.append("direction", newCombo.type)
-    formData.append("favorite", false)
-    formData.append("description1", "")
-    formData.append("description2", "")
-    formData.append("group_id", group.id ?? "")
-    formData.append("product_list", JSON.stringify(prods))
-    formData.append("ticket_type", "unica")
-    formData.append("price_sell", newCombo.price_sell)
-    formData.append("price_cost", 0)
-    formData.append("print_qrcode", false)
-    formData.append("print_ticket", true)
-    formData.append("print_local", true)
-    formData.append("print_date", true)
-    formData.append("print_value", true)
-
-    return {
-      formData,
-      registeredComboGroup: group && !comboGroup ? group : null,
-    }
-  }
-
   const getFormData = (item) => {
     const fd = new FormData()
 
-    const itemType = !isEmpty(item.type) ? item.type : "bar"
+    const itemType = !txt.isEmpty(item.type) ? item.type : "bar"
 
     fd.append("name", item.name)
     fd.append("group_id", item.group_id)
@@ -566,36 +367,9 @@ const Product = () => {
 
         for (let k = 0; k < fData.arr.length; k++) {
           const i = fData.arr[k]
+          const formData = getFormData(i)
 
-          if (!i.isCombo) {
-            const formData = getFormData(i)
-
-            await Api.post(`/product/createProduct`, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            })
-              .then(() => {
-                added = added + 1
-              })
-              .catch(() => {
-                noAdded.push(i)
-              })
-          } else {
-            combos.push(i)
-          }
-        }
-
-        /* Combos insertions
-        for (let k = 0; k < combos.length; k++) {
-          const i = combos[k]
-
-          const { formData, registeredComboGroup } = await getComboFormData(
-            i,
-            importedCombos
-          )
-
-          if (registeredComboGroup) importedCombos = registeredComboGroup
-
-          await Api.post(`/product/createCombo`, formData, {
+          await Api.post(`/product/createProduct`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           })
             .then(() => {
@@ -605,7 +379,6 @@ const Product = () => {
               noAdded.push(i)
             })
         }
-        */
 
         resolve({ added, noAdded })
       }).then((result) => {
@@ -632,6 +405,9 @@ const Product = () => {
     }
   }
 
+  // upload
+
+  // 3
   const extractCashValue = (valueStr) => {
     const realValue = valueStr.substring(3, valueStr.length).replace(",", ".")
 
@@ -645,6 +421,7 @@ const Product = () => {
     return readableValue
   }
 
+  // 2
   const getOnlyNeeded = (arr) => {
     let parsed = []
 
@@ -660,6 +437,7 @@ const Product = () => {
     return parsed
   }
 
+  // 1
   const loadNewData = async (e) => {
     const file = e.target.files[0]
     const reader = new FileReader()
@@ -698,6 +476,8 @@ const Product = () => {
     }
     return `${d.year}-${d.month}-${d.day}_` + `${h.hour}-${h.mins}-${h.secs}`
   }
+
+  // download
 
   const parseDataToDownload = () => {
     let rows = []
