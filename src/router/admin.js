@@ -103,32 +103,6 @@ export default [
     ],
   },
   {
-    title: "Extrato Financeiro",
-    path: "/financial",
-    icon: FinancialIcon,
-    content: <FinancialStatement />,
-    role: "master",
-    allow: {
-      allow_only_master: true,
-    },
-    show: {
-      role: "master",
-    },
-    paths: [
-      {
-        title: "Resumo Geral",
-        route: "/home",
-        role: "master",
-        show: {
-          role: "master",
-        },
-        allow: {
-          allow_only_master: true,
-        },
-      },
-    ],
-  },
-  {
     title: "Relatórios",
     icon: ReportIcon,
     list: [
@@ -148,6 +122,29 @@ export default [
         ],
       },
       {
+        title: "Extrato Financeiro",
+        path: "/report/financial",
+        content: <FinancialStatement />,
+        role: "master",
+        allow: {
+          allow_only_master: true,
+        },
+        show: {
+          role: "master",
+        },
+        paths: [
+          {
+            title: "Relatórios",
+            route: "/report",
+          },
+          {
+            title: "Resumo geral",
+            route: "/financial",
+          },
+        ],
+      },
+      /*
+      {
         title: "Cashless",
         path: "/report/cashless",
         //content: <CashlessReport />,
@@ -162,7 +159,7 @@ export default [
             route: "/cashless",
           },
         ],
-      },
+      }, */
       {
         title: "Validações",
         path: "/report/validation",
@@ -178,6 +175,7 @@ export default [
           },
         ],
       },
+      /*
       {
         title: "Garçons",
         path: "/report/waiter",
@@ -241,6 +239,7 @@ export default [
           },
         ],
       },
+      */
     ],
   },
   {
@@ -512,6 +511,7 @@ export default [
           },
         ],
       },
+      /*
       {
         title: "Mesas",
         path: "/reservation",
@@ -604,8 +604,10 @@ export default [
           },
         ],
       },
+      */
     ],
   },
+  /*
   {
     title: "Loja Online",
     icon: OnlineIcon,
@@ -672,6 +674,7 @@ export default [
       },
     ],
   },
+  */
   {
     title: "Gerencial",
     icon: ManagerIcon,
@@ -680,7 +683,7 @@ export default [
         title: "Conciliar dados",
         path: "/reconcile",
         content: <ReconcileData />,
-        show:{
+        show: {
           role: "master",
         },
         allow: {
@@ -708,6 +711,22 @@ export default [
           },
         ],
       },
+      {
+        path: "/profile",
+        title: "Meu Perfil",
+        content: <Profile />,
+        paths: [
+          {
+            title: "Configuração",
+            route: "/organization",
+          },
+          {
+            title: "Perfil",
+            route: "/profile",
+          },
+        ],
+      },
+      /*
       {
         title: "Cancelamentos",
         path: "/transaction/cancellations",
@@ -834,6 +853,7 @@ export default [
           },
         ],
       },
+      */
       // {
       //   title: 'Ajustes',
       //   path: '/adjustment',
@@ -868,7 +888,7 @@ export default [
   },
   {
     title: "Configurações",
-
+    hide: true,
     allow: {
       allow_register: 0,
       allow_operation: 0,
@@ -912,21 +932,6 @@ export default [
           {
             title: "Clientes",
             route: "/organization",
-          },
-        ],
-      },
-      {
-        path: "/profile",
-        title: "Meu Perfil",
-        content: <Profile />,
-        paths: [
-          {
-            title: "Configuração",
-            route: "/organization",
-          },
-          {
-            title: "Perfil",
-            route: "/profile",
           },
         ],
       },
