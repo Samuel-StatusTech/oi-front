@@ -305,10 +305,6 @@ const Operator = ({ user }) => {
     return formData
   }
 
-  useEffect(() => {
-    console.log("Image", image)
-  }, [image])
-
   const handleSave = async () => {
     try {
       setButtonLoading(true)
@@ -829,7 +825,6 @@ const Operator = ({ user }) => {
                           const value = e.target.value
                             .replace(/\D/g, "")
                             .slice(0, 3)
-                          console.log(value)
                           setServiceTax(
                             value > 100 ? 100 : value === "" ? 0 : value
                           )

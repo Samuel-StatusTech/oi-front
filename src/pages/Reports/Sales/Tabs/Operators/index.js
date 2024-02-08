@@ -217,22 +217,26 @@ const Operators = ({ type, event }) => {
       ) : (
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Grid item lg={12} md={12} sm={12} xs={12}>
-            {users.map(({ user, products, payments, operations }) => (
-              <Grid item key={user.id}>
-                <Painel
-                  userKey={user.id}
-                  event={event}
-                  dateIni={selected !== 1 ? formatDateTimeToDB(dateIni) : ""}
-                  dateEnd={selected !== 1 ? formatDateTimeToDB(dateEnd) : ""}
-                  title={user.name}
-                  type={type}
-                  data={products}
-                  payments={payments}
-                  operations={operations}
-                  group={group}
-                />
-              </Grid>
-            ))}
+            {users.map(({ user, products, payments, operations }) => {
+              const total = payments.money + payments.debit + payments.credit + payments.pix
+
+              return total > 0 ?(
+                <Grid item key={user.id}>
+                  <Painel
+                    userKey={user.id}
+                    event={event}
+                    dateIni={selected !== 1 ? formatDateTimeToDB(dateIni) : ""}
+                    dateEnd={selected !== 1 ? formatDateTimeToDB(dateEnd) : ""}
+                    title={user.name}
+                    type={type}
+                    data={products}
+                    payments={payments}
+                    operations={operations}
+                    group={group}
+                  />
+                </Grid>
+              ) : null
+            })}
           </Grid>
         </Grid>
       )}
