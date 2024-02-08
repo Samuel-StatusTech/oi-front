@@ -23,6 +23,7 @@ import TransferList from "../../../components/TransferList"
 import ModalResetPassword from "./Modal/ResetPassword"
 import ImagePicker from "../../../components/ImagePicker"
 import { GreenSwitch, StatusSwitch } from "../../../components/Switch"
+import { genWaiterFormData } from "./prodFD"
 
 const Operator = ({ user }) => {
   const { register } = useForm()
@@ -48,6 +49,7 @@ const Operator = ({ user }) => {
   const [hasTicket, setHasTicket] = useState(false)
   const [hasPark, setHasPark] = useState(false)
   const [allGroups, setAllGroups] = useState(false)
+  const [prodsGroups, setProdsGroups] = useState([])
   const [payMoney, setPayMoney] = useState(true)
   const [payDebit, setPayDebit] = useState(true)
   const [payCredit, setPayCredit] = useState(true)
@@ -70,6 +72,7 @@ const Operator = ({ user }) => {
   const [allowCashbackCashless, setAllowCashbackCashless] = useState(false)
   const [deviceCode, setDeviceCode] = useState(null)
   const [productList, setProductList] = useState([])
+  const [allProds, setAllProds] = useState([])
   const [rawList, setRawList] = useState([])
   const [disableOperators, setDisableOperators] = useState(false)
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false)
@@ -98,6 +101,14 @@ const Operator = ({ user }) => {
     loadData()
     firebase.auth().onAuthStateChanged(hasCashlessConf)
     hasCashlessConf()
+
+    Api.get("/group/getList").then(({ data }) => {
+      setProdsGroups(data.groups)
+    })
+    Api.get("/product/getList?type=todos").then(({ data }) => {
+      setAllProds(data.products)
+    })
+
     // eslint-disable-next-line
   }, [])
 
@@ -280,9 +291,11 @@ const Operator = ({ user }) => {
     formData.append("print_receipt", +printReceipt)
     formData.append("allow_refound", +allowRefound)
     formData.append("allow_cashback_cashless", +allowCashbackCashless)
-    formData.append("has_commission", +hasCommission)
     formData.append("print_mode", printMode)
+    formData.append("has_commission", +hasCommission)
     formData.append("commission", commission)
+    formData.append("has_service_tax", +hasServiceTax)
+    formData.append("service_tax", serviceTax)
     formData.append("device_code", deviceCode)
     formData.append(
       "products",
@@ -378,10 +391,49 @@ const Operator = ({ user }) => {
       commissionInputVerify(commission)
     )
   }
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
       setButtonLoading(true)
       if (verifyInputs()) throw { message: "Um ou mais campos possui erro!" }
+
+      // "Taxa garçom product - logic"
+      // 1. Verificar se hasServiceTax
+      if (hasServiceTax) {
+        // 2. Verificar se existe produto "Taxa garçom"
+
+        // 3. Caso não, cadastrar produto (e grupo)
+
+        if (!allProds.find((p) => p.name.includes("Taxa Garçom"))) {
+          const waiterGroup = prodsGroups.find((g) =>
+            g.name.includes("Taxa Garçom")
+          )
+
+          let gId = undefined
+
+          if (waiterGroup) gId = waiterGroup.id
+          else {
+            const newGroup = await Api.post("/group/createGroup", {
+              name: "Taxa Garçom",
+              type: "bar",
+              status: 1,
+            })
+            gId = newGroup.data.category.id
+          }
+
+          if (gId) {
+            const fd = genWaiterFormData(gId)
+
+            await Api.post("/product/createProduct", fd, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+          }
+        }
+
+        // 4. Caso sim, não fazer nada
+      }
+
       if (idOperator === "new" || idOperator === "clone") {
         handleSave()
         return
@@ -774,9 +826,13 @@ const Operator = ({ user }) => {
                         name="serviceTax"
                         value={serviceTax}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, "").slice(0, 3)
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 3)
                           console.log(value)
-                          setServiceTax(value > 100 ? 100 : value === "" ? 0 : value)
+                          setServiceTax(
+                            value > 100 ? 100 : value === "" ? 0 : value
+                          )
                         }}
                         error={Boolean(errorsVerify?.serviceTax)}
                         helperText={errorsVerify?.serviceTax}

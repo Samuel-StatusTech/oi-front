@@ -54,10 +54,10 @@ const SimpleProduct = ({ user }) => {
 
   // Dados da impressão
   const [printQrcode, setPrintQrcode] = useState(false);
-  const [printTicket, setPrintTicket] = useState(false);
-  const [printLocal, setPrintLocal] = useState(false);
-  const [printDate, setPrintDate] = useState(false);
-  const [printValue, setPrintValue] = useState(false);
+  const [printTicket, setPrintTicket] = useState(true);
+  const [printLocal, setPrintLocal] = useState(true);
+  const [printDate, setPrintDate] = useState(true);
+  const [printValue, setPrintValue] = useState(true);
   const [hasControl, setHasControl] = useState(false);
   const [startAt, setStartAt] = useState(1);
   const [canSave, setCanSave] = useState(false);
