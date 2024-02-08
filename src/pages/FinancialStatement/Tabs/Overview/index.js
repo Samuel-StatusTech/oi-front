@@ -56,7 +56,13 @@ const CardValue = ({ infos, editSingle }) => {
   } = infos
 
   return (
-    <Card style={{ height: "100%" }}>
+    <Card
+      style={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
       <CardContent>
         <Grid
           container
@@ -72,12 +78,6 @@ const CardValue = ({ infos, editSingle }) => {
                 {format(totalRecipe / 100, { code: "BRL" })}
               </Typography>
             </Grid>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
-              <Typography className={styles.h2}>Cartões Pix/Líquido</Typography>
-              <Typography className={styles.moneyLabelBlue}>
-                {format((cardPixNet + virtualNet) / 100, { code: "BRL" })}
-              </Typography>
-            </Grid>
           </Grid>
         </Grid>
       </CardContent>
@@ -86,8 +86,15 @@ const CardValue = ({ infos, editSingle }) => {
 }
 
 export default (props) => {
-  const { event, eventData, toggleModal, editSingle, deleteRelease, releases } =
-    props
+  const {
+    user,
+    event,
+    eventData,
+    toggleModal,
+    editSingle,
+    deleteRelease,
+    releases,
+  } = props
 
   const styles = useStyles()
 
@@ -168,9 +175,6 @@ export default (props) => {
         title: "Vendas Dinheiro",
         icon: { src: returnsTotalIcon, alt: "Ícone dinheiro" },
         value: payment.gross.money,
-        smallLabel: (
-          <>Líquido: {format(payment.gross.money / 100, { code: "BRL" })}</>
-        ),
       },
       {
         title: "Vendas Débito",
@@ -556,7 +560,7 @@ export default (props) => {
                               "Gerar PDF"
                             )}
                           </Button>
-                          <Button
+                          {/* <Button
                             onClick={sendWhatsapp}
                             style={{
                               color: "#0097FF",
@@ -564,16 +568,18 @@ export default (props) => {
                             }}
                           >
                             Enviar WhatsApp
-                          </Button>
-                          <Button
-                            onClick={addRelease}
-                            style={{
-                              color: "#0097FF",
-                              border: "1px solid #0097FF",
-                            }}
-                          >
-                            Registrar Lançamento
-                          </Button>
+                          </Button> */}
+                          {user.role === "master" && (
+                            <Button
+                              onClick={addRelease}
+                              style={{
+                                color: "#0097FF",
+                                border: "1px solid #0097FF",
+                              }}
+                            >
+                              Registrar Lançamento
+                            </Button>
+                          )}
                         </div>
                       </div>
                     }

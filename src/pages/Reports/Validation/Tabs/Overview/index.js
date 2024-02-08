@@ -184,9 +184,6 @@ export default memo(({ type, event }) => {
               </Grid>
             </Grid>
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <CardBar top5List={top5List} />
-            </Grid>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
               <Grid container spacing={2}>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
                   <EaseGrid data={list} columns={columns} pageSize={10} />

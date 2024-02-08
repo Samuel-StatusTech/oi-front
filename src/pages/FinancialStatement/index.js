@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react"
-import { connect } from "react-redux"
+import { connect, useStore } from "react-redux"
+import { store } from "../../store/index"
 import Overview from "./Tabs/Overview"
 import ModalNewRelease from "../../components/Modals/NewRelease"
+
 import Api from "../../api"
 
 export const releasesPerPage = 100
 
 const FinancialStatement = ({ event }) => {
   const [eventData, setEventData] = useState(null)
+
+  const { user } = useStore(store).getState("user")
+
+  useEffect(() => {
+    console.log(user)
+  }, [user])
 
   const [showReleaseModal, setShowReleaseModal] = useState(false)
   const [singleInfo, setSingleInfo] = useState(null)
@@ -97,6 +105,7 @@ const FinancialStatement = ({ event }) => {
       >
         <Overview
           event={event}
+          user={user}
           eventData={eventData}
           toggleModal={toggleModal}
           editSingle={editSingle}

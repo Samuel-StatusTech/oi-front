@@ -554,11 +554,11 @@ const Product = () => {
         </DialogActions>
       </Dialog>
 
-      <Grid container direction="column" spacing={2}>
+      <Grid container direction="column" spacing={2} style={{ flexWrap: "nowrap" }}>
         <Grid item lg md sm xs className={styles.productsHeaderWrp}>
           <div className={styles.productsHeaderContainer}>
             <Grid container direction="row" spacing={2}>
-              <Grid item>
+              <Grid item className={styles.registerBtnWrapper}>
                 <ButtonRound
                   variant="contained"
                   color="primary"
@@ -567,7 +567,7 @@ const Product = () => {
                   Cadastrar Produto
                 </ButtonRound>
               </Grid>
-              <Grid item>
+              <Grid item className={styles.registerBtnWrapper}>
                 <ButtonRound
                   variant="contained"
                   color="primary"
@@ -576,7 +576,7 @@ const Product = () => {
                   Cadastrar Combo
                 </ButtonRound>
               </Grid>
-              <Grid item>
+              <Grid item className={styles.registerBtnWrapper}>
                 <ButtonRound
                   variant="contained"
                   color="primary"

@@ -25,7 +25,7 @@ export default ({ value, setValue }) => {
       <Grid item>
         <AntTabs value={value} onChange={(e, data) => setValue(data)}>
           <AntTab label="Visão Geral" index={0} />
-          <AntTab label="Detalhado portaria" index={1} />
+          <AntTab label="Detalhado operador" index={1} />
         </AntTabs>
       </Grid>
     </Grid>

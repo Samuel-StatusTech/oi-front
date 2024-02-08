@@ -54,13 +54,17 @@ const CardProduct = ({
   return (
     <Grid item lg={2} md={3} sm={4} xs={12}>
       <Card className={styles.cardContainer}>
-        <CardContent className={`${styles.textCenter} ${status === 0 ? styles.inactive : ''}`}>
+        <CardContent
+          className={`${styles.textCenter} ${
+            status === 0 ? styles.inactive : ""
+          }`}
+        >
           <Grid container className={styles.relative}>
             <Grid
               item
               xs={12}
               alignItems="flex-end"
-              style={{ position: "absolute", right: "0px" }}
+              style={{ position: "absolute", right: "0px", zIndex: 2 }}
             >
               <IconButton
                 aria-label="settings"
@@ -79,6 +83,7 @@ const CardProduct = ({
             </Grid>
             <Grid item xs={12}>
               <img
+                style={{ filter: `grayscale(${status ? 0 : 100}%)` }}
                 className={styles.imgCardProduct}
                 src={image ? image : imagesPlaceholder?.[type] ?? unknown}
                 alt="Imagem do Produto"

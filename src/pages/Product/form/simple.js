@@ -54,10 +54,10 @@ const SimpleProduct = ({ user }) => {
 
   // Dados da impressão
   const [printQrcode, setPrintQrcode] = useState(false);
-  const [printTicket, setPrintTicket] = useState(true);
-  const [printLocal, setPrintLocal] = useState(true);
-  const [printDate, setPrintDate] = useState(true);
-  const [printValue, setPrintValue] = useState(true);
+  const [printTicket, setPrintTicket] = useState(false);
+  const [printLocal, setPrintLocal] = useState(false);
+  const [printDate, setPrintDate] = useState(false);
+  const [printValue, setPrintValue] = useState(false);
   const [hasControl, setHasControl] = useState(false);
   const [startAt, setStartAt] = useState(1);
   const [canSave, setCanSave] = useState(false);
@@ -608,7 +608,7 @@ const SimpleProduct = ({ user }) => {
                   />
                 </Grid>
                 <Grid item>
-                  {type === 'bar' ? (
+                  {type === 'bar' ?? (
                     <FormControlLabel
                       name='numberCopy'
                       control={<GreenSwitch checked={numberCopy == 2} onChange={(e) => setNumberCopy(e.target.checked ? 2 : 1)} />}
@@ -616,7 +616,7 @@ const SimpleProduct = ({ user }) => {
                       inputRef={register}
                       disabled={!printTicket}
                     />
-                  ) : type === 'ingresso' ? (
+                  )}
                     <FormControlLabel
                       name='printGroup'
                       control={<GreenSwitch checked={printGroup} onChange={(e) => setPrintGroup(e.target.checked)} />}
@@ -624,7 +624,6 @@ const SimpleProduct = ({ user }) => {
                       inputRef={register}
                       disabled={!printTicket}
                     />
-                  ) : null}
                 </Grid>
               </Grid>
             </Grid>

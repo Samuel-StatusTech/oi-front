@@ -54,6 +54,8 @@ const Operator = ({ user }) => {
   const [payPix, setPayPix] = useState(true)
   const [payCashless, setPayCashless] = useState(false)
   const [payMulti, setPayMulti] = useState(false)
+  const [hasServiceTax, setHasServiceTax] = useState(false)
+  const [serviceTax, setServiceTax] = useState(0)
   const [printMode, setPrintMode] = useState(null)
   const [viaProduction, setViaProduction] = useState(false)
   const [allowCashback, setAllowCashback] = useState(false)
@@ -250,16 +252,14 @@ const Operator = ({ user }) => {
     formData.append("role", "operador")
 
     // ... has changed the photo
-    
-    if (image) formData.append("image", image)
 
-    else if ((photo && !image)) {
+    if (image) formData.append("image", image)
+    else if (photo && !image) {
       // is doing nothing
-      
+
       // is deleting the photo
       formData.append("photo", "")
-    } else
-    formData.append("org_id", user.org_id)
+    } else formData.append("org_id", user.org_id)
     formData.append("status", +status)
     formData.append("has_product_list", +hasProductList)
     formData.append("has_bar", +hasBar)
@@ -292,9 +292,9 @@ const Operator = ({ user }) => {
     return formData
   }
 
-  useEffect(() =>{
+  useEffect(() => {
     console.log("Image", image)
-  },[image])
+  }, [image])
 
   const handleSave = async () => {
     try {
@@ -331,7 +331,7 @@ const Operator = ({ user }) => {
       const data = returnFormData()
       await Api.put(`/operator/updateOperator/${idOperator}`, data, {
         headers: {
-          "Content-Type": "multipart/form-data"
+          "Content-Type": "multipart/form-data",
         },
       })
 
@@ -444,7 +444,7 @@ const Operator = ({ user }) => {
 
     setImage(data)
   }
-  
+
   if (loading) {
     return (
       <Grid container spacing={2} justify="center">
@@ -753,6 +753,40 @@ const Operator = ({ user }) => {
                     />
                   </Grid>
                 </Grid>
+                <Grid container spacing={2}>
+                  <Grid item>
+                    <FormControlLabel
+                      label="Taxa de serviço"
+                      name="hasServiceTax"
+                      value={hasServiceTax}
+                      control={
+                        <GreenSwitch
+                          checked={hasServiceTax}
+                          onChange={(e) => setHasServiceTax(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
+                  {hasServiceTax && (
+                    <Grid item lg md sm xs>
+                      <TextField
+                        label="%"
+                        name="serviceTax"
+                        value={serviceTax}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "").slice(0, 3)
+                          console.log(value)
+                          setServiceTax(value > 100 ? 100 : value === "" ? 0 : value)
+                        }}
+                        error={Boolean(errorsVerify?.serviceTax)}
+                        helperText={errorsVerify?.serviceTax}
+                        variant="outlined"
+                        // type="number"
+                        size="small"
+                      />
+                    </Grid>
+                  )}
+                </Grid>
               </Grid>
 
               <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -844,6 +878,7 @@ const Operator = ({ user }) => {
                 </Grid>
               </Grid>
 
+              {/*               
               <Grid item container spacing={2} lg={12} md={12} sm={12} xs={12}>
                 <Grid container spacing={2}>
                   <Grid item>
@@ -893,6 +928,7 @@ const Operator = ({ user }) => {
                   </Grid>
                 </Grid>
               </Grid>
+              */}
 
               {hasCashlessConfig && (
                 <>

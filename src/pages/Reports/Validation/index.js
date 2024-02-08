@@ -6,7 +6,7 @@ import ProductType from './Pills/ProductType';
 import View from './Pills/View';
 
 import Overview from './Tabs/Overview';
-import Detail from './Tabs/Detail';
+import Operator from './Tabs/Operators';
 import { useEffect } from 'react';
 
 const Validation = ({ event }) => {
@@ -18,20 +18,20 @@ const Validation = ({ event }) => {
   return (
     <>
       <ProductType event={event} value={type} setValue={setType} />
-      {/*<View event={event} value={view} setValue={setView} />*/}
+      {/* <View event={event} value={view} setValue={setView} /> */}
       <Overview event={event} type={type} />
-      {/*<Grid container direction='column' spacing={2}>
+      {/* <Grid container direction='column' spacing={2}>
         {view === 0 && (
           <Grid item xs={12}>
-            <Overview type={type} />
+            <Overview event={event} type={type} />
           </Grid>
         )}
         {view === 1 && (
           <Grid item xs={12}>
-            <Detail type={type} />
+            <Operator event={event} type={type} />
           </Grid>
         )}
-        </Grid>*/}
+        </Grid> */}
     </>
   );
 };

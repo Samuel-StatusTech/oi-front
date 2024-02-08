@@ -144,6 +144,9 @@ export default makeStyles((theme) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  registerBtnWrapper: {
+    height: 'fit-content'
+  },
   productsHeaderContainer: {
     width: '100%',
     display: 'flex',
@@ -159,10 +162,11 @@ export default makeStyles((theme) => ({
   },
   exportDataArea: {
     display: 'flex',
-    alignItems:'center',
     justifyContent: 'end',
     gap:24,
     margin: 4,
+    marginTop: -4,
+    marginBottom: 0,
   },
   exportDataBtn: {
     color: '#0097FF',
