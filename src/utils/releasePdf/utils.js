@@ -25,6 +25,21 @@ export const getTotal = (releases, totalGross) => {
   return format(total, { code: "BRL" })
 }
 
+export const getAllTotal = ({ liquids, releases, allTotal }) => {
+  let total = 0
+
+  for (let i = 0; i < releases.length; i++) {
+    const r = releases[i]
+
+    let val = Number.parseFloat(Number(r.total_value) / 100)
+    total = r.operation === "creditar" ? total + val : total - val
+  }
+
+  total += totalGross / 100
+
+  return format(total, { code: "BRL" })
+}
+
 export const getLists = {
   releases: (rels) => {
     let totals = 0
@@ -33,7 +48,9 @@ export const getLists = {
       const unVal = Number.parseFloat(Number(r.unitary_value) / 100)
       const val = Number.parseFloat(Number(r.total_value) / 100)
 
-      totals = totals + Number.parseFloat(Number(r.total_value))
+      if (r.operation === "debitar")
+        totals = totals - Number.parseFloat(Number(r.total_value))
+      else totals = totals + Number.parseFloat(Number(r.total_value))
 
       return [
         r.type,
