@@ -501,7 +501,7 @@ const SimpleProduct = ({ user }) => {
                     fullWidth
                   />
                 </Grid>
-                {type === 'bar' ? (
+                {/* {type === 'bar' ? (
                   <Grid item>
                     <InputMoney
                       name='priceCost'
@@ -514,7 +514,7 @@ const SimpleProduct = ({ user }) => {
                       fullWidth
                     />
                   </Grid>
-                ) : null}
+                ) : null} */}
                 <Grid item>
                   <Grid container alignItems='center'>
                     <Grid item>
@@ -816,7 +816,7 @@ const SimpleProduct = ({ user }) => {
             {type === 'bar' ? (
               <Grid item>
                 <Grid container alignItems='center'>
-                  <Grid item>
+                  {/* <Grid item>
                     <FormControlLabel
                       name='painelControl'
                       control={
@@ -826,7 +826,7 @@ const SimpleProduct = ({ user }) => {
                       inputRef={register}
                       // disabled={!printTicket}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid item>
                     <Tooltip
                       title='A cada venda, esse produto irá para a fila de controle de pedidos'

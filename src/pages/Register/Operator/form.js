@@ -509,37 +509,6 @@ const Operator = ({ user }) => {
         <Card>
           <CardContent>
             <Grid container spacing={2}>
-              <Grid
-                item
-                xl={12}
-                lg={12}
-                md={6}
-                sm={12}
-                xs={12}
-                style={{ marginBottom: 12 }}
-              >
-                <Grid container direction="row" spacing={2}>
-                  <Grid
-                    style={{ textAlign: "center" }}
-                    item
-                    xl={3}
-                    lg={4}
-                    md={6}
-                    sm={6}
-                    xs={6}
-                  >
-                    <ImagePicker
-                      label="Imagem do operador"
-                      name="image"
-                      inputRef={register}
-                      image={image ?? photo}
-                      setImage={handleImage}
-                    />
-                    <small>Tamanho: 262×100 (png)</small>
-                  </Grid>
-                </Grid>
-              </Grid>
-
               <Grid item xl={12} lg={12} md={6} sm={12} xs={12}>
                 <Grid container spacing={2}>
                   <Grid item xl={4} lg={4} xs={12}>
@@ -845,6 +814,37 @@ const Operator = ({ user }) => {
                   Modo de impressão
                 </Typography>
                 <Divider />
+              </Grid>
+
+              <Grid
+                item
+                xl={12}
+                lg={12}
+                md={6}
+                sm={12}
+                xs={12}
+                style={{ marginBottom: 12 }}
+              >
+                <Grid container direction="row" spacing={2}>
+                  <Grid
+                    style={{ textAlign: "center" }}
+                    item
+                    xl={3}
+                    lg={4}
+                    md={6}
+                    sm={6}
+                    xs={6}
+                  >
+                    <ImagePicker
+                      label="Logomarca específica para impressão neste dispositivo"
+                      name="image"
+                      inputRef={register}
+                      image={image ?? photo}
+                      setImage={handleImage}
+                    />
+                    <small>Tamanho: 262×100 (png)</small>
+                  </Grid>
+                </Grid>
               </Grid>
 
               <Grid item xl={3} lg={4} md={6} sm={12} xs={12}>
