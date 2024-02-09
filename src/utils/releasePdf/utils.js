@@ -36,14 +36,10 @@ export const getLists = {
       totals = totals + Number.parseFloat(Number(r.total_value))
 
       return [
-        // types.find((t) => t.parsed === r.type).name ?? types[0].name,
         r.type,
         r.description,
         Number(r.tax_quantity),
-        {
-          text: format(unVal, { code: "BRL" }),
-          style: r.operation === "debitar" ? "debitValue" : "",
-        },
+        { text: format(unVal, { code: "BRL" }) },
         {
           text: format(val, { code: "BRL" }),
           style: r.operation === "debitar" ? "debitValue" : "",
