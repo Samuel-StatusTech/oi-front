@@ -27,8 +27,13 @@ export const getTotal = (releases, totalGross) => {
 
 export const getLists = {
   releases: (rels) => {
-    return rels.map((r) => {
+    let totals = 0
+
+    const table = rels.map((r) => {
+      const unVal = Number.parseFloat(Number(r.unitary_value) / 100)
       const val = Number.parseFloat(Number(r.total_value) / 100)
+
+      totals = totals + Number.parseFloat(Number(r.total_value))
 
       return [
         // types.find((t) => t.parsed === r.type).name ?? types[0].name,
@@ -36,34 +41,65 @@ export const getLists = {
         r.description,
         Number(r.tax_quantity),
         {
+          text: format(unVal, { code: "BRL" }),
+          style: r.operation === "debitar" ? "debitValue" : "",
+        },
+        {
           text: format(val, { code: "BRL" }),
           style: r.operation === "debitar" ? "debitValue" : "",
         },
       ]
     })
+
+    return { table, totals }
   },
   receipt: ({ money, pix, debit, credit }, total) => {
-
     return [
       [
         "Dinheiro",
-        `${Math.round((money / total) * 100)}%`,
+        // `${Math.round((money / total) * 100)}%`,
         format(money / 100, { code: "BRL" }),
       ],
       [
-        "Pix",
-        `${Math.round((pix / total) * 100)}%`,
-        format(pix / 100, { code: "BRL" }),
-      ],
-      [
-        "Cartão de débito",
-        `${Math.round((debit / total) * 100)}%`,
+        "Débito",
+        // `${Math.round((debit / total) * 100)}%`,
         format(debit / 100, { code: "BRL" }),
       ],
       [
-        "Cartão de crédito",
-        `${Math.round((credit / total) * 100)}%`,
+        "Crédito",
+        // `${Math.round((credit / total) * 100)}%`,
         format(credit / 100, { code: "BRL" }),
+      ],
+      [
+        "Pix",
+        // `${Math.round((pix / total) * 100)}%`,
+        format(pix / 100, { code: "BRL" }),
+      ],
+    ]
+  },
+  receives: ({
+    debitGross,
+    debitNet,
+    creditGross,
+    creditNet,
+    pixGross,
+    pixNet,
+  }) => {
+    return [
+      [
+        "Débito",
+        format(debitGross / 100, { code: "BRL" }),
+        format(debitNet / 100, { code: "BRL" }),
+      ],
+      [
+        "Crédito",
+        format(creditGross / 100, { code: "BRL" }),
+        format(creditNet / 100, { code: "BRL" }),
+      ],
+      [
+        "Pix",
+        format(pixGross / 100, { code: "BRL" }),
+        format(pixNet / 100, { code: "BRL" }),
       ],
     ]
   },

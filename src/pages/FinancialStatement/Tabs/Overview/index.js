@@ -236,8 +236,15 @@ export default (props) => {
   const exportPdfReleases = async () => {
     if (loadingReport) return
     setLoadingReport(true)
+    const orgData = await (await Api.get("/organization")).data
 
-    if (eventData && cardInfo) releasePDF(eventData, releases, payment, true)
+    if (eventData && cardInfo)
+      releasePDF(
+        { ...eventData, cpfCnpj: orgData.cpfCnpj },
+        releases,
+        payment,
+        true
+      )
 
     setLoadingReport(false)
   }

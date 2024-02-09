@@ -1,3 +1,4 @@
+import { format } from "currency-formatter"
 import { getTotal, logo } from "./utils"
 import { contractTxts } from "./contract"
 
@@ -10,7 +11,45 @@ export const reportTitle = [
   },
 ]
 
-export const content = (event, releases, releasesList, receiptList, total) => {
+export const content = (
+  event,
+  releases,
+  releasesList,
+  receiptList,
+  receivesList,
+  totalLiquidReceives,
+  total,
+  totals
+) => {
+  let eData = [
+    // {
+    //   text: `Nome / Razão Social: ${event.name}`, // user?
+    //   fontSize: 12,
+    //   margin: [0, 10, 0, 0],
+    // },
+  ]
+
+  if (event.cpfCnpj)
+    eData.push({
+      text: `CPF / CNPJ: ${event.cpfCnpj}`,
+      fontSize: 12,
+      margin: [0, 10, 0, 0],
+    })
+
+  eData = [
+    ...eData,
+    {
+      text: `Cidade: ${event.city}`,
+      fontSize: 12,
+      margin: [0, 10, 0, 0],
+    },
+    {
+      text: `Evento: ${event.name}`,
+      fontSize: 12,
+      margin: [0, 10, 0, 20],
+    },
+  ]
+
   return [
     {
       style: "header",
@@ -19,7 +58,7 @@ export const content = (event, releases, releasesList, receiptList, total) => {
         body: [
           [
             {
-              text: "RELATÓRIO DE LANÇAMENTOS",
+              text: "DEMONSTRATIVO FINANCEIRO",
               style: "headerItem",
               fontSize: 11,
               bold: true,
@@ -33,10 +72,81 @@ export const content = (event, releases, releasesList, receiptList, total) => {
     },
 
     // Event Data
+    ...eData,
+
+    // Payment
     {
-      text: `EVENTO: ${event.name}`,
-      fontSize: 12,
-      margin: [0, 10, 0, 20],
+      text: "Resumo Financeiro",
+      fontSize: 14,
+      margin: [0, 18, 0, 10],
+      bold: true,
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            { text: "Forma de pagamento", style: "contentTableHeader" },
+            { text: "Valor Total", style: "contentTableHeader" },
+          ],
+          ...receiptList,
+        ],
+        widths: ["*", 90],
+        columnGap: 10,
+      },
+      layout: "noBorders",
+    },
+
+    // Receives
+    {
+      text: "Repasse de Recebimentos (Cartão/Pix)",
+      fontSize: 14,
+      margin: [0, 18, 0, 10],
+      bold: true,
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            { text: "Forma de pagamento", style: "contentTableHeader" },
+            { text: "Valor Bruto", style: "contentTableHeader" },
+            { text: "Valor Líquido", style: "contentTableHeader" },
+          ],
+          ...receivesList,
+        ],
+        widths: ["*", 110, 90],
+        columnGap: 10,
+      },
+      layout: "noBorders",
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            "",
+            {
+              text: "TOTAL LÍQUIDO",
+              fontSize: 11,
+              bold: true,
+            },
+            {
+              text: format(totals.liquids / 100, { code: "BRL" }),
+              fontSize: 11,
+              bold: true,
+              style: totals.liquids < 0 ? "debitValue" : "",
+            },
+          ],
+          ["", "", ""],
+        ],
+        widths: ["*", 280, 90],
+      },
+      margin: [0, 50, 0, 0],
+      layout: "noBorders",
     },
 
     // Releases table
@@ -55,36 +165,12 @@ export const content = (event, releases, releasesList, receiptList, total) => {
             { text: "Lançamento", style: "contentTableHeader" },
             { text: "Descrição", style: "contentTableHeader" },
             { text: "Taxa/Qnte", style: "contentTableHeader" },
-            { text: "Valor Bruto", style: "contentTableHeader" },
+            { text: "Valor Un.", style: "contentTableHeader" },
+            { text: "Valor Total", style: "contentTableHeader" },
           ],
           ...releasesList,
         ],
-        widths: ["*", 190, 80, 100],
-        columnGap: 10,
-      },
-      layout: "noBorders",
-    },
-
-    // Receipt table
-    {
-      text: "Resumo de pagamentos",
-      fontSize: 14,
-      margin: [0, 38, 0, 10],
-      bold: true,
-    },
-    {
-      style: "tableExample",
-      table: {
-        headerRows: 1,
-        body: [
-          [
-            { text: "Forma de pagamento", style: "contentTableHeader" },
-            { text: "Proporção", style: "contentTableHeader" },
-            { text: "Valor total", style: "contentTableHeader" },
-          ],
-          ...receiptList,
-        ],
-        widths: ["*", 280, 100],
+        widths: [80, "*", 70, 70, 90],
         columnGap: 10,
       },
       layout: "noBorders",
@@ -99,22 +185,74 @@ export const content = (event, releases, releasesList, receiptList, total) => {
           [
             "",
             {
-              text: "TOTAL GERAL",
+              text: "LÍQUIDO CARTÕES / PIX",
               fontSize: 11,
               bold: true,
             },
             {
-              text: getTotal(releases, total),
+              text: format(totals.liquids / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
-              style: total < 0 ? "debitValue" : "",
+              style: totals.liquids < 0 ? "debitValue" : "",
             },
           ],
           ["", "", ""],
         ],
-        widths: ["*", 280, 100],
+        widths: ["*", 280, 90],
       },
       margin: [0, 50, 0, 0],
+      layout: "noBorders",
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            "",
+            {
+              text: "LANÇAMENTOS",
+              fontSize: 11,
+              bold: true,
+            },
+            {
+              text: format(totals.releases / 100, { code: "BRL" }),
+              fontSize: 11,
+              bold: true,
+              style: totals.releases < 0 ? "debitValue" : "",
+            },
+          ],
+          ["", "", ""],
+        ],
+        widths: ["*", 280, 90],
+      },
+      margin: [0, 10, 0, 0],
+      layout: "noBorders",
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            "",
+            {
+              text: "SALDO",
+              fontSize: 11,
+              bold: true,
+            },
+            {
+              text: format(totals.allTotal / 100, { code: "BRL" }),
+              fontSize: 11,
+              bold: true,
+              style: totals.allTotal < 0 ? "debitValue" : "",
+            },
+          ],
+          ["", "", ""],
+        ],
+        widths: ["*", 280, 90],
+      },
+      margin: [0, 10, 0, 0],
       layout: "noBorders",
     },
 
@@ -125,20 +263,23 @@ export const content = (event, releases, releasesList, receiptList, total) => {
       bold: true,
       style: "contractTitle",
       margin: [0, 50, 0, 24],
+      pageBreak: "before",
     },
     ...contractTxts.map((line) => ({
       text: line,
-      fontSize: 11,
+      fontSize: 10,
       style: "contractText",
       margin: [0, 0, 0, 12],
     })),
     {
       text: "Oi Tickets é marca de Oi Ingressos Assessoria de Eventos Eireli",
+      fontSize: 10,
       style: "contractFooter",
       margin: [0, 12, 0, 0],
     },
     {
       text: "CNPJ 15.217.618/0001-85  -  Joinville/SC  -  contato@oitickets.com.br",
+      fontSize: 10,
       style: "contractFooter",
       margin: [0, 0, 0, 12],
     },
