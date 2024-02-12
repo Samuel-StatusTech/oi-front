@@ -123,7 +123,7 @@ const Product = () => {
       if (success) {
         setGroupList([
           { id: "todos", name: "Todos" },
-          { id: "combo", name: "Combos" },
+          // { id: "combo", name: "Combos" },
           ...groups.sort((a, b) => {
             if (a.name < b.name) return -1
             if (a.name > b.name) return 1
