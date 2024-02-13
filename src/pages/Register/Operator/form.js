@@ -816,6 +816,22 @@ const Operator = ({ user }) => {
                 <Divider />
               </Grid>
 
+              <Grid item xl={3} lg={4} md={6} sm={12} xs={12}>
+                <TextField
+                  label="Selecione"
+                  name="printMode"
+                  value={printMode}
+                  onChange={(e) => setPrintMode(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  select
+                >
+                  <MenuItem value="ficha">Ficha</MenuItem>
+                  <MenuItem value="recibo">Recibo</MenuItem>
+                </TextField>
+              </Grid>
+              
               <Grid
                 item
                 xl={12}
@@ -847,21 +863,6 @@ const Operator = ({ user }) => {
                 </Grid>
               </Grid>
 
-              <Grid item xl={3} lg={4} md={6} sm={12} xs={12}>
-                <TextField
-                  label="Selecione"
-                  name="printMode"
-                  value={printMode}
-                  onChange={(e) => setPrintMode(e.target.value)}
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  select
-                >
-                  <MenuItem value="ficha">Ficha</MenuItem>
-                  <MenuItem value="recibo">Recibo</MenuItem>
-                </TextField>
-              </Grid>
               {printMode == "recibo" && (
                 <Grid item>
                   <FormControlLabel
