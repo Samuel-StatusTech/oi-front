@@ -167,31 +167,32 @@ const Operator = ({ user }) => {
             if (operator.photo && operator.photo.length > 0)
               setPhoto(operator.photo)
             setRawList(list)
-            setHasProductList(operator.has_product_list)
-            setHasBar(operator.has_bar)
-            setHasTicket(operator.has_ticket)
-            setHasPark(operator.has_park)
+            setStatus(Boolean(operator.status))
+            setHasProductList(Boolean(operator.has_product_list))
+            setHasBar(Boolean(operator.has_bar))
+            setHasTicket(Boolean(operator.has_ticket))
+            setHasPark(Boolean(operator.has_park))
             setAllGroups(
               operator.has_bar && operator.has_ticket && operator.has_park
             )
-            setPayMoney(operator.pay_money)
-            setPayDebit(operator.pay_debit)
-            setPayCredit(operator.pay_credit)
-            setPayPix(operator.pay_pix)
-            setPayCashless(operator.pay_cashless)
-            setPayMulti(operator.pay_multi)
+            setPayMoney(Boolean(operator.pay_money))
+            setPayDebit(Boolean(operator.pay_debit))
+            setPayCredit(Boolean(operator.pay_credit))
+            setPayPix(Boolean(operator.pay_pix))
+            setPayCashless(Boolean(operator.pay_cashless))
+            setPayMulti(Boolean(operator.pay_multi))
             setPrintMode(operator.print_mode)
-            setViaProduction(operator.via_production)
-            setAllowCashback(operator.allow_cashback)
-            setAllowCourtesy(operator.allow_courtesy)
-            setAllowDuplicate(operator.allow_duplicate)
-            setIsWaiter(operator.is_waiter)
-            setHasCommission(operator.has_commission)
+            setViaProduction(Boolean(operator.via_production))
+            setAllowCashback(Boolean(operator.allow_cashback))
+            setAllowCourtesy(Boolean(operator.allow_courtesy))
+            setAllowDuplicate(Boolean(operator.allow_duplicate))
+            setIsWaiter(Boolean(operator.is_waiter))
+            setHasCommission(Boolean(operator.has_commission))
             setCommission(operator.commission)
-            setHasCashless(operator.has_cashless)
-            setPrintReceipt(operator.print_receipt)
-            setAllowRefound(operator.allow_refound)
-            setAllowCashbackCashless(operator.allow_cashback_cashless)
+            setHasCashless(Boolean(operator.has_cashless))
+            setPrintReceipt(Boolean(operator.print_receipt))
+            setAllowRefound(Boolean(operator.allow_refound))
+            setAllowCashbackCashless(Boolean(operator.allow_cashback_cashless))
             setDeviceCode(operator.device_code)
           } else {
             alert("Não foi possível carregar os dados do gerente")
@@ -271,31 +272,31 @@ const Operator = ({ user }) => {
       // is deleting the photo
       formData.append("photo", "")
     } else formData.append("org_id", user.org_id)
-    formData.append("status", +status)
-    formData.append("has_product_list", +hasProductList)
-    formData.append("has_bar", +hasBar)
-    formData.append("has_ticket", +hasTicket)
-    formData.append("has_park", +hasPark)
-    formData.append("pay_money", +payMoney)
-    formData.append("pay_debit", +payDebit)
-    formData.append("pay_credit", +payCredit)
-    formData.append("pay_pix", +payPix)
-    formData.append("pay_cashless", +payCashless)
-    formData.append("pay_multi", +payMulti)
-    formData.append("via_production", +viaProduction)
-    formData.append("allow_cashback", +allowCashback)
-    formData.append("allow_courtesy", +allowCourtesy)
-    formData.append("allow_duplicate", +allowDuplicate)
-    formData.append("is_waiter", +isWaiter)
-    formData.append("has_cashless", +hasCashless)
-    formData.append("print_receipt", +printReceipt)
-    formData.append("allow_refound", +allowRefound)
-    formData.append("allow_cashback_cashless", +allowCashbackCashless)
-    formData.append("print_mode", printMode)
-    formData.append("has_commission", +hasCommission)
+    formData.append("status", status ? 1 : 0)
+    formData.append("has_product_list", hasProductList ? 1 : 0)
+    if (hasBar) formData.append("has_bar", 1)
+    if (hasTicket) formData.append("has_ticket", 1)
+    if (hasPark) formData.append("has_park", 1)
+    if (payMoney) formData.append("pay_money", 1)
+    if (payDebit) formData.append("pay_debit", 1)
+    if (payCredit) formData.append("pay_credit", 1)
+    if (payPix) formData.append("pay_pix", 1)
+    if (payCashless) formData.append("pay_cashless", 1)
+    if (payMulti) formData.append("pay_multi", 1)
+    if (viaProduction) formData.append("via_production", 1)
+    if (allowCashback) formData.append("allow_cashback", 1)
+    if (allowCourtesy) formData.append("allow_courtesy", 1)
+    if (allowDuplicate) formData.append("allow_duplicate", 1)
+    if (isWaiter) formData.append("is_waiter", 1)
+    if (hasCashless) formData.append("has_cashless", 1)
+    if (printReceipt) formData.append("print_receipt", 1)
+    if (allowRefound) formData.append("allow_refound", 1)
+    if (allowCashbackCashless) formData.append("allow_cashback_cashless", 1)
+    if (hasCommission) formData.append("has_commission", 1)
+    if (hasServiceTax) formData.append("has_service_tax", 1)
     formData.append("commission", commission)
-    formData.append("has_service_tax", +hasServiceTax)
     formData.append("service_tax", serviceTax)
+    formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
     formData.append(
       "products",
@@ -770,7 +771,7 @@ const Operator = ({ user }) => {
                     />
                   </Grid>
                 </Grid>
-                <Grid container spacing={2}>
+                {/* <Grid container spacing={2}>
                   <Grid item>
                     <FormControlLabel
                       label="Taxa de serviço"
@@ -806,6 +807,55 @@ const Operator = ({ user }) => {
                       />
                     </Grid>
                   )}
+                </Grid> */}
+
+                <Grid
+                  item
+                  container
+                  spacing={2}
+                  lg={12}
+                  md={12}
+                  sm={12}
+                  xs={12}
+                >
+                  <Grid container spacing={2}>
+                    <Grid item justify="center">
+                      <FormControlLabel
+                        label="Taxa de serviço"
+                        name="hasCommission"
+                        value={hasCommission}
+                        control={
+                          <GreenSwitch
+                            checked={hasCommission}
+                            onChange={(e) => setHasCommission(e.target.checked)}
+                          />
+                        }
+                      />
+                    </Grid>
+                    {hasCommission && (
+                      <Grid item lg md sm xs>
+                        <TextField
+                          label="%"
+                          name="commission"
+                          value={commission}
+                          onChange={(e) => {
+                            const value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 3)
+                            setCommission(
+                              value > 100 ? 100 : value === "" ? 0 : value
+                            )
+                          }}
+                          error={Boolean(errorsVerify?.commission)}
+                          helperText={errorsVerify?.commission}
+                          variant="outlined"
+                          // type="number"
+                          size="small"
+                          disabled={!hasCommission}
+                        />
+                      </Grid>
+                    )}
+                  </Grid>
                 </Grid>
               </Grid>
 
@@ -831,7 +881,7 @@ const Operator = ({ user }) => {
                   <MenuItem value="recibo">Recibo</MenuItem>
                 </TextField>
               </Grid>
-              
+
               <Grid
                 item
                 xl={12}
@@ -929,58 +979,6 @@ const Operator = ({ user }) => {
                   </Grid>
                 </Grid>
               </Grid>
-
-              {/*               
-              <Grid item container spacing={2} lg={12} md={12} sm={12} xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <FormControlLabel
-                      label="É um garçom"
-                      name="isWaiter"
-                      value={isWaiter}
-                      control={
-                        <GreenSwitch
-                          checked={isWaiter}
-                          onChange={(e) => setIsWaiter(e.target.checked)}
-                        />
-                      }
-                    />
-                  </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                  <Grid item justify="center">
-                    <FormControlLabel
-                      label="Comissão"
-                      name="hasCommission"
-                      value={hasCommission}
-                      control={
-                        <GreenSwitch
-                          checked={hasCommission}
-                          onChange={(e) => setHasCommission(e.target.checked)}
-                        />
-                      }
-                    />
-                  </Grid>
-                  <Grid item lg md sm xs>
-                    <TextField
-                      label="%"
-                      name="commission"
-                      value={commission}
-                      onChange={(e) => {
-                        const value = e.target.value.slice(0, 3)
-                        setCommission(value)
-                      }}
-                      error={Boolean(errorsVerify?.commission)}
-                      helperText={errorsVerify?.commission}
-                      variant="outlined"
-                      // type="number"
-                      size="small"
-                      disabled={!hasCommission}
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-              */}
 
               {hasCashlessConfig && (
                 <>
