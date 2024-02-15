@@ -382,6 +382,7 @@ const Operator = ({ user }) => {
       setHasPark(false)
     }
   }
+
   const verifyInputs = () => {
     return (
       nameInputVerify(name) ||
@@ -392,10 +393,16 @@ const Operator = ({ user }) => {
       commissionInputVerify(commission)
     )
   }
+
+  const verifyWaiterTax = () => {
+    return hasCommission && commission === 0
+  }
+
   const handleSubmit = async () => {
     try {
       setButtonLoading(true)
-      if (verifyInputs()) throw { message: "Um ou mais campos possui erro!" }
+      if (verifyWaiterTax() || verifyInputs())
+        throw { message: "Um ou mais campos possui erro!" }
 
       // "Taxa garçom product - logic"
       // 1. Verificar se hasServiceTax
