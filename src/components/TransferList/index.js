@@ -62,6 +62,14 @@ export default function TransferList({
   const leftChecked = intersection(checked, left);
   const rightChecked = intersection(checked, right);
 
+  const excludeWaiterProduct = (list) => {
+    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+  }
+
+  const excludeWaiterGroup = (list) => {
+    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+  }
+
   useEffect(() => {
     Api.get(url).then(({ data }) => {
       if (data.success) {
@@ -81,8 +89,8 @@ export default function TransferList({
           return item;
         });
 
-        setLeft(prods);
-        setRight(selecteds);
+        setLeft(excludeWaiterProduct(prods));
+        setRight(excludeWaiterProduct(selecteds));
       } else {
         alert('Erro ao carregar os produtos');
       }
@@ -92,7 +100,7 @@ export default function TransferList({
 
   useEffect(() => {
     Api.get('/group/getList').then(({ data }) => {
-      setGroupList(data.groups);
+      setGroupList(excludeWaiterGroup(data.groups));
     });
   }, []);
 

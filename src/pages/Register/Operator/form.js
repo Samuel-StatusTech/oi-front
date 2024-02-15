@@ -77,6 +77,14 @@ const Operator = ({ user }) => {
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false)
   const [devices, setDevice] = useState([])
 
+  const excludeWaiterProduct = (list) => {
+    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+  }
+
+  const excludeWaiterGroup = (list) => {
+    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+  }
+
   const hasCashlessConf = async (user) => {
     if (user && user.uid) {
       console.log(user.uid)
@@ -102,7 +110,7 @@ const Operator = ({ user }) => {
     hasCashlessConf()
 
     Api.get("/group/getList").then(({ data }) => {
-      setProdsGroups(data.groups)
+      setProdsGroups(excludeWaiterGroup(data.groups))
     })
     Api.get("/product/getList?type=todos").then(({ data }) => {
       setAllProds(data.products)
@@ -127,7 +135,7 @@ const Operator = ({ user }) => {
 
       const { operator, list } = location.state
 
-      setRawList(list)
+      setRawList(excludeWaiterProduct(list))
       setHasProductList(operator.has_product_list)
       setHasBar(operator.has_bar)
       setHasTicket(operator.has_ticket)
@@ -165,7 +173,7 @@ const Operator = ({ user }) => {
             setUsername(operator.username)
             if (operator.photo && operator.photo.length > 0)
               setPhoto(operator.photo)
-            setRawList(list)
+            setRawList(excludeWaiterProduct(list))
             setStatus(Boolean(operator.status))
             setHasProductList(Boolean(operator.has_product_list))
             setHasBar(Boolean(operator.has_bar))
