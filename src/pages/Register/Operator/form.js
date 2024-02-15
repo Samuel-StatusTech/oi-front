@@ -48,7 +48,6 @@ const Operator = ({ user }) => {
   const [hasBar, setHasBar] = useState(false)
   const [hasTicket, setHasTicket] = useState(false)
   const [hasPark, setHasPark] = useState(false)
-  const [allGroups, setAllGroups] = useState(false)
   const [prodsGroups, setProdsGroups] = useState([])
   const [payMoney, setPayMoney] = useState(true)
   const [payDebit, setPayDebit] = useState(true)
@@ -172,9 +171,6 @@ const Operator = ({ user }) => {
             setHasBar(Boolean(operator.has_bar))
             setHasTicket(Boolean(operator.has_ticket))
             setHasPark(Boolean(operator.has_park))
-            setAllGroups(
-              operator.has_bar && operator.has_ticket && operator.has_park
-            )
             setPayMoney(Boolean(operator.pay_money))
             setPayDebit(Boolean(operator.pay_debit))
             setPayCredit(Boolean(operator.pay_credit))
@@ -372,7 +368,6 @@ const Operator = ({ user }) => {
   const onOpenedHandle = (checked) => {
     setDisableOperators(checked)
     if (checked) {
-      setAllGroups(false)
       setHasBar(false)
       setHasTicket(false)
       setHasPark(false)
@@ -448,7 +443,6 @@ const Operator = ({ user }) => {
   }
 
   const selectGroups = (e) => {
-    setAllGroups(e.target.checked)
     setHasBar(e.target.checked)
     setHasPark(e.target.checked)
     setHasTicket(e.target.checked)
@@ -659,11 +653,11 @@ const Operator = ({ user }) => {
                     <FormControlLabel
                       label="Todos"
                       name="allGroups"
-                      value={allGroups}
+                      value={hasBar && hasTicket && hasPark}
                       disabled={disableOperators}
                       control={
                         <GreenSwitch
-                          checked={allGroups}
+                          checked={hasBar && hasTicket && hasPark}
                           onChange={selectGroups}
                         />
                       }
