@@ -77,12 +77,14 @@ const Operator = ({ user }) => {
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false)
   const [devices, setDevice] = useState([])
 
+  const [isPhotoDeleted, setPhotoDeleted] = useState(false)
+
   const excludeWaiterProduct = (list) => {
-    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+    return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
   }
 
   const excludeWaiterGroup = (list) => {
-    return list.filter(i => !i.name.toLowerCase().includes("garçom"))
+    return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
   }
 
   const hasCashlessConf = async (user) => {
@@ -267,17 +269,16 @@ const Operator = ({ user }) => {
     formData.append("password", password)
     formData.append("role", "operador")
 
-    // ... has changed the photo
+    if (isPhotoDeleted) formData.append("photo", null)
+    else {
+      if (image) formData.append("image", image)
+      else formData.append("photo", photo)
+    }
 
-    if (image) formData.append("image", image)
-    else if (photo && !image) {
-      // is doing nothing
-
-      // is deleting the photo
-      formData.append("photo", "")
-    } else formData.append("org_id", user.org_id)
+    formData.append("org_id", user.org_id)
     formData.append("status", status ? 1 : 0)
     formData.append("has_product_list", hasProductList ? 1 : 0)
+
     if (hasBar) formData.append("has_bar", 1)
     if (hasTicket) formData.append("has_ticket", 1)
     if (hasPark) formData.append("has_park", 1)
@@ -490,8 +491,8 @@ const Operator = ({ user }) => {
   }
 
   const handleImage = (data) => {
-    console.log("Data no handler: ", data)
-    // if (photo)
+    if (!data) setPhotoDeleted(true)
+    else if (isPhotoDeleted) setPhotoDeleted(false)
 
     setImage(data)
   }
@@ -884,6 +885,22 @@ const Operator = ({ user }) => {
                 </TextField>
               </Grid>
 
+              {printMode == "recibo" && (
+                <Grid item>
+                  <FormControlLabel
+                    label="Imprimir 2 Vias do Recibo"
+                    name="viaProduction"
+                    value={viaProduction}
+                    control={
+                      <GreenSwitch
+                        checked={viaProduction}
+                        onChange={(e) => setViaProduction(e.target.checked)}
+                      />
+                    }
+                  />
+                </Grid>
+              )}
+
               <Grid
                 item
                 xl={12}
@@ -907,29 +924,13 @@ const Operator = ({ user }) => {
                       label="Logomarca específica para impressão neste dispositivo"
                       name="image"
                       inputRef={register}
-                      image={image ?? photo}
+                      image={photo ?? image}
                       setImage={handleImage}
                     />
                     <small>Tamanho: 262×100 (png)</small>
                   </Grid>
                 </Grid>
               </Grid>
-
-              {printMode == "recibo" && (
-                <Grid item>
-                  <FormControlLabel
-                    label="Imprimir 2 Vias do Recibo"
-                    name="viaProduction"
-                    value={viaProduction}
-                    control={
-                      <GreenSwitch
-                        checked={viaProduction}
-                        onChange={(e) => setViaProduction(e.target.checked)}
-                      />
-                    }
-                  />
-                </Grid>
-              )}
 
               <Grid item lg={12} md={12} sm={12} xs={12}>
                 <Typography style={{ fontWeight: "bold" }}>
