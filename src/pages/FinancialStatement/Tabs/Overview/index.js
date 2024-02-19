@@ -125,6 +125,10 @@ export default (props) => {
   })
   const cancelTokenSource = useRef()
 
+  useEffect(() => {
+    console.log("EventData -> ", eventData)
+  }, [eventData])
+  
   const handleSearch = async () => {
     try {
       setLoading(true)
@@ -236,11 +240,10 @@ export default (props) => {
   const exportPdfReleases = async () => {
     if (loadingReport) return
     setLoadingReport(true)
-    const orgData = await (await Api.get("/organization")).data
 
     if (eventData && cardInfo)
       releasePDF(
-        { ...eventData, cpfCnpj: orgData.cpfCnpj },
+        eventData,
         releases,
         payment,
         true

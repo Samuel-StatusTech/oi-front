@@ -13,6 +13,7 @@ export const reportTitle = [
 
 export const content = (
   event,
+  org,
   releases,
   releasesList,
   receiptList,
@@ -22,22 +23,16 @@ export const content = (
   totals
 ) => {
   let eData = [
-    // {
-    //   text: `Nome / Razão Social: ${event.name}`, // user?
-    //   fontSize: 12,
-    //   margin: [0, 10, 0, 0],
-    // },
-  ]
-
-  if (event.cpfCnpj)
-    eData.push({
-      text: `CPF / CNPJ: ${event.cpfCnpj}`,
+    {
+      text: `Nome / Razão Social: ${org.name}`,
       fontSize: 12,
       margin: [0, 10, 0, 0],
-    })
-
-  eData = [
-    ...eData,
+    },
+    {
+      text: `CPF / CNPJ: ${org.document}`,
+      fontSize: 12,
+      margin: [0, 10, 0, 0],
+    },
     {
       text: `Cidade: ${event.city}`,
       fontSize: 12,

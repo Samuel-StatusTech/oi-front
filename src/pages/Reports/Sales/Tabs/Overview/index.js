@@ -376,9 +376,6 @@ export default (props) => {
 
   const exportPdfReportByType = async () => {
     if (loadingReport) return
-    setLoadingReport(true)
-    Api.get(`/financialops`)
-    return
 
     const groupsStr = `${
       selectedGroups.length > 0 ? selectedGroups[0].id : "all"

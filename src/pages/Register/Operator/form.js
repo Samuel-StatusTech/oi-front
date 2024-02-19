@@ -288,6 +288,7 @@ const Operator = ({ user }) => {
     if (payPix) formData.append("pay_pix", 1)
     if (payCashless) formData.append("pay_cashless", 1)
     if (payMulti) formData.append("pay_multi", 1)
+    if (hasProductList) formData.append("has_product_list", 1)
     if (viaProduction) formData.append("via_production", 1)
     if (allowCashback) formData.append("allow_cashback", 1)
     if (allowCourtesy) formData.append("allow_courtesy", 1)
@@ -303,10 +304,7 @@ const Operator = ({ user }) => {
     formData.append("service_tax", serviceTax)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
-    formData.append(
-      "products",
-      productList.map((prod) => prod.id)
-    )
+    formData.append("products", [...productList.map((prod) => prod.id)])
 
     return formData
   }
@@ -349,6 +347,7 @@ const Operator = ({ user }) => {
           "Content-Type": "multipart/form-data",
         },
       })
+      .catch(e => console.log("alskdj", e))
 
       handleCancel()
     } catch (e) {
@@ -359,7 +358,7 @@ const Operator = ({ user }) => {
         if (data.error) {
           alert(data.error)
         } else {
-          alert("Erro não esperado")
+          alert("Erro não esperado aqui", data)
         }
       } else {
         alert("Erro não esperado")

@@ -13,10 +13,6 @@ const FinancialStatement = ({ event }) => {
 
   const { user } = useStore(store).getState("user")
 
-  useEffect(() => {
-    console.log(user)
-  }, [user])
-
   const [showReleaseModal, setShowReleaseModal] = useState(false)
   const [singleInfo, setSingleInfo] = useState(null)
   const [releases, setReleases] = useState([])
@@ -78,13 +74,21 @@ const FinancialStatement = ({ event }) => {
   }
 
   useEffect(() => {
-    getReleases().then((ops) => setReleases(ops))
+    if (user) {
+      getReleases().then((ops) => setReleases(ops))
 
-    Api.get("/event/getSelect?status=todos").then(({ data }) => {
-      const eData = data.events.find((ev) => ev.id === event)
-      if (eData) setEventData(eData)
-    })
-  }, [])
+      Api.get("/event/getSelect?status=todos").then(({ data }) => {
+        const eData = data.events.find((ev) => ev.id === event)
+        if (eData) {
+          setEventData({
+            ...eData,
+            clientName: user.client_name,
+            clientDocument: user.client_document,
+          })
+        }
+      })
+    }
+  }, [user])
 
   return (
     <>

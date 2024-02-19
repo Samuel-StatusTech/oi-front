@@ -9,6 +9,10 @@ import { reportTitle, content, footer } from "./contents"
 const releasePDF = async (event, releases, payment, mustDownload = false) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
 
+  console.log("------------------------------")
+  console.log("event -> ", event)
+  console.log("------------------------------")
+
   return new Promise((resolve) => {
     const { money, pix, debit, credit } = payment.gross
     const total = money + pix + debit + credit
@@ -41,6 +45,10 @@ const releasePDF = async (event, releases, payment, mustDownload = false) => {
       content: [
         ...content(
           event,
+          {
+            name: event.clientName,
+            document: event.clientDocument
+          },
           releases,
           releasesList.table,
           receiptList,
