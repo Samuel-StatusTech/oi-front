@@ -72,6 +72,7 @@ const Operator = ({ user }) => {
   const [deviceCode, setDeviceCode] = useState(null)
   const [productList, setProductList] = useState([])
   const [allProds, setAllProds] = useState([])
+  const [prodsLoaded, setProdsLoaded] = useState(false)
   const [rawList, setRawList] = useState([])
   const [disableOperators, setDisableOperators] = useState(false)
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false)
@@ -79,12 +80,10 @@ const Operator = ({ user }) => {
 
   const [isPhotoDeleted, setPhotoDeleted] = useState(false)
 
-  const excludeWaiterProduct = (list) => {
-    return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
-  }
-
   const excludeWaiterGroup = (list) => {
-    return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
+    if (allProds.length > 0) {
+      return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
+    }
   }
 
   const hasCashlessConf = async (user) => {
@@ -106,22 +105,8 @@ const Operator = ({ user }) => {
     }
   }
 
-  useEffect(() => {
-    loadData()
-    firebase.auth().onAuthStateChanged(hasCashlessConf)
-    hasCashlessConf()
-
-    Api.get("/group/getList").then(({ data }) => {
-      setProdsGroups(excludeWaiterGroup(data.groups))
-    })
-    Api.get("/product/getList?type=todos").then(({ data }) => {
-      setAllProds(data.products)
-    })
-
-    // eslint-disable-next-line
-  }, [])
-
   const loadData = () => {
+
     Api.get("/device/getListActived").then(({ data }) => {
       if (data.success) {
         setDevice(data.devices)
@@ -137,7 +122,7 @@ const Operator = ({ user }) => {
 
       const { operator, list } = location.state
 
-      setRawList(excludeWaiterProduct(list))
+      setRawList(list)
       setHasProductList(operator.has_product_list)
       setHasBar(operator.has_bar)
       setHasTicket(operator.has_ticket)
@@ -175,7 +160,9 @@ const Operator = ({ user }) => {
             setUsername(operator.username)
             if (operator.photo && operator.photo.length > 0)
               setPhoto(operator.photo)
-            setRawList(excludeWaiterProduct(list))
+
+            setRawList(list)
+            
             setStatus(Boolean(operator.status))
             setHasProductList(Boolean(operator.has_product_list))
             setHasBar(Boolean(operator.has_bar))
@@ -226,41 +213,23 @@ const Operator = ({ user }) => {
     }
   }
 
-  const returnObjData = () => {
-    return {
-      name,
-      username,
-      password,
-      photo: photo ?? "",
-      status: true,
-      role: "operador",
-      org_id: user.org_id,
-      has_product_list: hasProductList,
-      has_bar: hasBar,
-      has_ticket: hasTicket,
-      has_park: hasPark,
-      pay_money: payMoney,
-      pay_debit: payDebit,
-      pay_credit: payCredit,
-      pay_pix: payPix,
-      pay_cashless: payCashless,
-      pay_multi: payMulti,
-      print_mode: printMode,
-      via_production: viaProduction,
-      allow_cashback: allowCashback,
-      allow_courtesy: allowCourtesy,
-      allow_duplicate: allowDuplicate,
-      is_waiter: isWaiter,
-      has_commission: hasCommission,
-      commission,
-      has_cashless: hasCashless,
-      print_receipt: printReceipt,
-      allow_refound: allowRefound,
-      allow_cashback_cashless: allowCashbackCashless,
-      device_code: deviceCode,
-      products: productList.map((prod) => prod.id),
-    }
-  }
+  useEffect(loadData, [prodsLoaded])
+
+  useEffect(() => {
+
+    firebase.auth().onAuthStateChanged(hasCashlessConf)
+    hasCashlessConf()
+
+    Api.get("/group/getList").then(({ data }) => {
+      setProdsGroups(excludeWaiterGroup(data.groups))
+    })
+    Api.get("/product/getList?type=todos").then(({ data }) => {
+      setAllProds(data.products)
+      setProdsLoaded(true)
+    })
+
+    // eslint-disable-next-line
+  }, [])
 
   const returnFormData = () => {
     const formData = new FormData()
@@ -277,7 +246,6 @@ const Operator = ({ user }) => {
 
     formData.append("org_id", user.org_id)
     formData.append("status", status ? 1 : 0)
-    formData.append("has_product_list", hasProductList ? 1 : 0)
 
     if (hasBar) formData.append("has_bar", 1)
     if (hasTicket) formData.append("has_ticket", 1)
@@ -301,10 +269,10 @@ const Operator = ({ user }) => {
     if (hasCommission) formData.append("has_commission", 1)
     if (hasServiceTax) formData.append("has_service_tax", 1)
     formData.append("commission", commission)
-    formData.append("service_tax", serviceTax)
+    // formData.append("service_tax", serviceTax)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
-    formData.append("products", [...productList.map((prod) => prod.id)])
+    formData.append("products", JSON.stringify(productList.map(p=>p.id)))
 
     return formData
   }
@@ -321,7 +289,6 @@ const Operator = ({ user }) => {
 
       handleCancel()
     } catch (e) {
-      console.log(e)
       if (e.response) {
         const data = e.response.data
 
@@ -347,18 +314,14 @@ const Operator = ({ user }) => {
           "Content-Type": "multipart/form-data",
         },
       })
-      .catch(e => console.log("alskdj", e))
 
       handleCancel()
     } catch (e) {
-      console.log(e)
       if (e.response) {
         const data = e.response.data
 
         if (data.error) {
           alert(data.error)
-        } else {
-          alert("Erro não esperado aqui", data)
         }
       } else {
         alert("Erro não esperado")
@@ -497,7 +460,7 @@ const Operator = ({ user }) => {
   }
 
   const handleImage = (data) => {
-    if (!data) setPhotoDeleted(true)
+    if (photo && !data) setPhotoDeleted(true)
     else if (isPhotoDeleted) setPhotoDeleted(false)
 
     setImage(data)

@@ -108,7 +108,6 @@ export default (props) => {
 
   const [number, setNumber] = useState("")
 
-  // const [cardInfo, setCardInfo] = useState({})
   const [cardInfo, setCardInfo] = useState()
   const [payment, setPayment] = useState({
     gross: {
@@ -124,10 +123,6 @@ export default (props) => {
     },
   })
   const cancelTokenSource = useRef()
-
-  useEffect(() => {
-    console.log("EventData -> ", eventData)
-  }, [eventData])
   
   const handleSearch = async () => {
     try {
@@ -381,7 +376,7 @@ export default (props) => {
       field: "tax",
       render: ({ tax_quantity }) => (
         <td>
-          <span>{`${parseFloat(tax_quantity)}`}</span>
+          <span>{(+tax_quantity) ? parseFloat(tax_quantity) : tax_quantity}</span>
         </td>
       ),
     },

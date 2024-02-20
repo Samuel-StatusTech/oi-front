@@ -19,7 +19,6 @@ const FinancialStatement = ({ event }) => {
 
   const insertRelease = async (rInfo) => {
     const add = await Api.post("/financialops", rInfo)
-    console.log(rInfo)
     if (add.status === 200) {
       const newArr = [add.data.financialop, ...releases]
       setReleases(newArr)

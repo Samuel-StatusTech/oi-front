@@ -217,7 +217,7 @@ const handleSubmit = async () => {
                     error={Boolean(errors?.code)}
                     helperText={errors?.code}
                     variant='outlined'
-                    type='number'
+                    type='text'
                     size='small'
                     fullWidth
                   />

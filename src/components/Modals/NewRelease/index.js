@@ -67,7 +67,7 @@ const ModalNewRelease = ({
 
   const [type, setType] = useState(types[0])
   const [description, setDescription] = useState("Locação Sistema/Maq")
-  const [taxQnt, setTaxQnt] = useState(0)
+  const [taxQnt, setTaxQnt] = useState("0")
   const [operation, setOperation] = useState("debitar")
   const [unVal, setUnVal] = useState("0,00")
   const [currentVal, setCurrentVal] = useState("0,00")
@@ -80,7 +80,7 @@ const ModalNewRelease = ({
     let obj = {
       type: type.name,
       description,
-      tax_quantity: String(taxQnt),
+      tax_quantity: taxQnt,
       unitary_value: String(parseFloat(unVal.replace(",", ".")) * 100),
       total_value: String(
         Number.parseFloat(currentVal.replace(",", ".")) * 100
@@ -120,7 +120,7 @@ const ModalNewRelease = ({
   const closeModal = () => {
     setType(types[0])
     setDescription("Locação Sistema/Maq")
-    setTaxQnt(0)
+    setTaxQnt("0")
     setOperation("debitar")
     setUnVal("0,00")
     setCurrentVal("0,00")
@@ -129,8 +129,7 @@ const ModalNewRelease = ({
   }
 
   const handleTaxQnt = (val) => {
-    const filtered = val.replace(/\D/g, "")
-    setTaxQnt(Number(filtered))
+    setTaxQnt(val.trim().length === 0 ? "0" : val)
   }
 
   const getMaskedValue = (val) => {
@@ -173,7 +172,7 @@ const ModalNewRelease = ({
 
       setType(t)
       setDescription(singleInfo.description)
-      setTaxQnt(parseFloat(singleInfo.tax_quantity))
+      setTaxQnt(singleInfo.tax_quantity)
       setOperation(singleInfo.operation)
       setUnVal(format(singleInfo.unitary_value / 100, { code: "BRL" }).slice(2))
       setCurrentVal(
