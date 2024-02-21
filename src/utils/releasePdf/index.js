@@ -3,15 +3,10 @@ import pdfFonts from "pdfmake/build/vfs_fonts"
 import { styles } from "./styles"
 import { getLists } from "./utils"
 import { parseDateDash } from "../date"
-import { format } from "currency-formatter"
 import { reportTitle, content, footer } from "./contents"
 
-const releasePDF = async (event, releases, payment, mustDownload = false) => {
+const releasePDF = async (event, releases, payment, date, mustDownload = false) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
-
-  console.log("------------------------------")
-  console.log("event -> ", event)
-  console.log("------------------------------")
 
   return new Promise((resolve) => {
     const { money, pix, debit, credit } = payment.gross
@@ -33,6 +28,7 @@ const releasePDF = async (event, releases, payment, mustDownload = false) => {
     const filename = parseDateDash(new Date())
 
     const totals = {
+      payments: total,
       liquids: totalLiquidReceives,
       releases: releasesList.totals,
       allTotal: totalLiquidReceives + releasesList.totals,
@@ -49,13 +45,11 @@ const releasePDF = async (event, releases, payment, mustDownload = false) => {
             name: event.clientName,
             document: event.clientDocument
           },
-          releases,
           releasesList.table,
           receiptList,
           receivesList,
-          format(totalLiquidReceives / 100, { code: "BRL" }),
-          total,
-          totals
+          totals,
+          date
         ),
       ],
       footer: [footer],

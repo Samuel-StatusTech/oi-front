@@ -14,13 +14,11 @@ export const reportTitle = [
 export const content = (
   event,
   org,
-  releases,
   releasesList,
   receiptList,
   receivesList,
-  totalLiquidReceives,
-  total,
-  totals
+  totals,
+  date
 ) => {
   let eData = [
     {
@@ -71,10 +69,24 @@ export const content = (
 
     // Payment
     {
-      text: "Resumo Financeiro",
-      fontSize: 14,
+      style: "header",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            {
+              text: "Resumo Financeiro",
+              style: "headerItem",
+              fontSize: 14,
+              bold: true,
+            },
+          ],
+          [""],
+        ],
+        widths: ["*"],
+      },
       margin: [0, 18, 0, 10],
-      bold: true,
+      layout: "headerLineOnly",
     },
     {
       style: "tableExample",
@@ -92,13 +104,53 @@ export const content = (
       },
       layout: "noBorders",
     },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            "",
+            {
+              text: "Valor Total",
+              fontSize: 14,
+              bold: true,
+            },
+            {
+              text: format(totals.payments / 100, { code: "BRL" }),
+              fontSize: 14,
+              bold: true,
+              style: totals.payments < 0 ? "debitValue" : "",
+            },
+          ],
+          ["", "", ""],
+        ],
+        widths: ["*", 110, 90],
+      },
+      margin: [0, 10, 0, 0],
+      layout: "noBorders",
+    },
 
     // Receives
     {
-      text: "Repasse de Recebimentos (Cartão/Pix)",
-      fontSize: 14,
+      style: "header",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            {
+              text: "Repasse de Recebimentos (Cartão/Pix)",
+              style: "headerItem",
+              fontSize: 14,
+              bold: true,
+            },
+          ],
+          [""],
+        ],
+        widths: ["*"],
+      },
       margin: [0, 18, 0, 10],
-      bold: true,
+      layout: "headerLineOnly",
     },
     {
       style: "tableExample",
@@ -125,31 +177,45 @@ export const content = (
           [
             "",
             {
-              text: "TOTAL LÍQUIDO",
-              fontSize: 11,
+              text: "Valor Total",
+              fontSize: 14,
               bold: true,
             },
             {
               text: format(totals.liquids / 100, { code: "BRL" }),
-              fontSize: 11,
+              fontSize: 14,
               bold: true,
               style: totals.liquids < 0 ? "debitValue" : "",
             },
           ],
           ["", "", ""],
         ],
-        widths: ["*", 280, 90],
+        widths: ["*", 110, 90],
       },
-      margin: [0, 50, 0, 0],
+      margin: [0, 10, 0, 0],
       layout: "noBorders",
     },
 
     // Releases table
     {
-      text: "Resumo de lançamentos",
-      fontSize: 14,
+      style: "header",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            {
+              text: "Resumo de lançamentos",
+              style: "headerItem",
+              fontSize: 14,
+              bold: true,
+            },
+          ],
+          [""],
+        ],
+        widths: ["*"],
+      },
       margin: [0, 18, 0, 10],
-      bold: true,
+      layout: "headerLineOnly",
     },
     {
       style: "tableExample",
@@ -193,9 +259,9 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 280, 90],
+        widths: ["*", 180, 90],
       },
-      margin: [0, 50, 0, 0],
+      margin: [0, 30, 0, 0],
       layout: "noBorders",
     },
     {
@@ -219,9 +285,9 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 280, 90],
+        widths: ["*", 180, 90],
       },
-      margin: [0, 10, 0, 0],
+      margin: [0, 5, 0, 0],
       layout: "noBorders",
     },
     {
@@ -245,9 +311,35 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 280, 90],
+        widths: ["*", 180, 90],
       },
-      margin: [0, 10, 0, 0],
+      margin: [0, 5, 0, 0],
+      layout: "noBorders",
+    },
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            "",
+            {
+              text: "Previsão do pagamento:",
+              fontSize: 11,
+              bold: true,
+            },
+            {
+              text: format(totals.allTotal / 100, { code: "BRL" }),
+              fontSize: 11,
+              bold: true,
+              style: totals.allTotal < 0 ? "debitValue" : "",
+            },
+          ],
+          ["", "", ""],
+        ],
+        widths: ["*", 180, 90],
+      },
+      margin: [0, 30, 0, 10],
       layout: "noBorders",
     },
 

@@ -139,8 +139,12 @@ const Operator = ({ user }) => {
       setAllowCourtesy(operator.allow_courtesy)
       setAllowDuplicate(operator.allow_duplicate)
       setIsWaiter(operator.is_waiter)
-      setHasCommission(operator.has_commission)
-      setCommission(operator.commission)
+      setHasServiceTax(Boolean(operator.has_service_tax))
+      setServiceTax(operator.service_tax)
+      if (operator.has_commission !== undefined && operator.commission !== undefined) {
+        setHasCommission(Boolean(operator.has_commission))
+        setCommission(operator.commission)
+      }
       setHasCashless(operator.has_cashless)
       setPrintReceipt(operator.print_receipt)
       setAllowRefound(operator.allow_refound)
@@ -180,8 +184,12 @@ const Operator = ({ user }) => {
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
             setIsWaiter(Boolean(operator.is_waiter))
-            setHasCommission(Boolean(operator.has_commission))
-            setCommission(operator.commission)
+            setHasServiceTax(Boolean(operator.has_service_tax))
+            setServiceTax(operator.service_tax)
+            if (operator.has_commission !== undefined && operator.commission !== undefined) {
+              setHasCommission(Boolean(operator.has_commission))
+              setCommission(operator.commission)
+            }
             setHasCashless(Boolean(operator.has_cashless))
             setPrintReceipt(Boolean(operator.print_receipt))
             setAllowRefound(Boolean(operator.allow_refound))
@@ -268,8 +276,8 @@ const Operator = ({ user }) => {
     if (allowCashbackCashless) formData.append("allow_cashback_cashless", 1)
     if (hasCommission) formData.append("has_commission", 1)
     if (hasServiceTax) formData.append("has_service_tax", 1)
-    formData.append("commission", commission)
-    // formData.append("service_tax", serviceTax)
+    if (commission !== 0) formData.append("commission", commission)
+    formData.append("service_tax", serviceTax)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
     formData.append("products", JSON.stringify(productList.map(p=>p.id)))
@@ -352,12 +360,12 @@ const Operator = ({ user }) => {
       (idOperator === "new" || idOperator === "clone"
         ? passwordInputVerify(password)
         : false) ||
-      commissionInputVerify(commission)
+      serviceTaxInputVerify(serviceTax)
     )
   }
 
   const verifyWaiterTax = () => {
-    return hasCommission && commission === 0
+    return hasServiceTax && serviceTax === 0
   }
 
   const handleSubmit = async () => {
@@ -452,10 +460,10 @@ const Operator = ({ user }) => {
     return false
   }
 
-  const commissionInputVerify = (commission) => {
-    if (!/^[0-9]{1,3}/i.test(commission))
-      return (errorsVerify.commission = "Valor Inválido.")
-    errorsVerify.commission = null
+  const serviceTaxInputVerify = (serviceTax) => {
+    if (!/^[0-9]{1,3}/i.test(serviceTax))
+      return (errorsVerify.serviceTax = "Valor Inválido.")
+    errorsVerify.serviceTax = null
     return false
   }
 
@@ -743,43 +751,6 @@ const Operator = ({ user }) => {
                     />
                   </Grid>
                 </Grid>
-                {/* <Grid container spacing={2}>
-                  <Grid item>
-                    <FormControlLabel
-                      label="Taxa de serviço"
-                      name="hasServiceTax"
-                      value={hasServiceTax}
-                      control={
-                        <GreenSwitch
-                          checked={hasServiceTax}
-                          onChange={(e) => setHasServiceTax(e.target.checked)}
-                        />
-                      }
-                    />
-                  </Grid>
-                  {hasServiceTax && (
-                    <Grid item lg md sm xs>
-                      <TextField
-                        label="%"
-                        name="serviceTax"
-                        value={serviceTax}
-                        onChange={(e) => {
-                          const value = e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 3)
-                          setServiceTax(
-                            value > 100 ? 100 : value === "" ? 0 : value
-                          )
-                        }}
-                        error={Boolean(errorsVerify?.serviceTax)}
-                        helperText={errorsVerify?.serviceTax}
-                        variant="outlined"
-                        // type="number"
-                        size="small"
-                      />
-                    </Grid>
-                  )}
-                </Grid> */}
 
                 <Grid
                   item
@@ -794,36 +765,33 @@ const Operator = ({ user }) => {
                     <Grid item justify="center">
                       <FormControlLabel
                         label="Taxa de serviço"
-                        name="hasCommission"
-                        value={hasCommission}
+                        name="hasServiceTax"
+                        value={hasServiceTax}
                         control={
                           <GreenSwitch
-                            checked={hasCommission}
-                            onChange={(e) => setHasCommission(e.target.checked)}
+                            checked={hasServiceTax}
+                            onChange={(e) => setServiceTax(e.target.checked)}
                           />
                         }
                       />
                     </Grid>
-                    {hasCommission && (
+                    {hasServiceTax && (
                       <Grid item lg md sm xs>
                         <TextField
                           label="%"
-                          name="commission"
-                          value={commission}
+                          name="serviceTax"
+                          value={serviceTax}
                           onChange={(e) => {
                             const value = e.target.value
                               .replace(/\D/g, "")
                               .slice(0, 3)
-                            setCommission(
+                            setServiceTax(
                               value > 100 ? 100 : value === "" ? 0 : value
                             )
                           }}
-                          error={Boolean(errorsVerify?.commission)}
-                          helperText={errorsVerify?.commission}
                           variant="outlined"
-                          // type="number"
                           size="small"
-                          disabled={!hasCommission}
+                          disabled={!hasServiceTax}
                         />
                       </Grid>
                     )}

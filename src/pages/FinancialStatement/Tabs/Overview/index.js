@@ -33,6 +33,7 @@ import { Between } from "../../../../components/Input/DateTime"
 import CardData from "../../../../components/CardData"
 import Bar from "../../../../components/Chart/Bar"
 import EaseGrid from "../../../../components/EaseGrid"
+import PaymentDataModal from "../../../../components/Modals/PaymentDate"
 
 const defaultNumber = "+15551292939"
 
@@ -99,14 +100,14 @@ export default (props) => {
   const styles = useStyles()
 
   const [loading, setLoading] = useState(false)
-  const [numberDialog, setNumberDialog] = useState(false)
+  const [dateDialog, setDateDialog] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
   const [loadingWhats, setLoadingWhats] = useState(false)
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
 
-  const [number, setNumber] = useState("")
+  const [date, setDate] = useState("")
 
   const [cardInfo, setCardInfo] = useState()
   const [payment, setPayment] = useState({
@@ -233,22 +234,7 @@ export default (props) => {
   }
 
   const exportPdfReleases = async () => {
-    if (loadingReport) return
-    setLoadingReport(true)
-
-    if (eventData && cardInfo)
-      releasePDF(
-        eventData,
-        releases,
-        payment,
-        true
-      )
-
-    setLoadingReport(false)
-  }
-
-  const sendWhatsapp = () => {
-    setNumberDialog(true)
+    setDateDialog(true)
   }
 
   const unmaskNumber = (masked) => {
@@ -258,45 +244,20 @@ export default (props) => {
     )
   }
 
-  const sendTo = async (maskedNumber) => {
-    const n = unmaskNumber(maskedNumber)
+  const genPDF = async () => {
+    if (loadingReport) return
+    setLoadingReport(true)
 
-    if (loadingWhats) return
-    setLoadingWhats(true)
+    if (eventData && cardInfo)
+      releasePDF(
+        eventData,
+        releases,
+        payment,
+        date,
+        true
+      )
 
-    // 2. Upload file
-    const blob = await releasePDF(eventData, releases, payment)
-    const file = genFile(blob)
-
-    var fd = new FormData()
-    fd.append("type", "application/pdf")
-    fd.append("messaging_product", "whatsapp")
-    fd.append("file", file)
-
-    const req = await fetch(`${sendDomain}${sendVersion}${sendID}/media`, {
-      method: "POST",
-      body: fd,
-      headers: { Authorization: wToken },
-    })
-
-    const data = await req.json()
-    const fileId = data.id
-
-    // 3. send pdf file
-    await fetch(`${sendDomain}${sendVersion}${sendID}/messages`, {
-      method: "POST",
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: n,
-        type: "document",
-        document: { id: fileId, filename: file.name },
-      }),
-      headers: { "Content-Type": "application/json", Authorization: wToken },
-      redirect: "manual",
-    })
-
-    setLoadingWhats(false)
+    setLoadingReport(false)
   }
 
   const editRelease = async (info) => {
@@ -421,12 +382,12 @@ export default (props) => {
 
   return (
     <>
-      <WhatsappNumberModal
-        show={numberDialog}
-        sendTo={sendTo}
-        closeFn={() => setNumberDialog(false)}
-        number={number}
-        setNumber={setNumber}
+      <PaymentDataModal
+        show={dateDialog}
+        genPDF={genPDF}
+        closeFn={() => setDateDialog(false)}
+        date={new Date()}
+        setDate={setDate}
       />
 
       <Grid
