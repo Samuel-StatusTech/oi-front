@@ -25,6 +25,12 @@ export const getTotal = (releases, totalGross) => {
   return format(total, { code: "BRL" })
 }
 
+const getTaxPercent = (gross, net) => {
+  return (+net > 0) ?
+  `${Number(gross / net).toFixed(2)}%` :
+  '0%'
+}
+
 export const getLists = {
   releases: (rels) => {
     let totals = 0
@@ -40,7 +46,7 @@ export const getLists = {
       return [
         r.type,
         r.description,
-        Number(r.tax_quantity),
+        +r.tax_quantity ? +r.tax_quantity : r.tax_quantity,
         { text: format(unVal, { code: "BRL" }) },
         {
           text: format(val, { code: "BRL" }),
@@ -75,27 +81,58 @@ export const getLists = {
       ],
     ]
   },
-  receives: ({
-    debitGross,
-    debitNet,
-    creditGross,
-    creditNet,
-    pixGross,
-    pixNet,
-  }) => {
+  // receives: ({
+  //   debitGross,
+  //   debitNet,
+  //   creditGross,
+  //   creditNet,
+  //   pixGross,
+  //   pixNet,
+  // }) => {
+  //   return [
+  //     [
+  //       "Débito",
+  //       format(debitGross / 100, { code: "BRL" }),
+  //       format(debitNet / 100, { code: "BRL" }),
+  //     ],
+  //     [
+  //       "Crédito",
+  //       format(creditGross / 100, { code: "BRL" }),
+  //       format(creditNet / 100, { code: "BRL" }),
+  //     ],
+  //     [
+  //       "Pix",
+  //       format(pixGross / 100, { code: "BRL" }),
+  //       format(pixNet / 100, { code: "BRL" }),
+  //     ],
+  //   ]
+  // },
+  receives: (d) => {
+    const {
+      debitGross, debitNet,
+      creditGross, creditNet,
+      pixGross, pixNet
+    } = d
+
     return [
       [
+        "Vendas",
         "Débito",
+        `${getTaxPercent(debitGross, debitNet)}`,
         format(debitGross / 100, { code: "BRL" }),
         format(debitNet / 100, { code: "BRL" }),
       ],
       [
+        "Vendas",
         "Crédito",
+        `${getTaxPercent(creditGross / creditNet)}`,
         format(creditGross / 100, { code: "BRL" }),
         format(creditNet / 100, { code: "BRL" }),
       ],
       [
+        "Vendas",
         "Pix",
+        `${getTaxPercent(pixGross / pixNet)}`,
         format(pixGross / 100, { code: "BRL" }),
         format(pixNet / 100, { code: "BRL" }),
       ],

@@ -1,6 +1,7 @@
 import { format } from "currency-formatter"
 import { getTotal, logo } from "./utils"
 import { contractTxts } from "./contract"
+import { formatDate } from "../date"
 
 export const reportTitle = [
   {
@@ -85,7 +86,7 @@ export const content = (
         ],
         widths: ["*"],
       },
-      margin: [0, 18, 0, 10],
+      margin: [0, 10, 0, 10],
       layout: "headerLineOnly",
     },
     {
@@ -149,7 +150,7 @@ export const content = (
         ],
         widths: ["*"],
       },
-      margin: [0, 18, 0, 10],
+      margin: [0, 10, 0, 10],
       layout: "headerLineOnly",
     },
     {
@@ -158,13 +159,16 @@ export const content = (
         headerRows: 1,
         body: [
           [
-            { text: "Forma de pagamento", style: "contentTableHeader" },
-            { text: "Valor Bruto", style: "contentTableHeader" },
-            { text: "Valor Líquido", style: "contentTableHeader" },
+            { text: "Lançamento", style: "contentTableHeader" },
+            { text: "Descrição", style: "contentTableHeader" },
+            { text: "Taxa/Qnte", style: "contentTableHeader" },
+            { text: "Valor Un.", style: "contentTableHeader" },
+            { text: "Valor Total", style: "contentTableHeader" },
           ],
-          ...receivesList,
+            ...receivesList,
+            ...releasesList
         ],
-        widths: ["*", 110, 90],
+        widths: [80, "*", 90, 90, 90],
         columnGap: 10,
       },
       layout: "noBorders",
@@ -182,10 +186,10 @@ export const content = (
               bold: true,
             },
             {
-              text: format(totals.liquids / 100, { code: "BRL" }),
+              text: format((totals.liquids + totals.releases) / 100, { code: "BRL" }),
               fontSize: 14,
               bold: true,
-              style: totals.liquids < 0 ? "debitValue" : "",
+              style: (totals.liquids + totals.releases) < 0 ? "debitValue" : "",
             },
           ],
           ["", "", ""],
@@ -193,47 +197,6 @@ export const content = (
         widths: ["*", 110, 90],
       },
       margin: [0, 10, 0, 0],
-      layout: "noBorders",
-    },
-
-    // Releases table
-    {
-      style: "header",
-      table: {
-        headerRows: 1,
-        body: [
-          [
-            {
-              text: "Resumo de lançamentos",
-              style: "headerItem",
-              fontSize: 14,
-              bold: true,
-            },
-          ],
-          [""],
-        ],
-        widths: ["*"],
-      },
-      margin: [0, 18, 0, 10],
-      layout: "headerLineOnly",
-    },
-    {
-      style: "tableExample",
-      table: {
-        headerRows: 1,
-        body: [
-          [
-            { text: "Lançamento", style: "contentTableHeader" },
-            { text: "Descrição", style: "contentTableHeader" },
-            { text: "Taxa/Qnte", style: "contentTableHeader" },
-            { text: "Valor Un.", style: "contentTableHeader" },
-            { text: "Valor Total", style: "contentTableHeader" },
-          ],
-          ...releasesList,
-        ],
-        widths: [80, "*", 70, 70, 90],
-        columnGap: 10,
-      },
       layout: "noBorders",
     },
 
@@ -329,17 +292,16 @@ export const content = (
               bold: true,
             },
             {
-              text: format(totals.allTotal / 100, { code: "BRL" }),
+              text: formatDate(date),
               fontSize: 11,
               bold: true,
-              style: totals.allTotal < 0 ? "debitValue" : "",
             },
           ],
           ["", "", ""],
         ],
         widths: ["*", 180, 90],
       },
-      margin: [0, 30, 0, 10],
+      margin: [0, 10, 0, 0],
       layout: "noBorders",
     },
 

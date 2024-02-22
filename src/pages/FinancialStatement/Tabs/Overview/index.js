@@ -13,6 +13,7 @@ import Api from "../../../../api"
 import axios from "axios"
 import { format } from "currency-formatter"
 import {
+  formatDate,
   formatDateTimeToDB,
   formatDatetime,
   parseDateDash,
@@ -107,7 +108,8 @@ export default (props) => {
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
 
-  const [date, setDate] = useState("")
+  const [date, setDate] = useState(new Date().setHours(new Date().getHours() + 24))
+  // const [date, setDate] = useState("")
 
   const [cardInfo, setCardInfo] = useState()
   const [payment, setPayment] = useState({
@@ -258,6 +260,7 @@ export default (props) => {
       )
 
     setLoadingReport(false)
+    setDateDialog(false)
   }
 
   const editRelease = async (info) => {
@@ -386,7 +389,7 @@ export default (props) => {
         show={dateDialog}
         genPDF={genPDF}
         closeFn={() => setDateDialog(false)}
-        date={new Date()}
+        date={date}
         setDate={setDate}
       />
 

@@ -23,8 +23,15 @@ const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
     closeFn()
   }
 
+  const getITime = () => {
+    let dateData = fDate.split('/')
+    let dString = `${dateData[2]}-${dateData[1]}-${dateData[0]}`
+    return new Date(dString).getTime()
+  }
+
   const saveDate = () => {
-    setDate(fDate)
+    const iTime = getITime()
+    setDate(iTime)
     genPDF()
   }
 
