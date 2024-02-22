@@ -8,10 +8,12 @@ import {
   CircularProgress,
   Button,
 } from "@material-ui/core"
+import { store } from "../../../../../store/index"
 
 import Api from "../../../../../api"
 import firebase from "../../../../../firebase"
 import axios from "axios"
+import { useStore } from "react-redux"
 import { format } from "currency-formatter"
 
 import { ReactComponent as CloseIcon } from "../../../../../assets/icons/close.svg"
@@ -24,8 +26,11 @@ import EaseGrid from "../../../../../components/EaseGrid/index"
 import useStyles from "../../../../../global/styles"
 import Bar from "../../../../../components/Chart/Bar"
 import CardValue from "./CardValue"
+import sellsPDF from "../../../../../utils/sellsPdf"
 
 export default (props) => {
+  const { user } = useStore(store).getState("user")
+
   const showingBtns = true
   const [loading, setLoading] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
@@ -52,6 +57,8 @@ export default (props) => {
     },
   ]
 
+  const [eventData, setEventData] = useState(null)
+
   const [group, setGroup] = useState("all")
   const [courtesies, setCourtesies] = useState("all")
 
@@ -75,6 +82,13 @@ export default (props) => {
         setGroupList(data.groups)
       } else {
         alert("Erro ao buscar a lista de grupos")
+      }
+    })
+    Api.get(`/event/getSelect?status=todos`).then(({ data }) => {
+      if (data.success) {
+        setEventData(data.events.find(ev => ev.id === event))
+      } else {
+        alert("Erro ao buscar a lista de eventos")
       }
     })
   }, [])
@@ -350,9 +364,40 @@ export default (props) => {
     }
   }
 
+  // const exportPdfReport = async () => {
+  //   if (loadingReport) return
+  //   setLoadingReport(true)
+
+  //   const totals = {
+  //     money: 0,
+  //     debit: {
+  //       gross: 0,
+  //       net: 0,
+  //     },
+  //     credit: {
+  //       gross: 0,
+  //       net: 0,
+  //     },
+  //     pix: 0,
+  //     all: 0,
+  //   }
+
+  //   sellsPDF({
+  //     event: eventData,
+  //     user,
+  //     products,
+  //     operators: [],
+  //     totals,
+  //     mustDownload: true,
+  //   })
+
+  //   setLoadingReport(false)
+  // }
+
   const exportPdfReport = async () => {
     if (loadingReport) return
     setLoadingReport(true)
+
     Api.post(`/reportPDF/product`, {
       event,
       dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",

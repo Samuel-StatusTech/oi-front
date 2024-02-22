@@ -79,9 +79,7 @@ const Operator = ({ user }) => {
   const [isPhotoDeleted, setPhotoDeleted] = useState(false)
 
   const excludeWaiterGroup = (list) => {
-    if (allProds.length > 0) {
-      return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
-    }
+    return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
   }
 
   const hasCashlessConf = async (user) => {
@@ -266,7 +264,7 @@ const Operator = ({ user }) => {
     if (allowRefound) formData.append("allow_refound", +allowRefound)
     if (allowCashbackCashless) formData.append("allow_cashback_cashless", +allowCashbackCashless)
     formData.append("has_service_tax", +hasServiceTax)
-    formData.append("service_tax", +hasServiceTax ? serviceTax : 0)
+    formData.append("service_tax", hasServiceTax ? serviceTax : 0)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
     formData.append("products", JSON.stringify(productList.map(p=>p.id)))
@@ -371,6 +369,9 @@ const Operator = ({ user }) => {
         // 2. Verificar se existe produto "Taxa garçom"
 
         // 3. Caso não, cadastrar produto (e grupo)
+
+        console.log("All prods", allProds)
+        console.log("prodsGroups", prodsGroups)
 
         if (!allProds.find((p) => p.name.includes("Taxa Garçom"))) {
           const waiterGroup = prodsGroups.find((g) =>
