@@ -770,7 +770,7 @@ const Operator = ({ user }) => {
                         control={
                           <GreenSwitch
                             checked={hasServiceTax}
-                            onChange={(e) => setServiceTax(e.target.checked)}
+                            onChange={(e) => setHasServiceTax(e.target.checked)}
                           />
                         }
                       />
