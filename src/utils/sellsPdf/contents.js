@@ -1,6 +1,7 @@
 import {
   getEventAndFilters,
   getGroups,
+  getTable
 } from "./utils"
 
 export const logo =
@@ -8,12 +9,14 @@ export const logo =
 
 const content = (data) => {
 
-  const {event, user, operators, products, totals} = data
+  const {event, operators, products, dateIni, dateEnd, totals} = data
 
-  const groupsStr = getGroups().join(", ")
+  const groupsStr = getGroups(products).join(", ")
   
-  const eventAndFilters = getEventAndFilters(event, operators, groupsStr)
+  const eventAndFilters = getEventAndFilters({event, dateIni, dateEnd, operators, groupsStr})
 
+  const table = getTable(products, totals)
+  
   return ({
     header: [
       {
@@ -43,7 +46,8 @@ const content = (data) => {
       }
     ],
     body: [
-      ...eventAndFilters
+      ...eventAndFilters,
+      ...table
     ],
     footer: [
       {

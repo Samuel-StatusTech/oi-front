@@ -21,7 +21,7 @@ import { ReactComponent as CheckIcon } from "../../../../../assets/icons/check.s
 import { Between } from "../../../../../components/Input/DateTime"
 import Tooltip from "../../../../../components/Tooltip"
 import Ranking from "../../../../../components/Ranking"
-import { formatDateTimeToDB } from "../../../../../utils/date"
+import { formatDate, formatDateTimeToDB } from "../../../../../utils/date"
 import EaseGrid from "../../../../../components/EaseGrid/index"
 import useStyles from "../../../../../global/styles"
 import Bar from "../../../../../components/Chart/Bar"
@@ -313,8 +313,8 @@ export default (props) => {
       if (event) {
         cancelTokenSource.current = axios.CancelToken.source()
 
-        const dI = new Date(dateIni).getTime()
-        const dE = new Date(dateEnd).getTime()
+        const dI = new Date(dateIni).toISOString()
+        const dE = new Date(dateEnd).toISOString()
         const dateURL = selected !== 1 ? `&date_ini=${dI}&date_end=${dE}` : ""
 
         let totals = {
@@ -364,60 +364,83 @@ export default (props) => {
     }
   }
 
-  // const exportPdfReport = async () => {
-  //   if (loadingReport) return
-  //   setLoadingReport(true)
+  const getDateIni = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateIni)
+      }
+    }
+  }
 
-  //   const totals = {
-  //     money: 0,
-  //     debit: {
-  //       gross: 0,
-  //       net: 0,
-  //     },
-  //     credit: {
-  //       gross: 0,
-  //       net: 0,
-  //     },
-  //     pix: 0,
-  //     all: 0,
-  //   }
-
-  //   sellsPDF({
-  //     event: eventData,
-  //     user,
-  //     products,
-  //     operators: [],
-  //     totals,
-  //     mustDownload: true,
-  //   })
-
-  //   setLoadingReport(false)
-  // }
+  const getDateEnd = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateEnd)
+      }
+    }
+  }
 
   const exportPdfReport = async () => {
     if (loadingReport) return
     setLoadingReport(true)
 
-    Api.post(`/reportPDF/product`, {
-      event,
-      dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",
-      dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : "",
+    const totals = {
+      money: payment.money,
+      debit: {
+        net: payment.debit,
+      },
+      credit: {
+        net: payment.credit,
+      },
+      pix: payment.pix,
+      all: +payment.money + +payment.debit + +payment.credit + +payment.pix
+    }
+
+    sellsPDF({
+      event: eventData,
+      products,
+      dateIni: getDateIni(),
+      dateEnd: getDateEnd(),
+      operators: ["Todos"],
+      totals,
+      mustDownload: true,
     })
-      .then(({}) => {
-        firebase
-          .storage()
-          .ref(`reports/${event}/all.pdf`)
-          .getDownloadURL()
-          .then(function (url) {
-            setLoadingReport(false)
-            window.open(url, "_blank")
-          })
-      })
-      .catch((error) => {
-        setLoadingReport(false)
-        console.log({ error })
-      })
+
+    setLoadingReport(false)
   }
+
+  // const exportPdfReport = async () => {
+  //   if (loadingReport) return
+  //   setLoadingReport(true)
+
+  //   Api.post(`/reportPDF/product`, {
+  //     event,
+  //     dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",
+  //     dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : "",
+  //   })
+  //     .then(({}) => {
+  //       firebase
+  //         .storage()
+  //         .ref(`reports/${event}/all.pdf`)
+  //         .getDownloadURL()
+  //         .then(function (url) {
+  //           setLoadingReport(false)
+  //           window.open(url, "_blank")
+  //         })
+  //     })
+  //     .catch((error) => {
+  //       setLoadingReport(false)
+  //       console.log({ error })
+  //     })
+  // }
 
   const exportPdfReportByType = async () => {
     if (loadingReport) return
