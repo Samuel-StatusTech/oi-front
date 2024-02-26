@@ -29,7 +29,6 @@ import CardValue from "./CardValue"
 import sellsPDF from "../../../../../utils/sellsPdf"
 
 export default (props) => {
-  const { user } = useStore(store).getState("user")
 
   const showingBtns = true
   const [loading, setLoading] = useState(false)
@@ -348,6 +347,10 @@ export default (props) => {
   }
 
   useEffect(() => {
+    setSelectedGroups([])
+  }, [productType])
+
+  useEffect(() => {
     if (selected != 2) {
       onSearch()
     }
@@ -577,7 +580,7 @@ export default (props) => {
                 <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
                   {showingBtns && (
                     <Button
-                      onClick={exportPdfReportByType}
+                      onClick={exportPdfReport}
                       style={{ color: "#0097FF", border: "1px solid #0097FF" }}
                     >
                       {loadingReport ? (

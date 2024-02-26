@@ -1,43 +1,31 @@
 import React, { memo, useEffect, useState, useRef } from "react"
-import {
-  Grid,
-  Button,
-  CircularProgress,
-  TextField,
-  MenuItem,
-} from "@material-ui/core"
+import { Grid, Button, CircularProgress } from "@material-ui/core"
 
 import Painel from "./Painel"
 import Api from "../../../../../api"
 import axios from "axios"
 import { Between } from "../../../../../components/Input/DateTime"
-import { formatDateTimeToDB } from "../../../../../utils/date"
+import { formatDate, formatDateTimeToDB } from "../../../../../utils/date"
+import detailedOperatorPDF from "../../../../../utils/detailedOperatorPdf"
 
 const Operators = ({ type, event }) => {
   const [loading, setLoading] = useState(true)
+  const [loadingReport, setLoadingReport] = useState(false)
   const [users, setUsers] = useState([])
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
   const [selected, onSelectType] = useState(1)
-  const [groupList, setGroupList] = useState([])
+
   const [group, setGroup] = useState("all")
   const cancelTokenSource = useRef()
+
+  const [eventData, setEventData] = useState(null)
 
   useEffect(() => {
     if (selected != 2) {
       onSearch()
     }
   }, [event, type, group, selected])
-
-  useEffect(() => {
-    Api.get("/group/getList").then(({ data }) => {
-      if (data.success) {
-        setGroupList(data.groups)
-      } else {
-        alert("Erro ao buscar a lista de grupos")
-      }
-    })
-  }, [])
 
   const onSearch = () => {
     if (cancelTokenSource && cancelTokenSource.current) {
@@ -65,7 +53,7 @@ const Operators = ({ type, event }) => {
         ...mach,
         orders: sells.data.orders,
       }
-      
+
       resolve(res)
     })
   }
@@ -74,38 +62,37 @@ const Operators = ({ type, event }) => {
 
   const getUnitaryTotal = (t) => {
     // return new Promise((resolve) => {
-      let details = {
-        money: 0,
-        debit: 0,
-        credit: 0,
-        pix: 0,
+    let details = {
+      money: 0,
+      debit: 0,
+      credit: 0,
+      pix: 0,
+    }
+
+    t.orders.forEach((o, k) => {
+      if (o.status === "cancelamento") {
+        if (k < t.orders.length - 1) return
+      } else {
+        o.payments.forEach((p) => {
+          switch (p.payment_type) {
+            case "credito":
+              details.credit = details.credit + parseMoney(p.price) * 100
+              break
+            case "debito":
+              details.debit = details.debit + parseMoney(p.price) * 100
+              break
+            case "pix":
+              details.pix = details.pix + parseMoney(p.price) * 100
+              break
+            case "dinheiro":
+              details.money = details.money + parseMoney(p.price) * 100
+              break
+          }
+        })
       }
+    })
 
-      t.orders.forEach((o, k) => {
-        if (o.status === "cancelamento") {
-          if (k < t.orders.length - 1) return
-        } else {
-          o.payments.forEach((p) => {
-            switch (p.payment_type) {
-              case "credito":
-                details.credit = details.credit + parseMoney(p.price) * 100
-                break
-              case "debito":
-                details.debit = details.debit + parseMoney(p.price) * 100
-                break
-              case "pix":
-                details.pix = details.pix + parseMoney(p.price) * 100
-                break
-              case "dinheiro":
-                details.money = details.money + parseMoney(p.price) * 100
-                break
-            }
-          })
-        }
-        
-      })
-
-      return details
+    return details
   }
 
   const handleSearch = () => {
@@ -117,76 +104,120 @@ const Operators = ({ type, event }) => {
         selected !== 1
           ? `&date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
           : ""
-  
+
       const groupURL = group && group != "all" ? `&group_id=${group}` : ""
 
       cancelTokenSource.current = axios.CancelToken.source()
 
-      Api.get(`/statistical/saleDetails/${event}?type=${type}${groupURL}${dateURL}`, {
-        cancelToken: cancelTokenSource.current.token,
-      })
-        .then(async ({ data: allDetails }) => {
-          
-          if (allDetails) {
-            setUsers([])
-            let promises = []
+      Api.get(
+        `/statistical/saleDetails/${event}?type=${type}${groupURL}${dateURL}`,
+        {
+          cancelToken: cancelTokenSource.current.token,
+        }
+      ).then(async ({ data: allDetails }) => {
+        if (allDetails) {
+          setUsers([])
+          let promises = []
 
-            for (const idx in allDetails)
-              promises.push(getMachSells(allDetails[idx]))
+          for (const idx in allDetails)
+            promises.push(getMachSells(allDetails[idx]))
 
-            await Promise.all(promises)
-              .then(async (data) => {
-                
-                let dList = []
+          await Promise.all(promises).then(async (data) => {
+            let dList = []
 
-                data.map(async d => {
-                  
-                  const products = []
-                  for (const key in d.products) {
-                    let productIdx = -1
-                    if (d.products[key].productVariable) {
-                      for (const pIdx in products) {
-                        if (
-                          products[pIdx].product_name ==
-                            d.products[key].product_name &&
-                          products[pIdx].productId ==
-                            d.products[key].productId
-                        ) {
-                          productIdx = pIdx
-                          break
-                        }
-                      }
-                    }
-                    if (productIdx < 0) {
-                      products.push(d.products[key])
-                    } else {
-                      products[productIdx].quantity +=
-                        d.products[key].quantity
-                      products[productIdx].price_total =
-                        Number(products[productIdx].price_total) +
-                        Number(d.products[key].price_total)
-                      products[productIdx].price_unit = "Variável"
+            data.map(async (d) => {
+              const products = []
+              for (const key in d.products) {
+                let productIdx = -1
+                if (d.products[key].productVariable) {
+                  for (const pIdx in products) {
+                    if (
+                      products[pIdx].product_name ==
+                        d.products[key].product_name &&
+                      products[pIdx].productId == d.products[key].productId
+                    ) {
+                      productIdx = pIdx
+                      break
                     }
                   }
+                }
+                if (productIdx < 0) {
+                  products.push(d.products[key])
+                } else {
+                  products[productIdx].quantity += d.products[key].quantity
+                  products[productIdx].price_total =
+                    Number(products[productIdx].price_total) +
+                    Number(d.products[key].price_total)
+                  products[productIdx].price_unit = "Variável"
+                }
+              }
 
-                  d.products = products
-                  d.payments = getUnitaryTotal(d)
+              d.products = products
+              d.payments = getUnitaryTotal(d)
 
-                  dList.push(d)
-                })
+              dList.push(d)
+            })
 
-                setUsers(
-                  data.sort((a, b) => a.user.name.localeCompare(b.user.name))
-                )
-              })
+            setUsers(
+              data.sort((a, b) => a.user.name.localeCompare(b.user.name))
+            )
+          })
 
-            setLoading(false)
-          } else {
-            setLoading(false)
-          }
-        })
+          setLoading(false)
+        } else {
+          setLoading(false)
+        }
+      })
     }
   }
+
+  const getDateIni = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateIni)
+      }
+    }
+  }
+
+  const getDateEnd = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateEnd)
+      }
+    }
+  }
+
+  const generatePDF = () => {
+    setLoadingReport(true)
+
+    detailedOperatorPDF({
+      event: eventData,
+      dateIni: getDateIni(),
+      dateEnd: getDateEnd(),
+      users,
+      mustDownload: true,
+    })
+
+    setLoadingReport(false)
+  }
+
+  useEffect(() => {
+    Api.get(`/event/getSelect?status=todos`).then(({ data }) => {
+      if (data.success) {
+        setEventData(data.events.find((ev) => ev.id === event))
+      } else {
+        alert("Erro ao buscar a lista de eventos")
+      }
+    })
+  }, [])
 
   return (
     <Grid container direction="column" spacing={2}>
@@ -201,6 +232,29 @@ const Operators = ({ type, event }) => {
           onSearch={onSearch}
           size="small"
         />
+        <Button
+          onClick={generatePDF}
+          style={{
+            color: "#0097FF",
+            border: "1px solid #0097FF",
+            marginTop: 6,
+          }}
+        >
+          {loadingReport ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                flex: 1,
+                justifyContent: "center",
+              }}
+            >
+              <CircularProgress size={20} color="#0097FF" />
+            </div>
+          ) : (
+            "Gerar PDF"
+          )}
+        </Button>
       </Grid>
       {loading ? (
         <div
@@ -218,9 +272,10 @@ const Operators = ({ type, event }) => {
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             {users.map(({ user, products, payments, operations }) => {
-              const total = payments.money + payments.debit + payments.credit + payments.pix
+              const total =
+                payments.money + payments.debit + payments.credit + payments.pix
 
-              return total > 0 ?(
+              return total > 0 ? (
                 <Grid item key={user.id}>
                   <Painel
                     userKey={user.id}

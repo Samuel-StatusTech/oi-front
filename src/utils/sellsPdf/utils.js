@@ -155,7 +155,7 @@ export const getEventAndFilters = ({
       margin: [0, 10, 0, 0],
     },
     {
-      text: `Operador${operators.length > 1 ? "s" : ""}: ${operators.join(
+      text: `Operador${operators.length > 1 ? "es" : ""}: ${operators.join(
         ", "
       )}`,
       fontSize: 12,
