@@ -114,12 +114,12 @@ export const content = (
             "",
             {
               text: "Valor Total",
-              fontSize: 14,
+              fontSize: 12,
               bold: true,
             },
             {
               text: format(totals.payments / 100, { code: "BRL" }),
-              fontSize: 14,
+              fontSize: 12,
               bold: true,
               style: totals.payments < 0 ? "debitValue" : "",
             },
@@ -182,12 +182,12 @@ export const content = (
             "",
             {
               text: "Valor Total",
-              fontSize: 14,
+              fontSize: 12,
               bold: true,
             },
             {
               text: format((totals.liquids + totals.releases) / 100, { code: "BRL" }),
-              fontSize: 14,
+              fontSize: 12,
               bold: true,
               style: (totals.liquids + totals.releases) < 0 ? "debitValue" : "",
             },
