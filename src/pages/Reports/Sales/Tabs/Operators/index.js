@@ -195,14 +195,14 @@ const Operators = ({ type, event }) => {
     }
   }
 
-  const generatePDF = () => {
+  const generatePDF = (userData) => {
     setLoadingReport(true)
 
     detailedOperatorPDF({
       event: eventData,
       dateIni: getDateIni(),
       dateEnd: getDateEnd(),
-      users,
+      user: userData,
       mustDownload: true,
     })
 
@@ -232,29 +232,6 @@ const Operators = ({ type, event }) => {
           onSearch={onSearch}
           size="small"
         />
-        <Button
-          onClick={generatePDF}
-          style={{
-            color: "#0097FF",
-            border: "1px solid #0097FF",
-            marginTop: 6,
-          }}
-        >
-          {loadingReport ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flex: 1,
-                justifyContent: "center",
-              }}
-            >
-              <CircularProgress size={20} color="#0097FF" />
-            </div>
-          ) : (
-            "Gerar PDF"
-          )}
-        </Button>
       </Grid>
       {loading ? (
         <div
@@ -271,7 +248,9 @@ const Operators = ({ type, event }) => {
       ) : (
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Grid item lg={12} md={12} sm={12} xs={12}>
-            {users.map(({ user, products, payments, operations }) => {
+            {users.map((uData) => {
+              const { user, products, payments, operations } = uData
+              
               const total =
                 payments.money + payments.debit + payments.credit + payments.pix
 
@@ -288,6 +267,7 @@ const Operators = ({ type, event }) => {
                     payments={payments}
                     operations={operations}
                     group={group}
+                    genPDF={() => generatePDF(uData)}
                   />
                 </Grid>
               ) : null

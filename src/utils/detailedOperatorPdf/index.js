@@ -7,11 +7,11 @@ import generateContent from "./contents"
 const detailedOperatorPDF = async (data) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
   
-  const { event, dateIni, dateEnd, users, mustDownload = false } = data
+  const { event, dateIni, dateEnd, user, mustDownload = false } = data
 
   return new Promise((resolve) => {
 
-    const content = generateContent({event, dateIni, dateEnd, users})
+    const content = generateContent({event, dateIni, dateEnd, user})
 
     const filename = parseDateDash(new Date())
 
@@ -27,7 +27,7 @@ const detailedOperatorPDF = async (data) => {
     const pdf = pdfMake.createPdf(docDefs)
 
     if (mustDownload)
-      pdf.download(`Relatório de vendas por operador ${event.name} ${filename}.pdf`)
+      pdf.download(`Relatório de vendas ${event.name} - operador ${user.user.name}, ${filename}.pdf`)
     else pdf.getBlob((blob) => resolve(blob))
   })
 }
