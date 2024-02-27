@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Grid,
   TextField,
@@ -8,20 +8,15 @@ import {
   CircularProgress,
   Button,
 } from "@material-ui/core"
-import { store } from "../../../../../store/index"
 
 import Api from "../../../../../api"
-import firebase from "../../../../../firebase"
 import axios from "axios"
-import { useStore } from "react-redux"
 import { format } from "currency-formatter"
 
-import { ReactComponent as CloseIcon } from "../../../../../assets/icons/close.svg"
 import { ReactComponent as CheckIcon } from "../../../../../assets/icons/check.svg"
 import { Between } from "../../../../../components/Input/DateTime"
-import Tooltip from "../../../../../components/Tooltip"
 import Ranking from "../../../../../components/Ranking"
-import { formatDate, formatDateTimeToDB } from "../../../../../utils/date"
+import { formatDate } from "../../../../../utils/date"
 import EaseGrid from "../../../../../components/EaseGrid/index"
 import useStyles from "../../../../../global/styles"
 import Bar from "../../../../../components/Chart/Bar"
@@ -410,6 +405,7 @@ export default (props) => {
     sellsPDF({
       event: eventData,
       products,
+      isAllGroups: selectedGroups.length === 0,
       dateIni: getDateIni(),
       dateEnd: getDateEnd(),
       operators: ["Todos"],
@@ -418,62 +414,6 @@ export default (props) => {
     })
 
     setLoadingReport(false)
-  }
-
-  // const exportPdfReport = async () => {
-  //   if (loadingReport) return
-  //   setLoadingReport(true)
-
-  //   Api.post(`/reportPDF/product`, {
-  //     event,
-  //     dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",
-  //     dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : "",
-  //   })
-  //     .then(({}) => {
-  //       firebase
-  //         .storage()
-  //         .ref(`reports/${event}/all.pdf`)
-  //         .getDownloadURL()
-  //         .then(function (url) {
-  //           setLoadingReport(false)
-  //           window.open(url, "_blank")
-  //         })
-  //     })
-  //     .catch((error) => {
-  //       setLoadingReport(false)
-  //       console.log({ error })
-  //     })
-  // }
-
-  const exportPdfReportByType = async () => {
-    if (loadingReport) return
-
-    const groupsStr = `${
-      selectedGroups.length > 0 ? selectedGroups[0].id : "all"
-    }`
-
-    Api.post(`/reportPDF/product`, {
-      event,
-      group: selectedGroups.length > 0 ? groupsStr : "all",
-      productType,
-      courtesies: courtesies && courtesies != "all" ? courtesies : 0,
-      dateIni: selected !== 1 ? formatDateTimeToDB(dateIni) : "",
-      dateEnd: selected !== 1 ? formatDateTimeToDB(dateEnd) : "",
-    })
-      .then(({}) => {
-        firebase
-          .storage()
-          .ref(`reports/${event}/all.pdf`)
-          .getDownloadURL()
-          .then(function (url) {
-            setLoadingReport(false)
-            window.open(url, "_blank")
-          })
-      })
-      .catch((error) => {
-        setLoadingReport(false)
-        console.log({ error })
-      })
   }
 
   const handleGrupoSelect = (groupId) => {

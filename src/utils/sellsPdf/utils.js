@@ -147,24 +147,24 @@ export const getEventAndFilters = ({
     {
       text: `Data de início: ${dateIni}`,
       fontSize: 12,
-      margin: [0, 10, 0, 0],
+      margin: [0, 0, 0, 0],
     },
     {
       text: `Data de término: ${dateEnd}`,
       fontSize: 12,
-      margin: [0, 10, 0, 0],
+      margin: [0, 0, 0, 0],
     },
     {
       text: `Operador${operators.length > 1 ? "es" : ""}: ${operators.join(
         ", "
       )}`,
       fontSize: 12,
-      margin: [0, 10, 0, 0],
+      margin: [0, 0, 0, 0],
     },
     {
       text: `Grupos: ${groupsStr}`,
       fontSize: 12,
-      margin: [0, 10, 0, 20],
+      margin: [0, 0, 0, 20],
     },
   ]
 }
