@@ -63,56 +63,49 @@ export const getTable = (products, totals) => {
         headerRows: 1,
         body: [
           [
-            {
-              text: "Totais",
-              fontSize: 11,
-              bold: true,
-            },
-            {
-              text: sellsCount,
-              fontSize: 11,
-            },
+            { text: "Totais", fontSize: 11, bold: true },
+            { text: sellsCount, fontSize: 11 },
             "",
           ],
           [
-            "",
-            "Dinheiro",
+            { text: "", style: 'paymentsLines' },
+            { text: "Dinheiro", style: 'paymentsLines' },
             {
               text: format(totals.money / 100, { code: "BRL" }),
               fontSize: 11,
+              style: 'paymentsLines'
             },
           ],
           [
-            "",
-            "Débito",
+            { text: "", style: 'paymentsLines' },
+            { text: "Débito", style: 'paymentsLines' },
             {
               text: format(totals.debit.net / 100, { code: "BRL" }),
               fontSize: 11,
+              style: 'paymentsLines'
             },
           ],
           [
-            "",
-            "Crédito",
+            { text: "", style: 'paymentsLines' },
+            { text: "Crédito", style: 'paymentsLines' },
             {
               text: format(totals.credit.net / 100, { code: "BRL" }),
               fontSize: 11,
+              style: 'paymentsLines'
             },
           ],
           [
-            "",
-            "Pix",
+            { text: "", style: 'paymentsLines' },
+            { text: "Pix", style: 'paymentsLines' },
             {
               text: format(totals.pix / 100, { code: "BRL" }),
               fontSize: 11,
+              style: 'paymentsLines'
             },
           ],
           [
-            "",
-            {
-              text: "Total geral",
-              fontSize: 11,
-              bold: true,
-            },
+            { text: "", style: 'paymentsLines' },
+            { text: "Total geral", fontSize: 11, bold: true },
             {
               text: format(totals.all / 100, { code: "BRL" }),
               fontSize: 11,
@@ -136,8 +129,6 @@ export const getEventAndFilters = ({
   groupsStr
 }) => {
 
-  console.log(dateIni)
-  console.log(dateEnd)
   return [
     {
       text: `Evento: ${event.name}`,
@@ -164,7 +155,7 @@ export const getEventAndFilters = ({
     {
       text: `Grupos: ${groupsStr}`,
       fontSize: 12,
-      margin: [0, 0, 0, 20],
+      margin: [0, 0, 0, 0],
     },
   ]
 }

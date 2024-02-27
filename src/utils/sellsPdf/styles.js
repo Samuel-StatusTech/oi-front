@@ -16,6 +16,10 @@ export const styles = {
     bold: true,
     fontSize: 14
   },
+  paymentsLines: {
+    fontSize: 12,
+    margin: [0, 0, 0, -4]
+  },
   debitValue: {
     color: "#B22222",
   },
