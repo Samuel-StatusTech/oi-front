@@ -118,7 +118,7 @@ export const content = (
               bold: true,
             },
             {
-              text: format(13000000000 / 100, { code: "BRL" }),
+              text: format(totals.payments / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
               style: totals.payments < 0 ? "debitValue" : "",
