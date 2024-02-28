@@ -27,7 +27,7 @@ export const getTotal = (releases, totalGross) => {
 
 const getTaxPercent = (gross, net) => {
   return (+net > 0) ?
-  `${Number(gross / net).toFixed(2)}%` :
+  `${Number(100 - ((net / gross) * 100)).toFixed(2)}%` :
   '0%'
 }
 
@@ -125,14 +125,14 @@ export const getLists = {
       [
         "Vendas",
         "Crédito",
-        `${getTaxPercent(creditGross / creditNet)}`,
+        `${getTaxPercent(creditGross, creditNet)}`,
         format(creditGross / 100, { code: "BRL" }),
         format(creditNet / 100, { code: "BRL" }),
       ],
       [
         "Vendas",
         "Pix",
-        `${getTaxPercent(pixGross / pixNet)}`,
+        `${getTaxPercent(pixGross, pixNet)}`,
         format(pixGross / 100, { code: "BRL" }),
         format(pixNet / 100, { code: "BRL" }),
       ],

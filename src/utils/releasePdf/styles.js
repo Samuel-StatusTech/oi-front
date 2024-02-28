@@ -7,6 +7,10 @@ export const styles = {
     color: "black",
     width: "100%",
   },
+  paymentsLines: {
+    fontSize: 12,
+    margin: [0, 0, 0, -4]
+  },
   dateFooter: {
     italics: true,
     alignment: "right",
