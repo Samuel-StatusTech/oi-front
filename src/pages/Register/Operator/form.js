@@ -178,8 +178,19 @@ const Operator = ({ user }) => {
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
             setIsWaiter(Boolean(operator.is_waiter))
-            setHasServiceTax(Boolean(operator.has_service_tax))
-            setServiceTax(operator.service_tax)
+            if (operator.has_service_tax !== null) {
+              setHasServiceTax(Boolean(operator.has_service_tax))
+            } else {
+              let hc = operator.has_commission
+              if (hc !== null) setHasServiceTax(Boolean(operator.has_commission))
+              else setHasServiceTax(false)
+            }
+            if (operator.service_tax !== null) setServiceTax(operator.service_tax)
+            else {
+              let c = operator.commission
+              if (c !== null) setServiceTax(operator.commission)
+              else setServiceTax(0)
+            }
             setHasCashless(Boolean(operator.has_cashless))
             setPrintReceipt(Boolean(operator.print_receipt))
             setAllowRefound(Boolean(operator.allow_refound))
