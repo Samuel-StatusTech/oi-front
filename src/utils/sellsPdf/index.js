@@ -18,6 +18,7 @@ const sellsPDF = async (data) => {
     isAllGroups,
     crudePays,
     isOverview,
+    prodType,
     mustDownload = false,
   } = data
 
@@ -32,6 +33,7 @@ const sellsPDF = async (data) => {
       isAllGroups,
       totals,
       isOverview,
+      prodType,
       crudePays,
     })
 

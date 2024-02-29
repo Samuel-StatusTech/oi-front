@@ -416,7 +416,8 @@ export default (props) => {
       operators: ["Todos"],
       totals,
       crudePays,
-      isOverview: productType === 'all',
+      isOverview: selectedGroups.length === 0,
+      prodType: productType,
       mustDownload: true,
     })
 
