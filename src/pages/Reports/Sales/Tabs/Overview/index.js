@@ -68,6 +68,7 @@ export default (props) => {
     debit: 0,
     pix: 0,
   })
+  const [crudePays, setCrudPays] = useState({})
   const cancelTokenSource = useRef()
 
   useEffect(() => {
@@ -186,6 +187,7 @@ export default (props) => {
 
     setCardInfo(totals.cardInfo)
     setPayment(totals.payments)
+    setCrudPays(data.paymentInfo)
 
     let filteredProds = []
     prods.forEach((p) => {
@@ -410,6 +412,7 @@ export default (props) => {
       dateEnd: getDateEnd(),
       operators: ["Todos"],
       totals,
+      crudePays,
       mustDownload: true,
     })
 

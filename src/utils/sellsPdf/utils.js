@@ -1,7 +1,7 @@
 import { formatDate } from "../../utils/date"
 import { format } from "currency-formatter"
 
-export const getTable = (products, totals) => {
+export const getTable = (products, totals, crudePays) => {
   let lines = []
 
   let sellsCount = 0
@@ -71,7 +71,8 @@ export const getTable = (products, totals) => {
             { text: "", style: 'paymentsLines' },
             { text: "Dinheiro", style: 'paymentsLines' },
             {
-              text: format(totals.money / 100, { code: "BRL" }),
+              // text: format(totals.money / 100, { code: "BRL" }),
+              text: format(crudePays.money / 100, { code: "BRL" }),
               fontSize: 11,
               style: 'paymentsLines'
             },
@@ -80,7 +81,8 @@ export const getTable = (products, totals) => {
             { text: "", style: 'paymentsLines' },
             { text: "Débito", style: 'paymentsLines' },
             {
-              text: format(totals.debit.net / 100, { code: "BRL" }),
+              // text: format(totals.debit.net / 100, { code: "BRL" }),
+              text: format(crudePays.debit / 100, { code: "BRL" }),
               fontSize: 11,
               style: 'paymentsLines'
             },
@@ -89,7 +91,8 @@ export const getTable = (products, totals) => {
             { text: "", style: 'paymentsLines' },
             { text: "Crédito", style: 'paymentsLines' },
             {
-              text: format(totals.credit.net / 100, { code: "BRL" }),
+              // text: format(totals.credit.net / 100, { code: "BRL" }),
+              text: format(crudePays.credit / 100, { code: "BRL" }),
               fontSize: 11,
               style: 'paymentsLines'
             },
@@ -98,7 +101,8 @@ export const getTable = (products, totals) => {
             { text: "", style: 'paymentsLines' },
             { text: "Pix", style: 'paymentsLines' },
             {
-              text: format(totals.pix / 100, { code: "BRL" }),
+              // text: format(totals.pix / 100, { code: "BRL" }),
+              text: format(crudePays.pix / 100, { code: "BRL" }),
               fontSize: 11,
               style: 'paymentsLines'
             },
