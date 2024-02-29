@@ -6,12 +6,34 @@ import generateContent from "./contents"
 
 const sellsPDF = async (data) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
-  
-  const { event, dateIni, dateEnd, user, products, operators, totals, isAllGroups, crudePays, mustDownload = false } = data
+
+  const {
+    event,
+    dateIni,
+    dateEnd,
+    user,
+    products,
+    operators,
+    totals,
+    isAllGroups,
+    crudePays,
+    isOverview,
+    mustDownload = false,
+  } = data
 
   return new Promise((resolve) => {
-
-    const content = generateContent({event, dateIni, dateEnd, user, operators, products, isAllGroups, totals, crudePays})
+    const content = generateContent({
+      event,
+      dateIni,
+      dateEnd,
+      user,
+      operators,
+      products,
+      isAllGroups,
+      totals,
+      isOverview,
+      crudePays,
+    })
 
     const filename = parseDateDash(new Date())
 

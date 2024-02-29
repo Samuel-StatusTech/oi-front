@@ -405,6 +405,8 @@ export default (props) => {
       all: +payment.money + +payment.debit + +payment.credit + +payment.pix
     }
 
+    console.log("Type", productType)
+
     sellsPDF({
       event: eventData,
       products,
@@ -414,6 +416,7 @@ export default (props) => {
       operators: ["Todos"],
       totals,
       crudePays,
+      isOverview: productType === 'all',
       mustDownload: true,
     })
 
