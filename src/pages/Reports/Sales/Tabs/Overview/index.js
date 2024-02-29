@@ -207,6 +207,7 @@ export default (props) => {
 
   const searchByGroups = async (dateURL, totals) => {
     let prods = []
+    let cPays = { money: 0, credit: 0, debit: 0, pix: 0 }
 
     for (let i = 1; i <= selectedGroups.length; i++) {
       const grp = selectedGroups[i - 1]

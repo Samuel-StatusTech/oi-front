@@ -66,7 +66,7 @@ export const getTable = (products, totals, crudePays) => {
             { text: "Totais", fontSize: 11, bold: true },
             { text: sellsCount, fontSize: 11 },
             "",
-          ],
+          ], /*
           [
             { text: "", style: 'paymentsLines' },
             { text: "Dinheiro", style: 'paymentsLines' },
@@ -106,7 +106,7 @@ export const getTable = (products, totals, crudePays) => {
               fontSize: 11,
               style: 'paymentsLines'
             },
-          ],
+          ], */
           [
             { text: "", style: 'paymentsLines' },
             { text: "Total geral", fontSize: 11, bold: true },
