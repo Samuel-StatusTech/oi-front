@@ -102,7 +102,6 @@ const Operator = ({ user }) => {
   }
 
   const loadData = () => {
-
     Api.get("/device/getListActived").then(({ data }) => {
       if (data.success) {
         setDevice(data.devices)
@@ -137,7 +136,7 @@ const Operator = ({ user }) => {
       setIsWaiter(operator.is_waiter)
       setHasServiceTax(Boolean(operator.has_service_tax))
       setServiceTax(operator.service_tax)
-      setDisableOperators(Boolean(operator.has_product_list)) 
+      setDisableOperators(Boolean(operator.has_product_list))
       setHasCashless(operator.has_cashless)
       setPrintReceipt(operator.print_receipt)
       setAllowRefound(operator.allow_refound)
@@ -159,7 +158,7 @@ const Operator = ({ user }) => {
               setPhoto(operator.photo)
 
             setRawList(list)
-            
+
             setStatus(Boolean(operator.status))
             setHasProductList(Boolean(operator.has_product_list))
             setHasBar(Boolean(operator.has_bar))
@@ -182,10 +181,12 @@ const Operator = ({ user }) => {
               setHasServiceTax(Boolean(operator.has_service_tax))
             } else {
               let hc = operator.has_commission
-              if (hc !== null) setHasServiceTax(Boolean(operator.has_commission))
+              if (hc !== null)
+                setHasServiceTax(Boolean(operator.has_commission))
               else setHasServiceTax(false)
             }
-            if (operator.service_tax !== null) setServiceTax(operator.service_tax)
+            if (operator.service_tax !== null)
+              setServiceTax(operator.service_tax)
             else {
               let c = operator.commission
               if (c !== null) setServiceTax(operator.commission)
@@ -225,7 +226,6 @@ const Operator = ({ user }) => {
   useEffect(loadData, [prodsLoaded])
 
   useEffect(() => {
-
     firebase.auth().onAuthStateChanged(hasCashlessConf)
     hasCashlessConf()
 
@@ -273,12 +273,14 @@ const Operator = ({ user }) => {
     if (hasCashless) formData.append("has_cashless", +hasCashless)
     if (printReceipt) formData.append("print_receipt", +printReceipt)
     if (allowRefound) formData.append("allow_refound", +allowRefound)
-    if (allowCashbackCashless) formData.append("allow_cashback_cashless", +allowCashbackCashless)
+    if (allowCashbackCashless)
+      formData.append("allow_cashback_cashless", +allowCashbackCashless)
     formData.append("has_service_tax", +hasServiceTax)
     formData.append("service_tax", hasServiceTax ? serviceTax : 0)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
-    formData.append("products", JSON.stringify(productList.map(p=>p.id)))
+    console.log(productList.map((p) => p.id))
+    formData.append("products", JSON.stringify(productList.map((p) => p.id)))
 
     return formData
   }
@@ -345,7 +347,7 @@ const Operator = ({ user }) => {
   const onOpenedHandle = (checked) => {
     setDisableOperators(checked)
     setHasProductList(checked)
-    
+
     if (checked) {
       setHasBar(false)
       setHasTicket(false)
@@ -662,6 +664,7 @@ const Operator = ({ user }) => {
                   hasProduct={hasProductList}
                   onOpenedHandle={onOpenedHandle}
                   selectAll
+                  url="/product/getList?type=todos"
                 />
               </Grid>
 
