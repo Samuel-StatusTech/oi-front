@@ -608,7 +608,7 @@ const SimpleProduct = ({ user }) => {
                   />
                 </Grid>
                 <Grid item>
-                  {type === 'bar' ?? (
+                  {type === 'bar' && (
                     <FormControlLabel
                       name='numberCopy'
                       control={<GreenSwitch checked={numberCopy == 2} onChange={(e) => setNumberCopy(e.target.checked ? 2 : 1)} />}
