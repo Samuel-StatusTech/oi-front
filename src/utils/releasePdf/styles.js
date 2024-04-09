@@ -20,6 +20,9 @@ export const styles = {
     bold: true,
     fontSize: 14
   },
+  right: {
+    alignment: 'right'
+  },
   debitValue: {
     color: "#B22222",
   },

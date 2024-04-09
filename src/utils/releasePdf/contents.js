@@ -3,6 +3,8 @@ import { logo } from "./utils"
 import { contractTxts } from "./contract"
 import { formatDate } from "../date"
 
+const marginRight10 = [0, 0, 10, 0]
+
 export const reportTitle = [
   {
     image: `data:image/png;base64, ${logo}`,
@@ -99,13 +101,14 @@ export const content = (
         body: [
           [
             { text: "Formas de Pagamento", style: "contentTableHeader" },
-            { text: "Valor Total", style: "contentTableHeader" },
+            { text: "Valor Total", style: ["contentTableHeader", "right"] },
           ],
           ...receiptList,
         ],
         widths: ["*", 100],
         columnGap: 10,
       },
+      margin: marginRight10,
       layout: "noBorders",
     },
     {
@@ -124,14 +127,14 @@ export const content = (
               text: format(totals.payments / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
-              style: totals.payments < 0 ? "debitValue" : "",
+              style: totals.payments < 0 ? ["debitValue", "right"] : "right",
             },
           ],
           ["", "", ""],
         ],
         widths: ["*", 90, 100],
       },
-      margin: [0, 10, 0, 0],
+      margin: [0, 10, 10, 0],
       layout: "noBorders",
     },
 
@@ -166,7 +169,7 @@ export const content = (
             { text: "Descrição", style: "contentTableHeader" },
             { text: "Taxa / Qtde", style: "contentTableHeader" },
             { text: "Valor Bruto", style: "contentTableHeader" },
-            { text: "Valor Líquido", style: "contentTableHeader" },
+            { text: "Valor Líquido", style: ["contentTableHeader", "right"] },
           ],
           ...receivesList,
           ...releasesList
@@ -174,6 +177,7 @@ export const content = (
         widths: [80, "*", 90, 90, 100],
         columnGap: 10,
       },
+      margin: marginRight10,
       layout: "noBorders",
     },
 
@@ -188,20 +192,20 @@ export const content = (
             {
               text: "LÍQUIDO CARTÕES / PIX",
               fontSize: 11,
-              bold: true,
+              bold: true
             },
             {
               text: format(totals.liquids / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
-              style: totals.liquids < 0 ? "debitValue" : "",
+              style: totals.liquids < 0 ? ["debitValue", "right"] : "right",
             },
           ],
           ["", "", ""],
         ],
         widths: ["*", 185, 100],
       },
-      margin: [0, 10, 0, -6],
+      margin: [0, 10, 10, -6],
       layout: "noBorders",
     },
     {
@@ -220,14 +224,14 @@ export const content = (
               text: format(totals.releases / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
-              style: totals.releases < 0 ? "debitValue" : "",
+              style: totals.liquids < 0 ? ["debitValue", "right"] : "right",
             },
           ],
           ["", "", ""]
         ],
         widths: ["*", 185, 100],
       },
-      margin: [0, 0, 0, -6],
+      margin: [0, 0, 10, -6],
       layout: "noBorders",
     },
     {
@@ -246,14 +250,14 @@ export const content = (
               text: format(totals.allTotal / 100, { code: "BRL" }),
               fontSize: 11,
               bold: true,
-              style: totals.allTotal < 0 ? "debitValue" : "",
+              style: totals.liquids < 0 ? ["debitValue", "right"] : "right",
             },
           ],
           ["", "", ""],
         ],
         widths: ["*", 185, 100],
       },
-      margin: [0, 0, 0, 0],
+      margin: [0, 0, 10, 0],
       layout: "noBorders",
     },
     {
@@ -272,19 +276,18 @@ export const content = (
               text: formatDate(date),
               fontSize: 11,
               bold: true,
+              style: "right"
             },
           ],
           ["", "", ""],
         ],
         widths: ["*", 185, 100],
       },
-      margin: [0, 10, 0, 0],
+      margin: [0, 10, 10, 0],
       layout: "noBorders",
     }
   ]
 
-  console.log("there", showTaxes)
-  
   if (showTaxes === true) {
     data = [
       ...data,
@@ -304,14 +307,9 @@ export const content = (
             body: [
               [
                 {
-                  text: "Taxas de Intermediação Cartão/Píx (Valores Retidos) – ",
-                  fontSize: 11,
-                  style: "additionalInfoMain",
-                },
-                {
                   text: format(taxes / 100, { code: "BRL" }),
                   fontSize: 11,
-                  style: "taxValue",
+                  style: "additionalInfoMain",
                 },
               ],
             ],
