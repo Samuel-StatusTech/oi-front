@@ -29,23 +29,23 @@ export const content = (
   let eData = [
     {
       text: `Contratante: ${org.name}`,
-      fontSize: 12,
+      fontSize: 11,
       margin: [0, 0, 0, 0],
     },
     {
       text: `CPF / CNPJ: ${org.document}`,
-      fontSize: 12,
+      fontSize: 11,
       margin: [0, 0, 0, 0],
     },
     {
       text: `Cidade: ${event.city}`,
-      fontSize: 12,
+      fontSize: 11,
       margin: [0, 0, 0, 0],
     },
     {
       text: `Evento: ${event.name}`,
-      fontSize: 12,
-      margin: [0, 0, 0, 20],
+      fontSize: 11,
+      margin: [0, 0, 0, 10],
     },
   ]
 
@@ -83,7 +83,7 @@ export const content = (
             {
               text: "Resumo Financeiro",
               style: "headerItem",
-              fontSize: 14,
+              fontSize: 11,
               bold: true,
             },
           ],
@@ -134,7 +134,7 @@ export const content = (
         ],
         widths: ["*", 90, 100],
       },
-      margin: [0, 10, 10, 0],
+      margin: [0, 0, 10, 0],
       layout: "noBorders",
     },
 
@@ -148,7 +148,7 @@ export const content = (
             {
               text: "Repasse de Recebimentos (Cartão/Pix)",
               style: "headerItem",
-              fontSize: 14,
+              fontSize: 11,
               bold: true,
             },
           ],
@@ -293,12 +293,24 @@ export const content = (
       ...data,
       ...[
         {
-          text: "Informações complementares",
-          fontSize: 12,
-          bold: true,
-          style: "additionalInfo",
-          margin: [0, 20, 0, 10],
-          pageBreak: "before",
+          style: "tableExample",
+          table: {
+            headerRows: 1,
+            body: [
+              [
+                {
+                  text: "Informações complementares",
+                  fontSize: 11,
+                  bold: true,
+                  style: "additionalInfo"
+                }
+              ],
+              [""]
+            ],
+            widths: ["*"],
+          },
+          margin: [0, 10, 0, 10],
+          layout: "headerLineOnly",
         },
         {
           style: "tableExample",
@@ -318,25 +330,19 @@ export const content = (
           layout: "noBorders",
         },
         {
-          text: "A Nota Fiscal será referente aos serviços de Sistema de Gestão, Locação de Maquininhas e/ou Intermediação de Pagamentos prestados pela Oi Tickets.",
-          fontSize: 11,
-          style: "additionalInfoDesc",
-          margin: [0, 0, 0, 10],
-        },
-        {
-          text: "A Oi Tickets não efetua venda de produtos e/ou serviços que não seja a Gestão e Intermediação de pagamentos.",
+          text: "A Nota Fiscal será referente aos serviços de Sistema de Gestão, Locação de Maquininhas e/ou Intermediação de Pagamentos prestados pela Oi Tickets. A Oi Tickets não efetua venda de produtos e/ou serviços que não seja a Gestão e Intermediação de pagamentos.",
           fontSize: 11,
           style: "additionalInfoDesc",
           margin: [0, 0, 0, 20],
         },
-        {
-          canvas: [
-            { type: 'line', x1: -4, y1: -10, x2: 510, y2: -10, lineWidth: 1 }, //Up line
-            { type: 'line', x1: -4, y1: -140, x2: 510, y2: -140, lineWidth: 1 }, //Bottom line
-            { type: 'line', x1: -4, y1: -10, x2: -4, y2: -140, lineWidth: 1 }, //Left line
-            { type: 'line', x1: 510, y1: -10, x2: 510, y2: -140, lineWidth: 1 }, //Rigth line
-          ],
-        },
+        // {
+        //   canvas: [
+        //     { type: 'line', x1: -4, y1: -10, x2: 510, y2: -10, lineWidth: 1 }, //Up line
+        //     { type: 'line', x1: -4, y1: -140, x2: 510, y2: -140, lineWidth: 1 }, //Bottom line
+        //     { type: 'line', x1: -4, y1: -10, x2: -4, y2: -140, lineWidth: 1 }, //Left line
+        //     { type: 'line', x1: 510, y1: -10, x2: 510, y2: -140, lineWidth: 1 }, //Rigth line
+        //   ],
+        // },
       ]
     ]
   }
@@ -344,7 +350,7 @@ export const content = (
   const contract = [
     {
       text: "DISPOSIÇÕES GERAIS",
-      fontSize: 14,
+      fontSize: 11,
       bold: true,
       style: "contractTitle",
       margin: [0, 50, 0, 24],
@@ -352,19 +358,19 @@ export const content = (
     },
     ...contractTxts.map((line) => ({
       text: line,
-      fontSize: 10,
+      fontSize: 11,
       style: "contractText",
       margin: [0, 0, 0, 12],
     })),
     {
       text: "Oi Tickets é marca de Oi Ingressos Assessoria de Eventos Eireli",
-      fontSize: 10,
+      fontSize: 11,
       style: "contractFooter",
       margin: [0, 12, 0, 0],
     },
     {
       text: "CNPJ 15.217.618/0001-85  -  Joinville/SC  -  contato@oitickets.com.br",
-      fontSize: 10,
+      fontSize: 11,
       style: "contractFooter",
       margin: [0, 0, 0, 12],
     }

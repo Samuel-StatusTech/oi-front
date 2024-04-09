@@ -31,8 +31,6 @@ const getTaxPercent = (gross, net) => {
     '0%'
 }
 
-const marginRight10 = [0, 0, 10, 0]
-
 export const getLists = {
   releases: (rels) => {
     let totals = 0
@@ -52,8 +50,7 @@ export const getLists = {
         { text: format(unVal, { code: "BRL" }) },
         {
           text: `${r.operation === "debitar" ? "-" : ""} ${format(val, { code: "BRL" })}`,
-          style: r.operation === "debitar" ? ["debitValue", "right"] : "right",
-          margin: marginRight10
+          style: r.operation === "debitar" ? ["debitValue", "right"] : "right"
         },
       ]
     })

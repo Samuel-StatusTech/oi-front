@@ -3,12 +3,12 @@ export const styles = {
     width: "100%",
   },
   headerItem: {
-    fontSize: 13,
+    fontSize: 12,
     color: "black",
     width: "100%",
   },
   paymentsLines: {
-    fontSize: 12,
+    fontSize: 11,
     margin: [0, 0, 0, -4]
   },
   dateFooter: {
@@ -18,7 +18,7 @@ export const styles = {
   contentTableHeader: {
     color: "#000",
     bold: true,
-    fontSize: 14
+    fontSize: 11
   },
   right: {
     alignment: 'right'
