@@ -1,5 +1,5 @@
 import { format } from "currency-formatter"
-import { getTotal, logo } from "./utils"
+import { logo } from "./utils"
 import { contractTxts } from "./contract"
 import { formatDate } from "../date"
 
@@ -19,11 +19,14 @@ export const content = (
   receiptList,
   receivesList,
   totals,
-  date
+  date,
+  showTaxes,
+  taxes
 ) => {
+
   let eData = [
     {
-      text: `Nome / Razão Social: ${org.name}`,
+      text: `Contratante: ${org.name}`,
       fontSize: 12,
       margin: [0, 0, 0, 0],
     },
@@ -44,7 +47,7 @@ export const content = (
     },
   ]
 
-  return [
+  let data = [
     {
       style: "header",
       table: {
@@ -95,7 +98,7 @@ export const content = (
         headerRows: 1,
         body: [
           [
-            { text: "Forma de pagamento", style: "contentTableHeader" },
+            { text: "Formas de Pagamento", style: "contentTableHeader" },
             { text: "Valor Total", style: "contentTableHeader" },
           ],
           ...receiptList,
@@ -113,7 +116,7 @@ export const content = (
           [
             "",
             {
-              text: "Valor Total",
+              text: "Total Evento",
               fontSize: 11,
               bold: true,
             },
@@ -161,42 +164,16 @@ export const content = (
           [
             { text: "Lançamento", style: "contentTableHeader" },
             { text: "Descrição", style: "contentTableHeader" },
-            { text: "Taxa/Qnte", style: "contentTableHeader" },
-            { text: "Valor Un.", style: "contentTableHeader" },
-            { text: "Valor Total", style: "contentTableHeader" },
+            { text: "Taxa / Qtde", style: "contentTableHeader" },
+            { text: "Valor Bruto", style: "contentTableHeader" },
+            { text: "Valor Líquido", style: "contentTableHeader" },
           ],
-            ...receivesList,
-            ...releasesList
+          ...receivesList,
+          ...releasesList
         ],
         widths: [80, "*", 90, 90, 100],
         columnGap: 10,
       },
-      layout: "noBorders",
-    },
-    {
-      style: "tableExample",
-      table: {
-        headerRows: 1,
-        body: [
-          [
-            "",
-            {
-              text: "Valor Total",
-              fontSize: 11,
-              bold: true,
-            },
-            {
-              text: format((totals.liquids + totals.releases) / 100, { code: "BRL" }),
-              fontSize: 11,
-              bold: true,
-              style: (totals.liquids + totals.releases) < 0 ? "debitValue" : "",
-            },
-          ],
-          ["", "", ""],
-        ],
-        widths: ["*", 90, 100],
-      },
-      margin: [0, 10, 0, 0],
       layout: "noBorders",
     },
 
@@ -222,9 +199,9 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 180, 100],
+        widths: ["*", 185, 100],
       },
-      margin: [0, 30, 0, -6],
+      margin: [0, 10, 0, -6],
       layout: "noBorders",
     },
     {
@@ -248,7 +225,7 @@ export const content = (
           ],
           ["", "", ""]
         ],
-        widths: ["*", 180, 100],
+        widths: ["*", 185, 100],
       },
       margin: [0, 0, 0, -6],
       layout: "noBorders",
@@ -274,7 +251,7 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 180, 100],
+        widths: ["*", 185, 100],
       },
       margin: [0, 0, 0, 0],
       layout: "noBorders",
@@ -299,15 +276,76 @@ export const content = (
           ],
           ["", "", ""],
         ],
-        widths: ["*", 180, 100],
+        widths: ["*", 185, 100],
       },
       margin: [0, 10, 0, 0],
       layout: "noBorders",
-    },
+    }
+  ]
 
-    // Contract
+  console.log("there", showTaxes)
+  
+  if (showTaxes === true) {
+    data = [
+      ...data,
+      ...[
+        {
+          text: "Informações complementares",
+          fontSize: 12,
+          bold: true,
+          style: "additionalInfo",
+          margin: [0, 20, 0, 10],
+          pageBreak: "before",
+        },
+        {
+          style: "tableExample",
+          table: {
+            headerRows: 1,
+            body: [
+              [
+                {
+                  text: "Taxas de Intermediação Cartão/Píx (Valores Retidos) – ",
+                  fontSize: 11,
+                  style: "additionalInfoMain",
+                },
+                {
+                  text: format(taxes / 100, { code: "BRL" }),
+                  fontSize: 11,
+                  style: "taxValue",
+                },
+              ],
+            ],
+          },
+          margin: [0, 0, 0, 10],
+          layout: "noBorders",
+        },
+        {
+          text: "A Nota Fiscal será referente aos serviços de Sistema de Gestão, Locação de Maquininhas e/ou Intermediação de Pagamentos prestados pela Oi Tickets.",
+          fontSize: 11,
+          style: "additionalInfoDesc",
+          margin: [0, 0, 0, 10],
+        },
+        {
+          text: "A Oi Tickets não efetua venda de produtos e/ou serviços que não seja a Gestão e Intermediação de pagamentos.",
+          fontSize: 11,
+          style: "additionalInfoDesc",
+          margin: [0, 0, 0, 20],
+        },
+        {
+          canvas: [
+            { type: 'line', x1: -4, y1: -10, x2: 510, y2: -10, lineWidth: 1 }, //Up line
+            { type: 'line', x1: -4, y1: -140, x2: 510, y2: -140, lineWidth: 1 }, //Bottom line
+            { type: 'line', x1: -4, y1: -10, x2: -4, y2: -140, lineWidth: 1 }, //Left line
+            { type: 'line', x1: 510, y1: -10, x2: 510, y2: -140, lineWidth: 1 }, //Rigth line
+          ],
+        },
+      ]
+    ]
+  }
+
+  const contract = [
     {
-      text: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS",
+      text: "DISPOSIÇÕES GERAIS",
       fontSize: 14,
       bold: true,
       style: "contractTitle",
@@ -331,8 +369,16 @@ export const content = (
       fontSize: 10,
       style: "contractFooter",
       margin: [0, 0, 0, 12],
-    },
+    }
   ]
+
+  data = [
+    ...data,
+    ...contract
+  ]
+
+  return data
+
 }
 
 export const footer = [

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react"
 import {
   Grid,
@@ -12,12 +13,7 @@ import useStyles from "../../../../global/styles"
 import Api from "../../../../api"
 import axios from "axios"
 import { format } from "currency-formatter"
-import {
-  formatDate,
-  formatDateTimeToDB,
-  formatDatetime,
-  parseDateDash,
-} from "../../../../utils/date"
+import { formatDateTimeToDB } from "../../../../utils/date"
 import releasePDF from "../../../../utils/releasePdf"
 
 import { releasesPerPage } from "../../index"
@@ -29,32 +25,17 @@ import pixTotalIcon from "../../../../assets/icons/ic_total-pix.svg"
 import virtualIcon from "../../../../assets/icons/ic_loja.svg"
 import othersIcon from "../../../../assets/icons/ic_outrasdespesas.svg"
 
-import WhatsappNumberModal from "../../../../components/Modals/GetWhatsappNumber"
 import { Between } from "../../../../components/Input/DateTime"
 import CardData from "../../../../components/CardData"
 import Bar from "../../../../components/Chart/Bar"
 import EaseGrid from "../../../../components/EaseGrid"
-import PaymentDataModal from "../../../../components/Modals/PaymentDate"
-
-const defaultNumber = "+15551292939"
-
-const sendDomain = "https://graph.facebook.com/"
-const sendVersion = "v18.0/"
-const sendID = "236986152823375"
-const wToken =
-  "Bearer EAATn2SqgRXkBO1V43TMh5ZCngQMfBFnrjePuAaIHcoQZC6UKW2gHqcuk8rgi4vPbd0WCEUOOTJBNbFsvMT3sTECnXdEPGkZCFadjXS0aNPuTZAmD1r41dZBFR0YjBdtbSRbgU3NpurwZBeWRnylEQd52ty6x6akwv4GwIVo6zgZCyp95vPqv2g4YZAbpmZBX3tTf89RrLr5iVRhyxkQIKM5F8T2hKtH1Kc0ZCsGJMZD"
+import FinancialPdfConfigModal from "../../../../components/Modals/FinancialPDFConfig"
 
 const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
 
   const {
     totalRecipe = 0,
-    cardPixGross = 0,
-    cardPixNet = 0,
-    virtualGross = 0,
-    virtualNet = 0,
-    withdrawal = 0,
-    balance = 0,
   } = infos
 
   return (
@@ -103,13 +84,12 @@ export default (props) => {
   const [loading, setLoading] = useState(false)
   const [dateDialog, setDateDialog] = useState(false)
   const [loadingReport, setLoadingReport] = useState(false)
-  const [loadingWhats, setLoadingWhats] = useState(false)
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
 
   const [date, setDate] = useState(new Date().setHours(new Date().getHours() + 24))
-  // const [date, setDate] = useState("")
+  const [showTaxes, setShowTaxes] = useState(true)
 
   const [cardInfo, setCardInfo] = useState()
   const [payment, setPayment] = useState({
@@ -126,7 +106,7 @@ export default (props) => {
     },
   })
   const cancelTokenSource = useRef()
-  
+
   const handleSearch = async () => {
     try {
       setLoading(true)
@@ -155,7 +135,7 @@ export default (props) => {
   }
 
   useEffect(() => {
-    if (selected != 2) {
+    if (selected !== 2) {
       onSearch()
     }
   }, [event, selected])
@@ -221,29 +201,8 @@ export default (props) => {
     toggleModal()
   }
 
-  const genFile = (blob) => {
-    const filename = parseDateDash(new Date())
-
-    return new File(
-      [blob],
-      `Relatório financeiro ${eventData.name} ${filename}.pdf`,
-      {
-        type: "application/pdf",
-        endings: "native",
-        lastModified: new Date().getTime(),
-      }
-    )
-  }
-
   const exportPdfReleases = async () => {
     setDateDialog(true)
-  }
-
-  const unmaskNumber = (masked) => {
-    return (
-      "55" +
-      masked.replace("(", "").replace(")", "").replace(" ", "").replace("-", "")
-    )
   }
 
   const genPDF = async () => {
@@ -256,11 +215,13 @@ export default (props) => {
         releases,
         payment,
         date,
+        showTaxes,
         true
       )
 
     setLoadingReport(false)
     setDateDialog(false)
+    setShowTaxes(true)
   }
 
   const editRelease = async (info) => {
@@ -385,12 +346,14 @@ export default (props) => {
 
   return (
     <>
-      <PaymentDataModal
+      <FinancialPdfConfigModal
         show={dateDialog}
         genPDF={genPDF}
         closeFn={() => setDateDialog(false)}
         date={date}
         setDate={setDate}
+        showTaxes={showTaxes}
+        setShowTaxes={setShowTaxes}
       />
 
       <Grid

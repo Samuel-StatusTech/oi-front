@@ -1,25 +1,24 @@
-import React, { useState, useRef } from "react"
+import React, { useState } from "react"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   Button,
   TextField,
-  CircularProgress,
   DialogActions,
 } from "@material-ui/core"
 
-import Api from "../../../api"
 import useStyles from "../../../global/styles"
 import { formatDate } from "../../../utils/date"
 
-const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
+const FinancialPdfConfigModal = ({ show, genPDF, setDate, closeFn, date, showTaxes, setShowTaxes }) => {
   const styles = useStyles()
 
   const [fDate, setFDate] = useState(formatDate(date))
 
   const closeModal = () => {
     setDate(formatDate)
+    setShowTaxes(true)
     closeFn()
   }
 
@@ -41,22 +40,22 @@ const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
     const masked = val
       .replace(/\D/g, "")
 
-    
+
     if (masked.length < 3) {
       v = masked.slice(0)
     } else {
       if (masked.length > 2 && masked.length <= 4)
-        v = masked.slice(0,2) + "/" + masked.slice(2);
+        v = masked.slice(0, 2) + "/" + masked.slice(2);
       else if (masked.length > 4)
-        v = masked.slice(0,2) + "/" + masked.slice(2,4) + "/" + masked.slice(4, 8);
+        v = masked.slice(0, 2) + "/" + masked.slice(2, 4) + "/" + masked.slice(4, 8);
     }
-      
+
     setFDate(v)
   }
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="sm">
-      <DialogTitle>Informe a previsão de pagamento</DialogTitle>
+      <DialogTitle>Por favor informe...</DialogTitle>
       <DialogContent>
         <div
           style={{
@@ -69,7 +68,7 @@ const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
           <div className={styles.modalInputsArea} style={{ padding: "10px 0" }}>
             <div className={styles.inpArea}>
               <TextField
-                label="Data"
+                label="Previsão de pagamento"
                 name="date"
                 value={fDate}
                 onChange={(e) => handleMask(e.target.value)}
@@ -78,6 +77,18 @@ const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
                 fullWidth
                 placeholder={"xx/xx/xxxx"}
               />
+            </div>
+            <div className={styles.inpArea}>
+              <input
+                type={"checkbox"}
+                checked={showTaxes}
+                id="showTaxes"
+                name="showTaxes"
+                onChange={() => {
+                  setShowTaxes(!showTaxes)
+                }}
+              />
+              <label htmlFor="showTaxes" style={{ cursor: 'pointer' }}>Mostrar taxas de intermediação (SIM / NÃO)</label>
             </div>
           </div>
         </div>
@@ -119,4 +130,4 @@ const PaymentDataModal = ({ show, genPDF, setDate, closeFn, date }) => {
   )
 }
 
-export default PaymentDataModal
+export default FinancialPdfConfigModal

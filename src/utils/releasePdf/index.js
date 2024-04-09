@@ -5,7 +5,7 @@ import { getLists } from "./utils"
 import { parseDateDash } from "../date"
 import { reportTitle, content, footer } from "./contents"
 
-const releasePDF = async (event, releases, payment, date, mustDownload = false) => {
+const releasePDF = async (event, releases, payment, date, showTaxes, mustDownload = false) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs
 
   return new Promise((resolve) => {
@@ -24,6 +24,18 @@ const releasePDF = async (event, releases, payment, date, mustDownload = false) 
     })
     const totalLiquidReceives =
       payment.net.debit + payment.net.credit + payment.net.pix
+
+      const taxes = (
+        payment.gross.debit +
+        payment.gross.credit +
+        payment.gross.pix
+      ) - (
+          payment.net.debit +
+          payment.net.credit +
+          payment.net.pix
+        )
+      
+    // File
 
     const filename = parseDateDash(new Date())
 
@@ -49,7 +61,9 @@ const releasePDF = async (event, releases, payment, date, mustDownload = false) 
           receiptList,
           receivesList,
           totals,
-          date
+          date,
+          showTaxes,
+          taxes
         ),
       ],
       footer: [footer],

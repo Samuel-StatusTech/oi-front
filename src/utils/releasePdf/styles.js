@@ -23,6 +23,18 @@ export const styles = {
   debitValue: {
     color: "#B22222",
   },
+  additionalInfo: {
+    color: "#7A7A7A",
+  },
+  additionalInfoMain: {
+    color: "#000",
+  },
+  taxValue: {
+    color: "orange",
+  },
+  additionalInfoDesc: {
+    color: "#838383",
+  },
   contractTitle: {
     alignment: "center",
   },

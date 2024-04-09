@@ -27,8 +27,8 @@ export const getTotal = (releases, totalGross) => {
 
 const getTaxPercent = (gross, net) => {
   return (+net > 0) ?
-  `${Number(100 - ((net / gross) * 100)).toFixed(2)}%` :
-  '0%'
+    `${Number(100 - ((net / gross) * 100)).toFixed(2)}%` :
+    '0%'
 }
 
 export const getLists = {
@@ -49,7 +49,7 @@ export const getLists = {
         +r.tax_quantity ? +r.tax_quantity : r.tax_quantity,
         { text: format(unVal, { code: "BRL" }) },
         {
-          text: format(val, { code: "BRL" }),
+          text: `${r.operation === "debitar" ? "-" : ""} ${format(val, { code: "BRL" })}`,
           style: r.operation === "debitar" ? "debitValue" : "",
         },
       ]
@@ -60,53 +60,23 @@ export const getLists = {
   receipt: ({ money, pix, debit, credit }, total) => {
     return [
       [
-        "Dinheiro",
-        // `${Math.round((money / total) * 100)}%`,
+        "Vendas Dinheiro",
         format(money / 100, { code: "BRL" }),
       ],
       [
-        "Débito",
-        // `${Math.round((debit / total) * 100)}%`,
+        "Vendas Débito",
         format(debit / 100, { code: "BRL" }),
       ],
       [
-        "Crédito",
-        // `${Math.round((credit / total) * 100)}%`,
+        "Vendas Crédito",
         format(credit / 100, { code: "BRL" }),
       ],
       [
-        "Pix",
-        // `${Math.round((pix / total) * 100)}%`,
+        "Vendas Pix",
         format(pix / 100, { code: "BRL" }),
       ],
     ]
   },
-  // receives: ({
-  //   debitGross,
-  //   debitNet,
-  //   creditGross,
-  //   creditNet,
-  //   pixGross,
-  //   pixNet,
-  // }) => {
-  //   return [
-  //     [
-  //       "Débito",
-  //       format(debitGross / 100, { code: "BRL" }),
-  //       format(debitNet / 100, { code: "BRL" }),
-  //     ],
-  //     [
-  //       "Crédito",
-  //       format(creditGross / 100, { code: "BRL" }),
-  //       format(creditNet / 100, { code: "BRL" }),
-  //     ],
-  //     [
-  //       "Pix",
-  //       format(pixGross / 100, { code: "BRL" }),
-  //       format(pixNet / 100, { code: "BRL" }),
-  //     ],
-  //   ]
-  // },
   receives: (d) => {
     const {
       debitGross, debitNet,
