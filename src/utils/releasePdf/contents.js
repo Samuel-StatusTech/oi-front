@@ -288,64 +288,63 @@ export const content = (
     }
   ]
 
+  // Taxes
+  data = [
+    ...data,
+    {
+      style: "tableExample",
+      table: {
+        headerRows: 1,
+        body: [
+          [
+            {
+              text: "Informações complementares",
+              fontSize: 11,
+              bold: true,
+              style: "additionalInfo"
+            }
+          ],
+          [""]
+        ],
+        widths: ["*"],
+      },
+      margin: [0, 10, 0, 10],
+      layout: "headerLineOnly",
+    }
+  ]
+
   if (showTaxes === true) {
+
     data = [
       ...data,
-      ...[
-        {
-          style: "tableExample",
-          table: {
-            headerRows: 1,
-            body: [
-              [
-                {
-                  text: "Informações complementares",
-                  fontSize: 11,
-                  bold: true,
-                  style: "additionalInfo"
-                }
-              ],
-              [""]
+      {
+        style: "tableExample",
+        table: {
+          headerRows: 1,
+          body: [
+            [
+              {
+                text: `Taxas de Intermediação Cartão/Pix (Valores Retidos) - ${format(taxes / 100, { code: "BRL" })}`,
+                fontSize: 11,
+                style: "additionalInfoMain",
+              },
             ],
-            widths: ["*"],
-          },
-          margin: [0, 10, 0, 10],
-          layout: "headerLineOnly",
+          ],
         },
-        {
-          style: "tableExample",
-          table: {
-            headerRows: 1,
-            body: [
-              [
-                {
-                  text: format(taxes / 100, { code: "BRL" }),
-                  fontSize: 11,
-                  style: "additionalInfoMain",
-                },
-              ],
-            ],
-          },
-          margin: [0, 0, 0, 10],
-          layout: "noBorders",
-        },
-        {
-          text: "A Nota Fiscal será referente aos serviços de Sistema de Gestão, Locação de Maquininhas e/ou Intermediação de Pagamentos prestados pela Oi Tickets. A Oi Tickets não efetua venda de produtos e/ou serviços que não seja a Gestão e Intermediação de pagamentos.",
-          fontSize: 11,
-          style: "additionalInfoDesc",
-          margin: [0, 0, 0, 20],
-        },
-        // {
-        //   canvas: [
-        //     { type: 'line', x1: -4, y1: -10, x2: 510, y2: -10, lineWidth: 1 }, //Up line
-        //     { type: 'line', x1: -4, y1: -140, x2: 510, y2: -140, lineWidth: 1 }, //Bottom line
-        //     { type: 'line', x1: -4, y1: -10, x2: -4, y2: -140, lineWidth: 1 }, //Left line
-        //     { type: 'line', x1: 510, y1: -10, x2: 510, y2: -140, lineWidth: 1 }, //Rigth line
-        //   ],
-        // },
-      ]
+        margin: [0, 0, 0, 10],
+        layout: "noBorders",
+      }
     ]
   }
+  data = [
+    ...data,
+    {
+      text: "A Nota Fiscal será referente aos serviços de Sistema de Gestão, Locação de Maquininhas e/ou Intermediação de Pagamentos prestados pela Oi Tickets. A Oi Tickets não efetua venda de produtos e/ou serviços que não seja a Gestão e Intermediação de pagamentos.",
+      fontSize: 11,
+      style: "additionalInfoDesc",
+      margin: [0, 0, 0, 20],
+    }
+  ]
 
   const contract = [
     {
