@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { connect } from "react-redux"
 import { Grid, CircularProgress } from "@material-ui/core"
@@ -12,7 +12,6 @@ import Api from "../../../api"
 
 import PaymentTypeColumn from "./Columns/PaymentType"
 import UserColumn from "./Columns/User"
-import ModalCancel from "./Modal/cancelOrder"
 import ModalDetailsOrder from "./Modal/detailsOrder"
 import { Info } from "@material-ui/icons"
 import useStyles from "../../../global/styles"
@@ -109,20 +108,20 @@ const ReconcileData = ({ event, user }) => {
     ],
   }
 
-  const [loading, setLoading] = useState(false)
-  const [checkLoading, setCheckLoading] = useState(false)
+  const [loading] = useState(false)
+  const [checkLoading] = useState(false)
   const [autoTotal, setAutoTotal] = useState(null)
   const [totalData, setTotalData] = useState([])
   const [cancelledData, setCancelledData] = useState([])
   const [notRegData, setNotRegData] = useState([])
-  const [productList, setProductList] = useState([])
+  const [productList] = useState([])
 
-  const [status, setStatus] = useState("todos")
-  const [type, setType] = useState("todos")
-  const [group, setGroup] = useState("todos")
+  const [status] = useState("todos")
+  const [type] = useState("todos")
+  const [group] = useState("todos")
   const [product, setProduct] = useState("todos")
-  const [operator, setOperator] = useState("todos")
-  const [paymentType, setPaymentType] = useState("todos")
+  const [operator] = useState("todos")
+  const [paymentType] = useState("todos")
   const [iniValue, onChangeIni] = useState(new Date().setHours(0, 0, 0, 0))
   const [endValue, onChangeEnd] = useState(new Date().setHours(23, 59, 59, 999))
   const [selectType, onSelectType] = useState(0)
@@ -136,17 +135,17 @@ const ReconcileData = ({ event, user }) => {
     iniDate: null,
     endDate: null,
   })
-  const [QRCode, setQRCode] = useState("")
+  const [QRCode] = useState("")
 
   const [showFilePicker, setShowFilePicker] = useState(false)
 
   const handleDetailOrder =
     ({ order_id, id }) =>
-    () => {
-      setDetailsOrderData(order_id)
-      setDetailsOrderDataId(id)
-      setShowDetailsOrder(true)
-    }
+      () => {
+        setDetailsOrderData(order_id)
+        setDetailsOrderDataId(id)
+        setShowDetailsOrder(true)
+      }
 
   const unshowModal = () => {
     setShowFilePicker(false)
@@ -165,7 +164,7 @@ const ReconcileData = ({ event, user }) => {
     const paymentTypeURL =
       paymentType !== "todos" ? `&paymentType=${paymentType}` : ""
     const QRCodeURL =
-      QRCode != "" ? `&qrcode=${`${QRCode}`.toUpperCase().trim()}` : ""
+      QRCode !== "" ? `&qrcode=${`${QRCode}`.toUpperCase().trim()}` : ""
     const dateURL =
       selectType !== 1 ? `&date_ini=${dateIni}&date_end=${dateEnd}` : ""
 
@@ -220,26 +219,26 @@ const ReconcileData = ({ event, user }) => {
     setShowFilePicker(true)
   }
 
-  const generateDateFilters = () => {
+  const generateDateFilters = useCallback(() => {
     const iniDate =
       selectType === 1
         ? null
         : selectType === 0
-        ? iniValue
-        : new Date(iniValue).getTime()
+          ? iniValue
+          : new Date(iniValue).getTime()
 
     const endDate =
       selectType === 1
         ? null
         : selectType === 0
-        ? endValue
-        : new Date(endValue).getTime()
+          ? endValue
+          : new Date(endValue).getTime()
 
     setDateFilters({
       iniDate,
       endDate,
     })
-  }
+  }, [endValue, iniValue, selectType])
 
   const renderLoadingOverlay = () => {
     const el = (
@@ -263,8 +262,8 @@ const ReconcileData = ({ event, user }) => {
       return new Date(aDate).getTime() === new Date(bDate).getTime()
         ? 0
         : new Date(aDate).getTime() > new Date(bDate).getTime()
-        ? 1
-        : -1
+          ? 1
+          : -1
     })
 
   const handleCheckOver = (checkResult) => {
@@ -292,19 +291,20 @@ const ReconcileData = ({ event, user }) => {
 
   useEffect(() => {
     generateDateFilters()
-  }, [iniValue, endValue, selectType])
+  }, [iniValue, endValue, selectType, generateDateFilters])
 
   useEffect(() => {
     if (event)
       Api.get(`/statistical/resume/${event}`).then((res) => {
         const { success, totalReceipt } = res.data
         if (success) {
-          setAutoTotal({
+          const totalResume = (parseInt(totalReceipt.total_credit)) +
+            (parseInt(totalReceipt.total_debit)) +
+            (parseInt(totalReceipt.total_pix))
+
+          const autoTotalData = {
             resume: {
-              value:
-                (parseInt(totalReceipt.total_credit) +
-                parseInt(totalReceipt.total_debit) +
-                parseInt(totalReceipt.total_pix)) / 100,
+              value: totalResume,
               ok: false,
             },
             details: {
@@ -321,10 +321,12 @@ const ReconcileData = ({ event, user }) => {
                 ok: false,
               },
             },
-          })
+          }
+
+          setAutoTotal(autoTotalData)
         }
       })
-  }, [])
+  }, [event])
 
   return (
     <>

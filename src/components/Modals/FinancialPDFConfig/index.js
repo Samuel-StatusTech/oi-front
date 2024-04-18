@@ -11,27 +11,25 @@ import {
 import useStyles from "../../../global/styles"
 import { formatDate } from "../../../utils/date"
 
-const FinancialPdfConfigModal = ({ show, genPDF, setDate, closeFn, date, showTaxes, setShowTaxes }) => {
+const FinancialPdfConfigModal = ({ show, genPDF, closeFn, showTaxes, setShowTaxes }) => {
   const styles = useStyles()
 
-  const [fDate, setFDate] = useState(formatDate(date))
+  const [fDate, setFDate] = useState(formatDate(new Date().setHours(new Date().getHours() + 24)))
 
   const closeModal = () => {
-    setDate(formatDate)
     setShowTaxes(true)
     closeFn()
   }
 
   const getITime = () => {
     let dateData = fDate.split('/')
-    let dString = `${dateData[2]}-${dateData[1]}-${dateData[0]}`
+    let dString = `${dateData[2]}-${dateData[1]}-${dateData[0]}T12:00:00Z`
     return new Date(dString).getTime()
   }
 
   const saveDate = () => {
     const iTime = getITime()
-    setDate(iTime)
-    genPDF()
+    genPDF(iTime)
   }
 
   const handleMask = (val) => {

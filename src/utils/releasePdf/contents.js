@@ -326,7 +326,7 @@ export const content = (
               {
                 text: `Taxas de Intermediação Cartão/Pix (Valores Retidos) - ${format(taxes / 100, { code: "BRL" })}`,
                 fontSize: 11,
-                style: "additionalInfoMain",
+                style: "additionalInfoDesc",
               },
             ],
           ],

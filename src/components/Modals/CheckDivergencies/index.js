@@ -12,6 +12,7 @@ import {
 import Api from "../../../api"
 import useStyles from "../../../global/styles"
 import csvtojson from "csvtojson"
+import { formatMoney } from '../../../utils/toolbox/formatMoney'
 
 const ModalCheck = ({
   show,
@@ -44,17 +45,18 @@ const ModalCheck = ({
     return newD
   }
 
-  const parseMoney = (v) => Number(v) / 100
+  const parseMoney = (v) => Number(v)
 
   const parsePagMoney = (v) => {
     const pureString = v
-      .replace(",", ".")
-      .substring(-5, v.length - v.indexOf(",0000"))
+      .replace(",", "")
+      .replace(".", "")
 
-    return Number(pureString)
+    return Number(pureString) / 100
   }
   const parseBRL = (v) => {
-    return `R$ ${String(v.toFixed(2)).replace(".", ",")}`
+    const str = formatMoney(v, true)
+    return str
   }
 
   const calcTotal = async (transactions, from) => {
@@ -90,6 +92,8 @@ const ModalCheck = ({
               case "Pix":
                 details.pix = details.pix + parsedMoney
                 break
+              default:
+                break
             }
 
             if (i === transactions.length - 1) {
@@ -120,6 +124,7 @@ const ModalCheck = ({
             const parsedMoney = parseMoney(t.total_price)
             const currentTotal = acc + parsedMoney
 
+
             t.payments.forEach((p) => {
               switch (p.payment_type) {
                 case "credito":
@@ -131,13 +136,15 @@ const ModalCheck = ({
                 case "pix":
                   details.pix = details.pix + parseMoney(p.price)
                   break
+                default:
+                  break
               }
             })
 
             if (i === transactions.length - 1) {
               return resolve({
                 resume: {
-                  value: currentTotal,
+                  value: (details.credit + details.debit + details.pix),
                   ok: false,
                 },
                 details: {
@@ -155,9 +162,7 @@ const ModalCheck = ({
                   },
                 },
               })
-            }
-
-            return acc + parsedMoney
+            } else return currentTotal
           }, 0)
         }
       })
@@ -194,10 +199,10 @@ const ModalCheck = ({
     const f = hasntFilters
       ? log
       : log.filter(
-          (transaction) =>
-            parseTime(transaction.Data_Transacao) >= iniDate &&
-            parseTime(transaction.Data_Transacao) <= endDate
-        )
+        (transaction) =>
+          parseTime(transaction.Data_Transacao) >= iniDate &&
+          parseTime(transaction.Data_Transacao) <= endDate
+      )
 
     return f
   }

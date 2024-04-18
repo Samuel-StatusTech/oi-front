@@ -88,7 +88,7 @@ export default (props) => {
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
 
-  const [date, setDate] = useState(new Date().setHours(new Date().getHours() + 24))
+  // const [date, setDate] = useState(new Date().setHours(new Date().getHours() + 24))
   const [showTaxes, setShowTaxes] = useState(true)
 
   const [cardInfo, setCardInfo] = useState()
@@ -205,7 +205,7 @@ export default (props) => {
     setDateDialog(true)
   }
 
-  const genPDF = async () => {
+  const genPDF = async (dt) => {
     if (loadingReport) return
     setLoadingReport(true)
 
@@ -214,7 +214,7 @@ export default (props) => {
         eventData,
         releases,
         payment,
-        date,
+        dt,
         showTaxes,
         true
       )
@@ -350,8 +350,6 @@ export default (props) => {
         show={dateDialog}
         genPDF={genPDF}
         closeFn={() => setDateDialog(false)}
-        date={date}
-        setDate={setDate}
         showTaxes={showTaxes}
         setShowTaxes={setShowTaxes}
       />
