@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 
 const AllowedContainer = ({ children, user, route }) => {
-  // console.clear();
+  console.clear();
   const allow = route.allow;
   const security = user.roleData || {};
 
