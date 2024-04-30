@@ -30,12 +30,13 @@ export const parseDateDash = (date) => {
 
 export const returnString = (period) => (period < 10 ? "0" + period : period)
 
-export const formatDate = (timestamp) => {
+export const formatDate = (timestamp, woMonth = false, woYear = false) => {
   const obj = new Date(timestamp)
 
-  return `${returnString(obj.getUTCDate())}/${returnString(
-    obj.getUTCMonth() + 1
-  )}/${obj.getUTCFullYear()}`
+  return `${returnString(obj.getUTCDate())
+    }${woMonth ? "" : `/${returnString(
+      obj.getUTCMonth() + 1
+    )}`}${woYear ? "" : `/${obj.getUTCFullYear()}`}`
 }
 
 export const formatTime = (timestamp) => {

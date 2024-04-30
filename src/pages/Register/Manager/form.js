@@ -39,6 +39,7 @@ const Manager = ({ user }) => {
   const [viewMode, setViewMode] = useState(false);
   const [allowOperation, setAllowOperation] = useState(false);
   const [allowRegister, setAllowRegister] = useState(false);
+  const [allowEcommerce, setAllowEcommerce] = useState(false);
   const [allowCancel, setAllowCancel] = useState(false);
   const [allowReprint, setAllowReprint] = useState(false);
   const [allowBleed, setAllowBleed] = useState(false);
@@ -107,6 +108,7 @@ const Manager = ({ user }) => {
             setViewMode(Boolean(manager.view_mode));
             setAllowOperation(Boolean(manager.allow_operation));
             setAllowRegister(Boolean(manager.allow_register));
+            setAllowEcommerce(Boolean(manager.allow_ecommerce ?? 0));
             setAllowCancel(Boolean(manager.allow_cancel));
             setAllowReprint(Boolean(manager.allow_reprint));
             setAllowBleed(Boolean(manager.allow_bleed));
@@ -152,6 +154,7 @@ const Manager = ({ user }) => {
           view_mode: Boolean(viewMode),
           allow_operation: Boolean(allowOperation),
           allow_register: Boolean(allowRegister),
+          allow_ecommerce: Boolean(allowEcommerce),
           allow_cancel: Boolean(allowCancel),
           allow_reprint: Boolean(allowReprint),
           allow_bleed: Boolean(allowBleed),
@@ -184,6 +187,7 @@ const Manager = ({ user }) => {
         view_mode: Boolean(viewMode),
         allow_operation: Boolean(allowOperation),
         allow_register: Boolean(allowRegister),
+        allow_ecommerce: Boolean(allowEcommerce),
         allow_cancel: Boolean(allowCancel),
         allow_reprint: Boolean(allowReprint),
         allow_bleed: Boolean(allowBleed),
@@ -412,6 +416,25 @@ const Manager = ({ user }) => {
                           disabled={viewMode}
                           checked={allowRegister}
                           onChange={(e) => setAllowRegister(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Tooltip>
+                </Grid>
+                <Grid item>
+                  <Tooltip
+                    title='Permite Acesso à Loja Virtual'
+                    placement='right'
+                  >
+                    <FormControlLabel
+                      label='Loja Virtual'
+                      name='allowEcommerce'
+                      value={allowEcommerce}
+                      control={
+                        <GreenSwitch
+                          disabled={viewMode}
+                          checked={allowEcommerce}
+                          onChange={(e) => setAllowEcommerce(e.target.checked)}
                         />
                       }
                     />

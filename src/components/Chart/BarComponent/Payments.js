@@ -2,7 +2,6 @@ import React from 'react';
 import Skeleton from '@material-ui/lab/Skeleton';
 import Chart from 'react-apexcharts';
 
-import Card from '.';
 import { Typography } from '@material-ui/core';
 import useStyles from '../../../global/styles';
 

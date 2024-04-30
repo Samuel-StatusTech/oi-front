@@ -28,41 +28,42 @@ export default memo(({labels = [], series = [], hideLegend=false, ...props}) => 
         shadeIntensity: 10,
       }
     },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            height: 200,
-          },
-          legend: {
-            show: true,
-            position: 'bottom',
-          },
-        },
-      },
-      {
-        breakpoint: 1590,
-        options: {
-          chart: {
-            width: 300,
-          },
-          legend: {
-            show: true,
-          },
-        },
-      },
-    ],
+    // responsive: [
+    //   {
+    //     breakpoint: 480,
+    //     options: {
+    //       chart: {
+    //         height: 200,
+    //       },
+    //       legend: {
+    //         show: true,
+    //         position: 'bottom',
+    //       },
+    //     },
+    //   },
+    //   {
+    //     breakpoint: 1590,
+    //     options: {
+    //       chart: {
+    //         width: 300,
+    //       },
+    //       legend: {
+    //         show: true,
+    //       },
+    //     },
+    //   },
+    // ],
   }
 
   return (
     <Chart
       options={{
         ...options,
-        labels
+        labels,
+        plotOptions:{ pie: { size: "100%" } }
       }}
       series={series}
-      type="donut"
+      type={props.type ?? "donut"}
       {...props}
     />
   );

@@ -37,6 +37,9 @@ import ReservationForm from "../pages/Register/Reservation/form"
 /*              VENDA ONLINE                */
 import { Icon as OnlineIcon } from "../pages/Online/Icon"
 import OnlineEventList from "../pages/Online/Event"
+import WSOverview from "../pages/WebStore/Overview"
+import WSSettings from "../pages/WebStore/Settings"
+import WSStatement from "../pages/WebStore/Statement"
 import OnlineEventForm from "../pages/Online/Event/form"
 import OnlineProductList from "../pages/Online/Product"
 import OnlineProductForm from "../pages/Online/Product/form"
@@ -607,74 +610,164 @@ export default [
       */
     ],
   },
-  /*
   {
     title: "Loja Online",
     icon: OnlineIcon,
+    allow: {
+      allow_only_ecommerce: true,
+    },
     list: [
       {
-        title: "Eventos",
-        path: "/online-events",
-        content: <OnlineEventList />,
+        title: "Visão geral",
+        path: "/webstore",
+        content: <WSOverview />,
         allow: {
-          //allow_register: 1,
-          //allow_operation: 0,
-          allow_only_master: true,
+          allow_only_ecommerce: true,
         },
         paths: [
           {
-            title: "Eventos",
-            route: "/online-events",
+            title: "Loja virtual",
+            route: "/webstore",
+          },
+          {
+            title: "Visão geral",
+            route: "/overview",
           },
         ],
       },
       {
-        path: "/online-events/:idEvent",
-        hide: true,
-        content: <OnlineEventForm />,
+        title: "Configurações",
+        path: "/webstore/settings",
+        content: <WSSettings />,
         allow: {
-          allow_register: 1,
-          allow_operation: 0,
+          allow_only_ecommerce: true,
         },
         paths: [
           {
-            title: "Eventos",
-            route: "/online-events",
+            title: "Loja virtual",
+            route: "/webstore",
+          },
+          {
+            title: "Configurações",
+            route: "/settings",
           },
         ],
       },
       {
-        title: "Ingressos",
-        path: "/online-products",
-        content: <OnlineProductList />,
+        title: "Ingressos a Venda",
+        path: "/webstore/tickets",
+        content: <EmBreve />,
         allow: {
-          allow_only_master: true,
+          allow_only_ecommerce: true,
         },
         paths: [
+          {
+            title: "Loja virtual",
+            route: "/webstore",
+          },
           {
             title: "Ingressos",
-            route: "/online-products",
+            route: "/settings",
           },
         ],
       },
       {
-        path: "/online-products/:idProduct",
-        hide: true,
-        content: <OnlineProductForm />,
+        title: "Extratos de Venda",
+        path: "/webstore/statements",
+        content: <WSStatement />,
         allow: {
-          allow_register: 1,
-          allow_operation: 0,
+          allow_only_ecommerce: true,
         },
         paths: [
           {
-            title: "Ingressos",
-            route: "/online-products",
+            title: "Loja virtual",
+            route: "/webstore",
+          },
+          {
+            title: "Extratos",
+            route: "/statements",
+          },
+        ],
+      },
+      {
+        title: "Retiradas",
+        path: "/webstore/withdrawals",
+        content: <EmBreve />,
+        allow: {
+          allow_only_ecommerce: true,
+          allow_only_admin: true,
+        },
+        paths: [
+          {
+            title: "Loja virtual",
+            route: "/webstore",
+          },
+          {
+            title: "Retiradas",
+            route: "/withdrawals",
           },
         ],
       },
     ],
+    // list: [
+    //   {
+    //     title: "Eventos",
+    //     path: "/online-events",
+    //     content: <OnlineEventList />,
+    //     allow: {
+    //       allow_only_ecommerce: true,
+    //     },
+    //     paths: [
+    //       {
+    //         title: "Eventos",
+    //         route: "/online-events",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     path: "/online-events/:idEvent",
+    //     content: <OnlineEventForm />,
+    //     allow: {
+    //       allow_only_ecommerce: true,
+    //     },
+    //     paths: [
+    //       {
+    //         title: "Eventos",
+    //         route: "/online-events",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     title: "Ingressos",
+    //     path: "/online-products",
+    //     content: <OnlineProductList />,
+    //     allow: {
+    //       allow_only_master: true,
+    //     },
+    //     paths: [
+    //       {
+    //         title: "Ingressos",
+    //         route: "/online-products",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     path: "/online-products/:idProduct",
+    //     hide: true,
+    //     content: <OnlineProductForm />,
+    //     allow: {
+    //       allow_register: 1,
+    //       allow_operation: 0,
+    //     },
+    //     paths: [
+    //       {
+    //         title: "Ingressos",
+    //         route: "/online-products",
+    //       },
+    //     ],
+    //   },
+    // ],
   },
-  */
   {
     title: "Gerencial",
     icon: ManagerIcon,

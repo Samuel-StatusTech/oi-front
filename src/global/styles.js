@@ -163,7 +163,7 @@ export default makeStyles((theme) => ({
   exportDataArea: {
     display: 'flex',
     justifyContent: 'end',
-    gap:24,
+    gap: 24,
     margin: 4,
     marginTop: -4,
     marginBottom: 0,
@@ -176,7 +176,6 @@ export default makeStyles((theme) => ({
   },
 
   modalBox: {
-    position: 'relative',
     backgroundColor: "#FFF",
     padding: 24,
     position: 'absolute',
@@ -361,7 +360,7 @@ export default makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inactive:{
+  inactive: {
     backgroundColor: 'rgba(0, 0, 0, .1)'
   },
   textCenter: {
@@ -410,4 +409,8 @@ export default makeStyles((theme) => ({
     display: 'inline-flex',
   },
   tableRows: {},
+  textArea: {
+    border: "1px solid #CCC",
+    width: "100%",
+  },
 }));

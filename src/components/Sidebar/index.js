@@ -97,7 +97,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded,  }) => {
+const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, setExpanded, }) => {
   const styles = useStyles();
   const location = useLocation();
   const actualLocation = location.pathname;
@@ -172,9 +172,6 @@ const RouteListItem = ({ route, handleClick, handleCollapse, user, expanded, set
           />
         </ListItemIcon>
         <ListItemText primary={route.title} />
-        {/* <Typography className={styles.itemTitle}>
-                    {route.title}
-                </Typography> */}
       </Fragment>
     </ListItem>
   );
@@ -208,7 +205,8 @@ const Sidebar = ({ open, toggle, user, events }) => {
             {RouteList.filter((route) => !route.hide)
               .filter((route) => (!route.show || route.show.role === user.role))
               .map((route, index) => {
-                return (
+
+                const item = (
                   <RouteListItem
                     key={index}
                     route={route}
@@ -217,7 +215,9 @@ const Sidebar = ({ open, toggle, user, events }) => {
                     expanded={expanded}
                     setExpanded={setExpanded}
                   />
-                );
+                )
+
+                return item
               })}
           </List>
         </Drawer>
