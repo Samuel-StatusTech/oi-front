@@ -271,7 +271,7 @@ const Operator = ({ user }) => {
     if (viaProduction) formData.append("via_production", +viaProduction)
     if (allowCashback) formData.append("allow_cashback", +allowCashback)
     if (allowCourtesy) formData.append("allow_courtesy", +allowCourtesy)
-    formData.append("isNeedPassword", +allowProduct)
+    formData.append("isNeedPassword", +(!allowProduct))
     if (allowDuplicate) formData.append("allow_duplicate", +allowDuplicate)
     if (isWaiter) formData.append("is_waiter", +isWaiter)
     if (hasCashless) formData.append("has_cashless", +hasCashless)
