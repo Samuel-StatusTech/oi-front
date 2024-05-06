@@ -62,6 +62,7 @@ const Operator = ({ user }) => {
   const [allowCashback, setAllowCashback] = useState(false)
   const [allowCourtesy, setAllowCourtesy] = useState(false)
   const [allowDuplicate, setAllowDuplicate] = useState(false)
+  const [allowProduct, setAllowProduct] = useState(false)
   const [isWaiter, setIsWaiter] = useState(false)
   const [hasCashless, setHasCashless] = useState(false)
   const [printReceipt, setPrintReceipt] = useState(false)
@@ -133,6 +134,7 @@ const Operator = ({ user }) => {
       setAllowCashback(operator.allow_cashback)
       setAllowCourtesy(operator.allow_courtesy)
       setAllowDuplicate(operator.allow_duplicate)
+      setAllowProduct(operator.isNeedPassword ?? false)
       setIsWaiter(operator.is_waiter)
       setHasServiceTax(Boolean(operator.has_service_tax))
       setServiceTax(operator.service_tax)
@@ -176,6 +178,7 @@ const Operator = ({ user }) => {
             setAllowCashback(Boolean(operator.allow_cashback))
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
+            setAllowProduct(Boolean(operator.isNeedPassword))
             setIsWaiter(Boolean(operator.is_waiter))
             if (operator.has_service_tax !== null) {
               setHasServiceTax(Boolean(operator.has_service_tax))
@@ -268,6 +271,7 @@ const Operator = ({ user }) => {
     if (viaProduction) formData.append("via_production", +viaProduction)
     if (allowCashback) formData.append("allow_cashback", +allowCashback)
     if (allowCourtesy) formData.append("allow_courtesy", +allowCourtesy)
+    formData.append("isNeedPassword", +allowProduct)
     if (allowDuplicate) formData.append("allow_duplicate", +allowDuplicate)
     if (isWaiter) formData.append("is_waiter", +isWaiter)
     if (hasCashless) formData.append("has_cashless", +hasCashless)
@@ -279,7 +283,6 @@ const Operator = ({ user }) => {
     formData.append("service_tax", hasServiceTax ? serviceTax : 0)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
-    console.log(productList.map((p) => p.id))
     formData.append("products", JSON.stringify(productList.map((p) => p.id)))
 
     return formData
@@ -376,15 +379,7 @@ const Operator = ({ user }) => {
       if (verifyWaiterTax() || verifyInputs())
         throw { message: "Um ou mais campos possui erro!" }
 
-      // "Taxa garçom product - logic"
-      // 1. Verificar se hasServiceTax
       if (hasServiceTax) {
-        // 2. Verificar se existe produto "Taxa garçom"
-
-        // 3. Caso não, cadastrar produto (e grupo)
-
-        console.log("All prods", allProds)
-        console.log("prodsGroups", prodsGroups)
 
         if (!allProds.find((p) => p.name.includes("Taxa Garçom"))) {
           const waiterGroup = prodsGroups.find((g) =>
@@ -413,8 +408,6 @@ const Operator = ({ user }) => {
             })
           }
         }
-
-        // 4. Caso sim, não fazer nada
       }
 
       if (idOperator === "new" || idOperator === "clone") {
@@ -919,6 +912,19 @@ const Operator = ({ user }) => {
                         <GreenSwitch
                           checked={allowDuplicate}
                           onChange={(e) => setAllowDuplicate(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      label="Permite Adicionar Produtos"
+                      name="allowProduct"
+                      value={allowProduct}
+                      control={
+                        <GreenSwitch
+                          checked={allowProduct}
+                          onChange={(e) => setAllowProduct(e.target.checked)}
                         />
                       }
                     />
