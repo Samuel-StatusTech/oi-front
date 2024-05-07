@@ -27,18 +27,18 @@ function App() {
   return (
     // <MuiPickersUtilsProvider utils={DateFNSUtils}>
     <ThemeProvider theme={theme}>
-     <Context.Provider value={ContextValues()}>,
-      <MuiPickersUtilsProvider
-        libInstance={moment}
-        utils={MomentUtils}
-        locale={"pt-br"}
-      >
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <Router />
-          </PersistGate>
-        </Provider>
-      </MuiPickersUtilsProvider>
+      <Context.Provider value={ContextValues()}>,
+        <MuiPickersUtilsProvider
+          libInstance={moment}
+          utils={MomentUtils}
+          locale={"pt-br"}
+        >
+          <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+              <Router />
+            </PersistGate>
+          </Provider>
+        </MuiPickersUtilsProvider>
       </Context.Provider>
     </ThemeProvider>
   );
