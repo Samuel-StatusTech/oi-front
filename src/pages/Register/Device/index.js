@@ -58,37 +58,6 @@ const Device = () => {
       });
   }, []);
 
-  const handleChangeStatus = async (id) => {
-    try {
-      await Api.patch(`/device/changeStatus/${id}`);
-
-      setData((previous) =>
-        previous.map((device) => {
-          if (device.code === id) {
-            return {
-              ...device,
-              status: !device.status,
-            };
-          }
-
-          return device;
-        })
-      );
-    } catch (error) {
-      if (error.response) {
-        const data = error.response.data;
-
-        if (data.error) {
-          alert(data.error);
-        } else {
-          alert('Erro não esperado');
-        }
-      } else {
-        alert('Erro não esperado');
-      }
-    }
-  };
-
   const handleGotoCreate = () => {
     history.push('/dashboard/device/new');
   };

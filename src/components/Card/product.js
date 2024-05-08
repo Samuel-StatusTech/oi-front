@@ -5,13 +5,11 @@ import {
   Card,
   CardContent,
   Typography,
-  CardHeader,
   IconButton,
 } from "@material-ui/core"
 import { format } from "currency-formatter"
 import EditIcon from "@material-ui/icons/Edit"
 import DeleteIcon from "@material-ui/icons/Delete"
-import imagePlaceholder from "../../assets/images/example.png"
 import combo from "../../assets/images/default_image_combo.svg"
 import estacionamento from "../../assets/images/default_image_park.svg"
 import bar from "../../assets/images/default_image_bar.svg"
@@ -97,8 +95,8 @@ const CardProduct = ({
           <Typography align="center" className={styles.label}>
             {format(price_sell / 100, { code: "BRL" })}
           </Typography>
-          {(warehouse_type == "soldOut" ||
-            (warehouse_type == "controled" && quantity == 0)) && (
+          {(warehouse_type === "soldOut" ||
+            (warehouse_type === "controled" && quantity === 0)) && (
             <Typography
               style={{
                 color: "white",

@@ -87,7 +87,7 @@ const FinancialStatement = ({ event }) => {
         }
       })
     }
-  }, [user])
+  }, [user, event])
 
   return (
     <>

@@ -13,8 +13,9 @@ const Adjust = ({ onClose, open, event, product_id, quantity, handleChangeEdit, 
     }
   }, [open, quantity]);
   const valueInputVerify = (value) => {
-    if (!/^\d+$/.test(value)) return (error.value = 'O campo somente aceita números');
-    error.value = null;
+    if (!/^\d+$/.test(value)) setError({ ...error, value: 'O campo somente aceita números' })
+
+    setError({ ...error, value: null })
     return false;
   };
   const handleChange = (e) => {
@@ -25,7 +26,7 @@ const Adjust = ({ onClose, open, event, product_id, quantity, handleChangeEdit, 
 
   const handleSave = async () => {
     try {
-      if (valueInputVerify(value)) throw 'O campo somente aceita números';
+      if (valueInputVerify(value)) throw new Error('O campo somente aceita números');
       const qtd = parseInt(value, 10);
       const { status } = await Api.patch(`/warehouse/${product_id}/changeQuantity`, {
         quantity: qtd,

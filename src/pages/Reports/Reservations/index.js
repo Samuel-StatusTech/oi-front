@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
@@ -69,7 +69,7 @@ const Reservation = ({ event }) => {
   const [stats, setStats] = useState({});
   const [data, setData] = useState([]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const { data } = await Api.get(`/statistical/reservation/${event}`)
       const { data: list } = await Api.get(`/reservation/getList`)
@@ -79,13 +79,13 @@ const Reservation = ({ event }) => {
     } catch (error) {
       
     }
-  }
+  }, [event])
 
   useEffect(() => {
     if(event) {
       loadData()
     }
-  }, [event]);
+  }, [event, loadData]);
 
   return (
     <Grid container direction="column" spacing={2}>

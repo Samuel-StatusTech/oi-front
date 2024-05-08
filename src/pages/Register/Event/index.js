@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Grid, Button } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
@@ -59,7 +59,7 @@ const Event = ({ events, loadEvents }) => {
   const updateLists = (events) => {
     let city = {};
     let local = {};
-    events.map((map) => {
+    events.forEach((map) => {
       city[map.city] = map.city;
       local[map.local] = map.local;
     });
@@ -78,7 +78,7 @@ const Event = ({ events, loadEvents }) => {
   const [endValue, setEndValue] = useState(new Date());
   const [selectType, setSelectType] = useState(1);
 
-  const filterDate = () => {
+  const filterDate = useCallback(() => {
     if (selectType === 1) {
       setData(events);
     } else {
@@ -92,7 +92,7 @@ const Event = ({ events, loadEvents }) => {
       });
       setData(filteredDate);
     }
-  };
+  }, [endValue, events, iniValue, selectType]);
   // See for changes on any input, to update the search
   useEffect(() => {
     try {
@@ -103,7 +103,7 @@ const Event = ({ events, loadEvents }) => {
     } finally {
       setLoading(false);
     }
-  }, [iniValue, endValue, selectType]);
+  }, [iniValue, endValue, selectType, filterDate]);
   return (
     <Grid container direction='column' spacing={2}>
       <Grid item lg={12} md={12} sm={12} xs={12}>

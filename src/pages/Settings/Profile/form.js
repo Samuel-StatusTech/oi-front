@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
 import { Grid, TextField, Button, CircularProgress, Card, CardContent } from '@material-ui/core';
 import { connect } from 'react-redux';
 import Api from '../../../api';
 import InputPassword from '../../../components/Input/Password';
 
 const Profile = ({ user }) => {
-  const history = useHistory();
   const [errorsVerify, setErrorsVerify] = useState({});
-  const [loading, setLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   // Usuário comum
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
 
   const formData = (assignData = {}) => {
     return Object.assign(assignData, {
       email,
       password,
-      currentPassword,
+      currentPassword: "",
     });
   };
 
@@ -43,45 +39,38 @@ const Profile = ({ user }) => {
     }
   };
   const getData = async () => {
-    setLoading(true);
     const { data } = await Api.get('/getProfileData');
-
     setEmail(data.email);
-    setLoading(false);
   };
 
   const isEmpty = (str) => {
     return !str || str.length === 0;
   };
-  const currentPasswordInputVerify = (password) => {
-    if (!/^\S{6,}/.test(password)) return (errorsVerify.currentPassword = 'Mínimo 6 caracteres');
-    if (!/^\S*$/i.test(password)) return (errorsVerify.currentPassword = 'Não pode espaço em branco no campo');
-    errorsVerify.currentPassword = null;
-    return false;
-  };
+
   const passwordInputVerify = (password) => {
     if (password.length !== 0) {
-      if (!/^\S{6,}/.test(password)) return (errorsVerify.password = 'Mínimo 6 caracteres');
-      if (!/^\S*$/i.test(password)) return (errorsVerify.password = 'Não pode espaço em branco no campo');
+      if (!/^\S{6,}/.test(password)) setErrorsVerify({ ...errorsVerify, password: 'Mínimo 6 caracteres' })
+      if (!/^\S*$/i.test(password)) setErrorsVerify({ ...errorsVerify, password: 'Não pode espaço em branco no campo' })
     }
 
-    errorsVerify.password = null;
+    setErrorsVerify({ ...errorsVerify, password: null })
     return false;
   };
   const emailInputVerify = (email) => {
-    if (isEmpty(email)) return (errorsVerify.email = 'É necessário preencher este campo');
+    if (isEmpty(email)) setErrorsVerify({ ...errorsVerify, email: 'É necessário preencher este campo' })
     if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email))
-      return (errorsVerify.email = 'Endereço de email inválido');
-    errorsVerify.email = null;
+      setErrorsVerify({ ...errorsVerify, email: 'Endereço de email inválido' })
+
+    setErrorsVerify({ ...errorsVerify, email: null })
     return false;
   };
 
   const verifyInputs = () => {
-    return emailInputVerify(email) || passwordInputVerify(password)/* || currentPasswordInputVerify(currentPassword)*/;
+    return emailInputVerify(email) || passwordInputVerify(password)
   };
   const handleSubmit = () => {
     try {
-      if (verifyInputs()) throw { message: 'Por favor revise todos os campos' };
+      if (verifyInputs()) throw new Error('Por favor revise todos os campos');
 
       handleEdit();
     } catch (error) {
@@ -127,24 +116,6 @@ const Profile = ({ user }) => {
                     fullWidth
                   />
                 </Grid>
-                {/*<Grid item xs={12}>
-                  <InputPassword
-                    autoComplete='none'
-                    label='Senha Atual*'
-                    name='currentPassword'
-                    value={currentPassword}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setCurrentPassword(value);
-                      currentPasswordInputVerify(value);
-                    }}
-                    error={Boolean(errorsVerify?.currentPassword)}
-                    helperText={errorsVerify?.currentPassword}
-                    variant='outlined'
-                    size='small'
-                    fullWidth
-                  />
-                  </Grid>*/}
               </Grid>
             </Grid>
 

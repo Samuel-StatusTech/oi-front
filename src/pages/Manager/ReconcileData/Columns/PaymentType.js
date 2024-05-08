@@ -6,7 +6,7 @@ export default ({ payments = [] }) => {
 
     if (payments.length > 1) {
         text = 'Multiplus';
-    } else if (payments.length == 1) {
+    } else if (payments.length === 1) {
         switch(payments[0].payment_type) {
             case 'dinheiro':
                 text = 'Dinheiro';

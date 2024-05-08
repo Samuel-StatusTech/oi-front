@@ -6,9 +6,6 @@ import EaseGrid from '../../../../../components/EaseGrid';
 import CardData from '../../../../../components/CardData';
 
 import totalIcon from '../../../../../assets/icons/ic_total.svg';
-import cashSalesIcon from '../../../../../assets/icons/ic_total-dinheiro.svg';
-import itemsSoldIcon from '../../../../../assets/icons/ic_itens-vendidos.svg';
-import cashlessIcon from '../../../../../assets/icons/ic_aporte.svg';
 import ticketSalesIcon from '../../../../../assets/icons/ic_dinheiro-disponivel.svg';
 import outputsIcon from '../../../../../assets/icons/ic_sangria.svg';
 import Api from '../../../../../api';

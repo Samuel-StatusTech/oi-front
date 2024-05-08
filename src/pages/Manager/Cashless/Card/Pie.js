@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, memo } from 'react';
+import React, { useRef, memo } from 'react';
 import { Card, CardContent, Typography, Grid } from '@material-ui/core';
 
 import Pie from '../../../../components/Chart/Pie';
@@ -6,15 +6,7 @@ import Pie from '../../../../components/Chart/Pie';
 const colors = ['#FE2265', '#4C7', '#FFAA15', '#303132', '#3A82F8'];
 
 export default memo(({ title, content, topList = [] }) => {
-  const [height, setHeight] = useState(80);
- 
   const cardRef = useRef(null);
-
-  useEffect(() => {
-    const height = cardRef.current.offsetHeight;
-
-    setHeight(height || 0);
-  }, [cardRef]);
 
   return (
     <Card style={{ height: '100%' }}>

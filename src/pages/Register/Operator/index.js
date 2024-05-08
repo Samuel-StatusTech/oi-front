@@ -2,16 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Grid,
   Button,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
 } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import './styles/index.css'
 
 import EaseGrid from '../../../components/EaseGrid';
-// import Drawer from "./drawer";
 import Api from '../../../api';
 
 import ModalResetPassword from './Modal/ResetPassword';
@@ -22,10 +17,6 @@ const Operator = () => {
   const history = useHistory();
   const [data, setData] = useState([]);
   const [id, setId] = useState(null);
-  const [type, setType] = useState('todos');
-  const [group, setGroup] = useState('todos');
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('todos');
 
   const columns = [
     { title: 'Operador', field: 'name', },
@@ -111,58 +102,6 @@ const Operator = () => {
         }
       }
     }
-  };
-
-  const handleQuery = async (props) => {
-    try {
-      const selectedGroup = props.group ? props.group : group;
-      const searchText = props.search !== undefined ? props.search : search;
-      const url = `/operator/getList?type=${props.type ? props.type : type}&search=${searchText}`;
-
-      const { data } = await Api.get(url);
-
-      if (data.success) {
-        let list = []
-        switch (selectedGroup) {
-          case 'waiter':
-            list = (data.operators.filter(op => op.is_waiter === 1))
-            break;
-          case 'status':
-            list = (data.operators.filter(op => op.status === 1))
-            break;
-          case 'todos':
-          default:
-            list = data.operators
-            break;
-        }
-        setData(list.sort((a, b) => a.name.localeCompare(b.name)));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  var time;
-
-  const handleType = (e) => {
-    setType(e.target.value);
-    setGroup('todos');
-    localStorage.setItem('GROUP_SAVED', 'todos');
-
-    if (time) {
-      clearTimeout(time);
-      time = null;
-    }
-
-    time = setTimeout(() => {
-      handleQuery({ type: e.target.value, group: 'todos' });
-    }, 100);
-  };
-
-  const handleGroup = (e) => {
-    setGroup(e.target.value);
-    localStorage.setItem('GROUP_SAVED', e.target.value);
-    handleQuery({ group: e.target.value });
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { Grid, Button } from '@material-ui/core';
 
@@ -37,7 +37,7 @@ const TransactionProduct = ({ event }) => {
     },
     { title: 'Cancelamento', field: 'canceled_location' },
   ];
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const newData = await Api.get(`/order/getAllOrdersDetails/${event}`);
@@ -47,7 +47,8 @@ const TransactionProduct = ({ event }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [event]);
+  
   const updateChildRows = ({ data, where, status, canceled_location, canceled_date, canceled_by }) => {
     const length = data.length;
     for (let i = 0; i < length; i++) {
@@ -57,9 +58,10 @@ const TransactionProduct = ({ event }) => {
     }
     return data;
   };
+
   const updateDataChange = (orders) => {
     let newData = [...data];
-    orders.map((order) => {
+    orders.forEach((order) => {
       if (order?.qr_code) {
         let index = newData.findIndex((element) => element?.qr_code === order?.qr_code);
         newData[index] = order;
@@ -76,6 +78,7 @@ const TransactionProduct = ({ event }) => {
     });
     return newData;
   };
+
   const uncheckAll = (orders) => {
     const newData = orders.map((order) => {
       if (order?.tableData?.checked) order.tableData.checked = false;
@@ -83,6 +86,7 @@ const TransactionProduct = ({ event }) => {
     });
     return newData;
   };
+  
   const cancelOrderProductsList = async (orderProductsList) => {
     try {
       setLoading(true);
@@ -98,6 +102,7 @@ const TransactionProduct = ({ event }) => {
       setLoading(false);
     }
   };
+
   const uncancelOrderProductsList = async (orderProductsList) => {
     try {
       setLoading(true);
@@ -110,15 +115,18 @@ const TransactionProduct = ({ event }) => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (event) {
       loadData();
     } else {
       console.log('Sem evento');
     }
-  }, [event]);
+  }, [event, loadData]);
+  
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
+  
   return (
     <Grid container direction='column' spacing={2}>
       <Grid item lg={12} md={12} sm={12} xs={12}></Grid>
