@@ -190,7 +190,7 @@ const CustomList = ({
           .filter((value) =>
             isGroupFilter && group !== 'todos' ? (value.group ? value.group.id : value.group_id) === group : true
           )
-          .filter((value) => (isSearch ? value.name.includes(search) : true))
+          .filter((value) => isSearch ? value.name.toLowerCase().includes(search.toLowerCase()) : true)
           .map((value, index) => (
             <ListItem key={value?.id}>
               <ListItemIcon>

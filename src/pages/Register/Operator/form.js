@@ -20,6 +20,7 @@ import { useForm } from "react-hook-form"
 
 import InputPassword from "../../../components/Input/Password"
 import TransferList from "../../../components/TransferList"
+import ModalRequirePassword from "./Modal/RequirePass"
 import ModalResetPassword from "./Modal/ResetPassword"
 import ImagePicker from "../../../components/ImagePicker"
 import { GreenSwitch, StatusSwitch } from "../../../components/Switch"
@@ -33,9 +34,10 @@ const Operator = ({ user }) => {
   const { idOperator } = useParams()
   const [errorsVerify, setErrorsVerify] = useState({})
   const [resetPassword, setResetPassword] = useState(null)
-  const [action] = useState(idOperator === "new")
+  const [,] = useState(idOperator === "new")
   const [loading, setLoading] = useState(true)
   const [buttonLoading, setButtonLoading] = useState(false)
+  const [showPassModal, setShowPassModal] = useState(false)
 
   const [status, setStatus] = useState(true)
   const [photo, setPhoto] = useState(null)
@@ -62,7 +64,6 @@ const Operator = ({ user }) => {
   const [allowCashback, setAllowCashback] = useState(false)
   const [allowCourtesy, setAllowCourtesy] = useState(false)
   const [allowDuplicate, setAllowDuplicate] = useState(false)
-  const [allowProduct, setAllowProduct] = useState(false)
   const [isWaiter, setIsWaiter] = useState(false)
   const [hasCashless, setHasCashless] = useState(false)
   const [printReceipt, setPrintReceipt] = useState(false)
@@ -134,7 +135,6 @@ const Operator = ({ user }) => {
       setAllowCashback(operator.allow_cashback)
       setAllowCourtesy(operator.allow_courtesy)
       setAllowDuplicate(operator.allow_duplicate)
-      setAllowProduct(operator.isNeedPassword ?? false)
       setIsWaiter(operator.is_waiter)
       setHasServiceTax(Boolean(operator.has_service_tax))
       setServiceTax(operator.service_tax)
@@ -178,7 +178,6 @@ const Operator = ({ user }) => {
             setAllowCashback(Boolean(operator.allow_cashback))
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
-            setAllowProduct(Boolean(operator.isNeedPassword))
             setIsWaiter(Boolean(operator.is_waiter))
             if (operator.has_service_tax !== null) {
               setHasServiceTax(Boolean(operator.has_service_tax))
@@ -271,7 +270,6 @@ const Operator = ({ user }) => {
     if (viaProduction) formData.append("via_production", +viaProduction)
     if (allowCashback) formData.append("allow_cashback", +allowCashback)
     if (allowCourtesy) formData.append("allow_courtesy", +allowCourtesy)
-    formData.append("isNeedPassword", +(!allowProduct))
     if (allowDuplicate) formData.append("allow_duplicate", +allowDuplicate)
     if (isWaiter) formData.append("is_waiter", +isWaiter)
     if (hasCashless) formData.append("has_cashless", +hasCashless)
@@ -377,7 +375,7 @@ const Operator = ({ user }) => {
     try {
       setButtonLoading(true)
       if (verifyWaiterTax() || verifyInputs())
-        throw { message: "Um ou mais campos possui erro!" }
+        throw new Error("Um ou mais campos possui erro!")
 
       if (hasServiceTax) {
 
@@ -435,34 +433,33 @@ const Operator = ({ user }) => {
   const isEmpty = (str) => {
     return !str || str.length === 0
   }
+
   const nameInputVerify = (name) => {
-    if (isEmpty(name))
-      return (errorsVerify.name = "É necessário preencher este campo")
-    //if (!/^[a-zA-Z ]*$/.test(name)) return (errorsVerify.name = 'Esse campo só aceita letras.');
-    errorsVerify.name = null
-    return false
+    if (isEmpty(name)) return setErrorsVerify({ ...errorsVerify, name: "É necessário preencher este campo" })
+    else return setErrorsVerify({ ...errorsVerify, name: null })
   }
+  
   const usernameInputVerify = (username) => {
-    if (!/^[a-z]{1}(\w)+$/.test(username))
-      return (errorsVerify.username =
-        "Esse campo somente aceita letras e números. (Mín. 2 caracteres)")
-    errorsVerify.username = null
-    return false
+    if (!/^[a-z]{1}(\w)+$/.test(username)) {
+      return setErrorsVerify({ ...errorsVerify, username: "Esse campo somente aceita letras e números. (Mín. 2 caracteres)" })
+    } else return setErrorsVerify({ ...errorsVerify, username: null })
+
   }
+  
   const passwordInputVerify = (password) => {
     if (!/^\S{4,}/.test(password))
-      return (errorsVerify.password = "Mínimo 4 caracteres")
+      return setErrorsVerify({ ...errorsVerify, password: "Mínimo 4 caracteres" })
     if (!/^\S*$/i.test(password))
-      return (errorsVerify.password = "Não pode espaço em branco no campo")
-    errorsVerify.password = null
-    return false
+      return setErrorsVerify({ ...errorsVerify, password: "Não pode espaço em branco no campo" })
+
+    return setErrorsVerify({ ...errorsVerify, password: null })
   }
 
   const serviceTaxInputVerify = (serviceTax) => {
     if (!/^[0-9]{1,3}/i.test(serviceTax))
       return (errorsVerify.serviceTax = "Valor Inválido.")
-    errorsVerify.serviceTax = null
-    return false
+
+    return setErrorsVerify({ ...errorsVerify, serviceTax: null })
   }
 
   const handleImage = (data) => {
@@ -484,6 +481,20 @@ const Operator = ({ user }) => {
 
   return (
     <>
+      {(user.role === "master" || user.role === "admin") && (
+        <ModalRequirePassword
+          opened={showPassModal}
+          current={isWaiter}
+          onClose={(state) => {
+            setIsWaiter(state)
+            setShowPassModal(false)
+          }}
+        />
+      )}
+      <ModalResetPassword
+        id={resetPassword}
+        onClose={() => setResetPassword(null)}
+      />
       <form>
         <Card>
           <CardContent>
@@ -821,7 +832,7 @@ const Operator = ({ user }) => {
                 </TextField>
               </Grid>
 
-              {printMode == "recibo" && (
+              {printMode === "recibo" && (
                 <Grid item>
                   <FormControlLabel
                     label="Imprimir 2 Vias do Recibo"
@@ -916,19 +927,17 @@ const Operator = ({ user }) => {
                       }
                     />
                   </Grid>
-                  <Grid item>
-                    <FormControlLabel
-                      label="Permite Adicionar Produtos"
-                      name="allowProduct"
-                      value={allowProduct}
-                      control={
-                        <GreenSwitch
-                          checked={allowProduct}
-                          onChange={(e) => setAllowProduct(e.target.checked)}
-                        />
-                      }
-                    />
-                  </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                  {(user.role === "master" || user.role === "admin") && (
+                    <Grid item>
+                      <Button onClick={() => {
+                        setShowPassModal(true)
+                      }}>
+                        Solicitar senha
+                      </Button>
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
 
@@ -1050,10 +1059,6 @@ const Operator = ({ user }) => {
           </CardContent>
         </Card>
       </form>
-      <ModalResetPassword
-        id={resetPassword}
-        onClose={() => setResetPassword(null)}
-      />
     </>
   )
 }
