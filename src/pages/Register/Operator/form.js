@@ -20,7 +20,6 @@ import { useForm } from "react-hook-form"
 
 import InputPassword from "../../../components/Input/Password"
 import TransferList from "../../../components/TransferList"
-import ModalRequirePassword from "./Modal/RequirePass"
 import ModalResetPassword from "./Modal/ResetPassword"
 import ImagePicker from "../../../components/ImagePicker"
 import { GreenSwitch, StatusSwitch } from "../../../components/Switch"
@@ -37,7 +36,6 @@ const Operator = ({ user }) => {
   const [,] = useState(idOperator === "new")
   const [loading, setLoading] = useState(true)
   const [buttonLoading, setButtonLoading] = useState(false)
-  const [showPassModal, setShowPassModal] = useState(false)
 
   const [status, setStatus] = useState(true)
   const [photo, setPhoto] = useState(null)
@@ -65,6 +63,7 @@ const Operator = ({ user }) => {
   const [allowCourtesy, setAllowCourtesy] = useState(false)
   const [allowDuplicate, setAllowDuplicate] = useState(false)
   const [isWaiter, setIsWaiter] = useState(false)
+  const [isNeedPassword, setIsNeedPassword] = useState(true)
   const [hasCashless, setHasCashless] = useState(false)
   const [printReceipt, setPrintReceipt] = useState(false)
   const [allowRefound, setAllowRefound] = useState(false)
@@ -144,6 +143,7 @@ const Operator = ({ user }) => {
       setAllowRefound(operator.allow_refound)
       setAllowCashbackCashless(operator.allow_cashback_cashless)
       setDeviceCode(operator.device_code)
+      setIsNeedPassword(operator.isNeedPassword)
 
       setLoading(false)
     } else if (idOperator !== "new") {
@@ -179,6 +179,7 @@ const Operator = ({ user }) => {
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
             setIsWaiter(Boolean(operator.is_waiter))
+            setIsNeedPassword(Boolean(operator.isNeedPassword))
             if (operator.has_service_tax !== null) {
               setHasServiceTax(Boolean(operator.has_service_tax))
             } else {
@@ -275,6 +276,7 @@ const Operator = ({ user }) => {
     if (hasCashless) formData.append("has_cashless", +hasCashless)
     if (printReceipt) formData.append("print_receipt", +printReceipt)
     if (allowRefound) formData.append("allow_refound", +allowRefound)
+    if (isNeedPassword) formData.append("isNeedPassword", +isNeedPassword)
     if (allowCashbackCashless)
       formData.append("allow_cashback_cashless", +allowCashbackCashless)
     formData.append("has_service_tax", +hasServiceTax)
@@ -481,16 +483,6 @@ const Operator = ({ user }) => {
 
   return (
     <>
-      {(user.role === "master" || user.role === "admin") && (
-        <ModalRequirePassword
-          opened={showPassModal}
-          current={isWaiter}
-          onClose={(state) => {
-            setIsWaiter(state)
-            setShowPassModal(false)
-          }}
-        />
-      )}
       <ModalResetPassword
         id={resetPassword}
         onClose={() => setResetPassword(null)}
@@ -927,17 +919,19 @@ const Operator = ({ user }) => {
                       }
                     />
                   </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                  {(user.role === "master" || user.role === "admin") && (
-                    <Grid item>
-                      <Button onClick={() => {
-                        setShowPassModal(true)
-                      }}>
-                        Solicitar senha
-                      </Button>
-                    </Grid>
-                  )}
+                  <Grid item>
+                    <FormControlLabel
+                      label="Solicitar senha"
+                      name="isWaiter"
+                      value={isNeedPassword}
+                      control={
+                        <GreenSwitch
+                          checked={isNeedPassword}
+                          onChange={(e) => setIsNeedPassword(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
                 </Grid>
               </Grid>
 

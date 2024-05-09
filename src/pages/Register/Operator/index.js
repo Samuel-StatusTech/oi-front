@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Button } from '@material-ui/core';
+import { Grid, Button, CircularProgress } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import './styles/index.css'
 
 import Api from '../../../api';
 import { connect } from 'react-redux'
 
+import ModalRequirePassword from './Modal/RequirePass';
 import ModalResetPassword from './Modal/ResetPassword';
 import EaseGrid from '../../../components/EaseGrid';
 import ButtonRound from '../../../components/ButtonRound';
 import StatusColumn from '../../../components/EaseGrid/Columns/Status';
+import { parseFD } from './parseFD';
 
 const Operator = ({ user }) => {
   const history = useHistory();
   const [data, setData] = useState([]);
   const [id, setId] = useState(null);
+  const [updating, setUpdating] = useState(false);
+  const [showPassModal, setShowPassModal] = useState(false);
 
   const columns = [
     { title: 'Operador', field: 'name', },
@@ -100,8 +104,47 @@ const Operator = ({ user }) => {
     }
   };
 
+  const updateOpPassRequirement = async (baseOp, state) => {
+    const op = (await Api.get(`/operator/getData/${baseOp.id}`)).data
+
+    if (op) {
+      const fd = parseFD(user, op, state)
+      const update = await Api.put(`/operator/updateOperator/${baseOp.id}`, fd, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      return update.data.success
+    } else return false
+  }
+
+  const handlePassModal = async (state) => {
+    
+    setShowPassModal(false)
+    
+    if (state !== null) {
+
+      setUpdating(true)
+      for (const idx in data) {
+        const op = data[idx]
+        await updateOpPassRequirement(op, state)
+      }
+      
+      alert("Alterações concluídas")
+    }
+
+    setUpdating(false)
+  }
+
   return (
     <Grid container>
+      {(user.role === "master" || user.role === "admin") && (
+        <ModalRequirePassword
+          opened={showPassModal}
+          onClose={handlePassModal}
+        />
+      )}
       <ModalResetPassword id={id} onClose={() => setId(null)} />
       <Grid item lg md sm xs>
         <EaseGrid
@@ -122,6 +165,23 @@ const Operator = ({ user }) => {
             </div>
           )}
         />
+      </Grid>
+
+      <Grid container spacing={2} justifyContent='flex-end'>
+        {(user.role === "master" || user.role === "admin") && (
+          <Grid item style={{marginTop: 12}}>
+              <ButtonRound
+                variant="contained"
+                color="primary"
+                onClick={() => setShowPassModal(true)}
+                disabled={updating}
+              >
+                {updating ? (
+                  <CircularProgress size={25} />
+                ) : "Solicitar senha"}
+              </ButtonRound>
+          </Grid>
+        )}
       </Grid>
     </Grid>
   );

@@ -12,15 +12,20 @@ import {
 
 import { GreenSwitch } from "../../../../components/Switch"
 
-const RequirePass = ({ opened, current, onClose }) => {
-  const [state, setState] = useState(current);
+const RequirePass = ({ opened, onClose }) => {
+  const [required, setRequired] = useState(false);
+  const [notRequired, setNotRequired] = useState(false);
 
   const handleSave = async () => {
-    onClose(state)
+    if (!required && !notRequired) onClose(null)
+    else {
+      if (required && !notRequired) onClose(true)
+      else if (!required && notRequired) onClose(false)
+    }
   };
 
   return (
-    <Dialog open={opened} onClose={() => onClose(current)}>
+    <Dialog open={opened} onClose={() => onClose(null)}>
       <DialogContent>
         <Grid container spacing={2} direction="column">
           <Grid item>
@@ -31,12 +36,15 @@ const RequirePass = ({ opened, current, onClose }) => {
           <Grid item lg md sm xs>
             <FormControlLabel
               label="Permitir cadastro e edição de produtos sem senha do operador"
-              name="allowCreate"
-              value={!state}
+              name="notRequired"
+              value={notRequired}
               control={
                 <GreenSwitch
-                  checked={!state}
-                  onChange={(e) => setState(!e.target.checked)}
+                  checked={notRequired}
+                  onChange={(e) => {
+                    if (e.target.checked && required) setRequired(false)
+                    setNotRequired(e.target.checked)
+                  }}
                 />
               }
             />
@@ -44,12 +52,15 @@ const RequirePass = ({ opened, current, onClose }) => {
           <Grid item lg md sm xs>
             <FormControlLabel
               label="Solicitar senha"
-              name="allowCreate"
-              value={state}
+              name="required"
+              value={required}
               control={
                 <GreenSwitch
-                  checked={state}
-                  onChange={(e) => setState(e.target.checked)}
+                  checked={required}
+                  onChange={(e) => {
+                    if (e.target.checked && notRequired) setNotRequired(false)
+                    setRequired(e.target.checked)
+                  }}
                 />
               }
             />
@@ -63,7 +74,7 @@ const RequirePass = ({ opened, current, onClose }) => {
               variant="outlined"
               color="secondary"
               size="small"
-              onClick={onClose}
+              onClick={() => onClose(null)}
             >
               Cancelar
             </Button>
@@ -74,6 +85,7 @@ const RequirePass = ({ opened, current, onClose }) => {
               color="primary"
               size="small"
               onClick={handleSave}
+              disabled={!notRequired && !required}
             >
               Confirmar
             </Button>
