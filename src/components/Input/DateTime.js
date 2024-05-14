@@ -12,6 +12,7 @@ export const Between = memo(
     showToday,
     onSelectType,
     allPeriodButtonColor,
+    toggleDevicesModal,
     onSearch,
     isForDivgs = false,
     ...props
@@ -56,13 +57,11 @@ export const Between = memo(
 
       const dateF = date._d
       const day = `${dateF.getDate() < 10 ? "0" : ""}${dateF.getDate()}`
-      const month = `${dateF.getMonth() + 1 < 10 ? "0" : ""}${
-        dateF.getMonth() + 1
-      }`
+      const month = `${dateF.getMonth() + 1 < 10 ? "0" : ""}${dateF.getMonth() + 1
+        }`
       const hours = `${dateF.getHours() < 10 ? "0" : ""}${dateF.getHours()}`
-      const minutes = `${
-        dateF.getMinutes() < 10 ? "0" : ""
-      }${dateF.getMinutes()}`
+      const minutes = `${dateF.getMinutes() < 10 ? "0" : ""
+        }${dateF.getMinutes()}`
       return `${day}/${month}/${dateF.getFullYear()} ${hours}:${minutes}`
     }
     useEffect(() => {
@@ -71,6 +70,19 @@ export const Between = memo(
     }, [props.selected])
     return (
       <Grid container spacing={2} alignItems="center">
+        {isForDivgs && (
+          <Grid item xl={2} lg={2} md={2} sm={3} xs={12}>
+            <Button
+              variant="outlined"
+              color="default"
+              onClick={toggleDevicesModal}
+              fullWidth
+              className={styles.exportDataBtn}
+            >
+              Dispositivos
+            </Button>
+          </Grid>
+        )}
         <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
           <Button
             variant="outlined"
@@ -105,7 +117,7 @@ export const Between = memo(
             </Button>
           </Grid>
         )}
-        <Grid item xl={3} lg={3} md={4} sm={6} xs={12}>
+        <Grid item xl={isForDivgs ? 2 : 3} lg={isForDivgs ? 2 : 3} md={4} sm={6} xs={12}>
           <KeyboardDateTimePicker
             autoOk
             ampm={false}
@@ -126,7 +138,7 @@ export const Between = memo(
             style={{ backgroundColor: "#fff" }}
           />
         </Grid>
-        <Grid item xl={3} lg={3} md={4} sm={6} xs={12}>
+        <Grid item xl={isForDivgs ? 2 : 3} lg={isForDivgs ? 2 : 3} md={4} sm={6} xs={12}>
           <KeyboardDateTimePicker
             autoOk
             ampm={false}
@@ -149,7 +161,7 @@ export const Between = memo(
             style={{ backgroundColor: "#fff" }}
           />
         </Grid>
-        <Grid item xl={2} lg={2} md={4} sm={6} xs={12}>
+        <Grid item xl={2} lg={2} md={isForDivgs ? 2 : 4} sm={isForDivgs ? 3 : 6} xs={12}>
           <Button
             variant="outlined"
             color="default"

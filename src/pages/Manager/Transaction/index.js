@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom'
 import { connect } from 'react-redux';
@@ -300,6 +301,7 @@ const Transaction = ({ event, user }) => {
       + `${filters.productURL}`
       + `${filters.operatorURL}`
       + `${filters.paymentTypeURL}`
+      + `${filters.dateURL}`
       + `${qr ? `&qrcode=${qr}` : filters.QRCodeURL}`
       + `&per_page=1000000`
       + `&page=${0}`

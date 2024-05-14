@@ -16,6 +16,7 @@ import ModalDetailsOrder from "./Modal/detailsOrder"
 import { Info } from "@material-ui/icons"
 import useStyles from "../../../global/styles"
 import ModalCheck from "../../../components/Modals/CheckDivergencies"
+import ModalDevices from "../../../components/Modals/Devices"
 
 const colors = {
   ok: "#1FAA34",
@@ -89,6 +90,24 @@ const ReconcileData = ({ event, user }) => {
       { title: "Data e Hora", field: "created_at", type: "datetime" },
       { title: "Operador", field: "user_id", render: UserColumn },
       {
+        title: "Número de Série",
+        field: "terminalSerialNumber",
+        render: (data) => {
+          let txt = "-"
+
+          if (data.payments.some(p => p.machineData)) {
+            const machineData = (data.payments.filter(p => p.machineData)[0].machineData ?? "null")
+
+            if (machineData) {
+              const { terminalSerialNumber } = JSON.parse(machineData)
+              if (terminalSerialNumber) txt = terminalSerialNumber
+            }
+          }
+
+          return txt
+        }
+      },
+      {
         title: "Valor",
         field: "total_price",
         render: ({ total_price }) => format(total_price / 100, { code: "BRL" }),
@@ -105,6 +124,7 @@ const ReconcileData = ({ event, user }) => {
       { title: "Tipo de Pagamento", field: "Tipo_Pagamento" },
       { title: "Data e Hora", field: "Data_Transacao" },
       { title: "Valor", field: "Valor_Bruto" },
+      { title: "Número de Série", field: "Serial_Leitor" },
     ],
   }
 
@@ -129,6 +149,7 @@ const ReconcileData = ({ event, user }) => {
     `/order/getList/${event}?status=todos&type=todos&per_page=1000000&page=0`
   )
   const [showDetailsOrder, setShowDetailsOrder] = useState(false)
+  const [showDevicesSelector, setShowDevicesSelector] = useState(false)
   const [detailsOrderData, setDetailsOrderData] = useState(0)
   const [detailsOrderDataId, setDetailsOrderDataId] = useState(0)
   const [dateFilters, setDateFilters] = useState({
@@ -136,6 +157,9 @@ const ReconcileData = ({ event, user }) => {
     endDate: null,
   })
   const [QRCode] = useState("")
+
+  const [allDevices, setAllDevices] = useState([])
+  const [devices, setDevices] = useState([])
 
   const [showFilePicker, setShowFilePicker] = useState(false)
 
@@ -149,6 +173,7 @@ const ReconcileData = ({ event, user }) => {
 
   const unshowModal = () => {
     setShowFilePicker(false)
+    setShowDevicesSelector(false)
   }
 
   const parseData = () => {
@@ -179,10 +204,6 @@ const ReconcileData = ({ event, user }) => {
       dateURL,
     }
   }
-
-  useEffect(() => {
-    if (!event) console.log("Sem evento")
-  }, [event])
 
   useEffect(() => {
     if (group !== "todos" && product !== "todos") {
@@ -295,6 +316,7 @@ const ReconcileData = ({ event, user }) => {
 
   useEffect(() => {
     if (event)
+      // payments
       Api.get(`/statistical/resume/${event}`).then((res) => {
         const { success, totalReceipt } = res.data
         if (success) {
@@ -326,6 +348,31 @@ const ReconcileData = ({ event, user }) => {
           setAutoTotal(autoTotalData)
         }
       })
+
+    // devices
+    Api.get('/device/getList')
+      .then(({ data }) => {
+        if (data.success) {
+          setAllDevices(data.devices
+            .filter(device => {
+              if (!(user.role === "master" || user.role === "admin")) {
+                return (device.name !== "NEUTRO")
+              } else return device
+            })
+            .sort((a, b) => {
+              const dataA = new Date(a.created_at).getTime();
+              const dataB = new Date(b.created_at).getTime();
+              return dataA > dataB ? -1 : dataA < dataB ? 1 : 0;
+            }));
+        }
+      })
+      .catch((e) => {
+        if (e.error) {
+          alert(e.error);
+        } else {
+          alert('Erro não esperado');
+        }
+      });
   }, [event])
 
   return (
@@ -347,6 +394,18 @@ const ReconcileData = ({ event, user }) => {
           urlWithFilters={urlWithFilters}
           dates={dateFilters}
           autoTotal={autoTotal}
+          devices={devices}
+        />
+
+        <ModalDevices
+          show={showDevicesSelector}
+          finish={(list) => {
+            setDevices(list)
+            unshowModal()
+          }}
+          closeFn={unshowModal}
+          allDevices={allDevices}
+          selected={devices}
         />
 
         <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -359,6 +418,9 @@ const ReconcileData = ({ event, user }) => {
                 onChangeEnd={onChangeEnd}
                 onSelectType={onSelectType}
                 selected={selectType}
+                toggleDevicesModal={() => {
+                  setShowDevicesSelector(true)
+                }}
                 onSearch={handleDivgsSearch}
                 size="small"
                 fullWidth
