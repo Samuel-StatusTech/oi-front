@@ -40,6 +40,8 @@ import OnlineEventList from "../pages/Online/Event"
 import WSOverview from "../pages/WebStore/Overview"
 import WSSettings from "../pages/WebStore/Settings"
 import WSStatement from "../pages/WebStore/Statement"
+import TicketsPage from "../pages/WebStore/Tickets"
+import TicketSimpleForm from "../pages/WebStore/Tickets/form/simple"
 import OnlineEventForm from "../pages/Online/Event/form"
 import OnlineProductList from "../pages/Online/Product"
 import OnlineProductForm from "../pages/Online/Product/form"
@@ -656,7 +658,7 @@ export default [
       {
         title: "Ingressos a Venda",
         path: "/webstore/tickets",
-        content: <EmBreve />,
+        content: <TicketsPage />,
         allow: {
           allow_only_ecommerce: true,
         },
@@ -667,7 +669,31 @@ export default [
           },
           {
             title: "Ingressos",
-            route: "/settings",
+            route: "/tickets",
+          },
+        ],
+      },
+      {
+        path: "/webstore/tickets/simple/:idProduct",
+        hide: true,
+        content: <TicketSimpleForm />,
+        allow: {
+          allow_only_ecommerce: true,
+          allow_register: 1,
+          allow_operation: 0,
+        },
+        paths: [
+          {
+            title: "Loja Virtual",
+            route: "/webstore",
+          },
+          {
+            title: "Ingressos",
+            route: "/tickets",
+          },
+          {
+            title: "Novo",
+            route: "/simple",
           },
         ],
       },
