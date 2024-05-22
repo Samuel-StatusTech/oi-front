@@ -158,7 +158,7 @@ const Operator = ({ user }) => {
             setUsername(operator.username)
             if (operator.photo && operator.photo.length > 0)
               setPhoto(operator.photo)
-
+            
             setRawList(list)
 
             setStatus(Boolean(operator.status))

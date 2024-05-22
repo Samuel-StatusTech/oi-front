@@ -46,8 +46,8 @@ export default function TransferList({
   rawList = [],
   label = "Quero escolher",
   url = "/product/getFilterList",
-  onCostChange = () => {},
-  onOpenedHandle = () => {},
+  onCostChange = () => { },
+  onOpenedHandle = () => { },
   visible = false,
   hasQuantity = false,
   selectAll = false
@@ -70,31 +70,42 @@ export default function TransferList({
     return list.filter((i) => !i.name.toLowerCase().includes("garçom"))
   }
 
-  useEffect(() => {
-        Api.get(url).then(({ data }) => {
-          if (data.success) {
-            const prods = []
-            const selecteds = []
-            data.products.map((product) => {
-              const prod = rawList.find((prod) => prod.id === product.id)
-              const item = {
-                ...product,
-                qtd: prod ? prod.qtd : 1,
-              }
-              if (prod) {
-                selecteds.push(item)
-              } else {
-                prods.push(item)
-              }
-              return item
-            })
+  const filterUniqueList = (list) => {
 
-            setLeft(excludeWaiterProduct(prods))
-            setRight(excludeWaiterProduct(selecteds))
-          } else {
-            alert("Erro ao carregar os produtos")
+    let uniqueList = []
+
+    list.forEach((p) => {
+      if (uniqueList.every(up => up.id !== p.id)) uniqueList.push(p)
+    })
+
+    return uniqueList
+  }
+
+  useEffect(() => {
+    Api.get(url).then(({ data }) => {
+      if (data.success) {
+        const prods = []
+        const selecteds = []
+        data.products.map((product) => {
+          const prod = rawList.find((prod) => prod.id === product.id)
+          const item = {
+            ...product,
+            qtd: prod ? prod.qtd : 1,
           }
+          if (prod) {
+            selecteds.push(item)
+          } else {
+            prods.push(item)
+          }
+          return item
         })
+
+        setLeft(filterUniqueList(excludeWaiterProduct(prods)))
+        setRight(filterUniqueList(excludeWaiterProduct(selecteds)))
+      } else {
+        alert("Erro ao carregar os produtos")
+      }
+    })
 
     // eslint-disable-next-line
   }, [])
