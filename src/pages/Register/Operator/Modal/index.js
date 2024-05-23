@@ -6,7 +6,7 @@ import './styles/index.css'
 import Api from '../../../api';
 import { connect } from 'react-redux'
 
-import ModalConfirmDevice from './Modal/ConfirmDevice';
+import ModalConfirmDevice from './Modal/ConfirmDevoce';
 import ModalRequirePassword from './Modal/RequirePass';
 import ModalResetPassword from './Modal/ResetPassword';
 import EaseGrid from '../../../components/EaseGrid';
@@ -160,19 +160,19 @@ const Operator = ({ user }) => {
     let exists = false
     let devices = []
 
-    await Api.get('/device/getList').then((res) => {
+    await Api.get('/devices/getList').then((res) => {
       devices = res.data.devices
     })
-
+    
     exists = devices.find(d => d.name === "NEUTRO")
-
+    
     return exists
   }
 
   const createDevice = async (name) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const code = String(new Date().getTime()) + String(Math.ceil(Math.random(10, 999) * 1000))
+        const code = String(new Date().getTime()) + String(Math.random() * 10)
         await Api.post('/device/createDevice', {
           name,
           code: Math.ceil(code / 2),
@@ -189,7 +189,7 @@ const Operator = ({ user }) => {
     })
   }
 
-  const handleConfirm = async (confirm, cb = false) => {
+  const handleConfirm = async (confirm) => {
 
     setConfirmUnsetModal(false)
 
@@ -198,22 +198,24 @@ const Operator = ({ user }) => {
       setUpdating(true)
 
       const device = await checkNeutralDevice()
+      console.log(device)
+      return
 
       if (device) {
 
         let proms = []
         for (const idx in data) {
           const op = data[idx]
-          proms.push(updateOpDevice(op, device))
+          proms.push(updateOpDevice(op))
         }
 
         await Promise.all(proms)
-        
-        alert("Alterações concluídas")
       } else {
-        await createDevice('NEUTRO').then(handleConfirm(confirm, cb))
+        await createDevice('NEUTRO').then(handleConfirm(confirm))
+
       }
 
+      alert("Alterações concluídas")
     }
 
     setUpdating(false)
@@ -221,24 +223,6 @@ const Operator = ({ user }) => {
 
   return (
     <Grid container>
-      {updating && (
-        <div style={{
-          width: "100vw",
-          height: "100vh",
-          position: "fixed",
-          display: "grid",
-          placeItems: "center",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom:0,
-          zIndex: 20,
-          backgroundColor: "rgba(255, 255, 255, 0.05)",
-          backdropFilter: "blur(5px)"
-        }}>
-          <CircularProgress size={70} />
-        </div>
-      )}
       {(user.role === "master" || user.role === "admin") && (
         <ModalConfirmDevice
           opened={showConfirmModal}
@@ -282,7 +266,9 @@ const Operator = ({ user }) => {
               onClick={() => setConfirmUnsetModal(true)}
               disabled={updating}
             >
-              Desvincular operadores
+              {updating ? (
+                <CircularProgress size={25} />
+              ) : "Descvincular operadores"}
             </ButtonRound>
           </Grid>
         )}
@@ -294,7 +280,9 @@ const Operator = ({ user }) => {
               onClick={() => setShowPassModal(true)}
               disabled={updating}
             >
-              Solicitar senha
+              {updating ? (
+                <CircularProgress size={25} />
+              ) : "Solicitar senha"}
             </ButtonRound>
           </Grid>
         )}

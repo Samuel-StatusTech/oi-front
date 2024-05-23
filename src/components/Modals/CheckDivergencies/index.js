@@ -14,14 +14,7 @@ import useStyles from "../../../global/styles"
 import csvtojson from "csvtojson"
 import { formatMoney } from '../../../utils/toolbox/formatMoney'
 
-const ModalCheck = ({
-  show,
-  finish,
-  closeFn,
-  urlWithFilters,
-  dates,
-  autoTotal,
-}) => {
+const ModalCheck = ({ show, finish, closeFn, urlWithFilters, dates, autoTotal, devices }) => {
   const styles = useStyles()
 
   const [pagData, setPagData] = useState(null)
@@ -221,8 +214,17 @@ const ModalCheck = ({
         if (p.machineData.length > 0) {
           const machInfo = JSON.parse(p.machineData)
           if (machInfo) {
+
             const machineSerial = machInfo.terminalSerialNumber
-            if (!codes.includes(machineSerial)) codes.push(machineSerial)
+            if (!codes.includes(machineSerial)) {
+              if (devices.length === 0) {
+                codes.push(machineSerial)
+              } else {
+                if (devices.some(d => machineSerial.includes(d.code))) {
+                  codes.push(machineSerial)
+                }
+              }
+            }
           }
         }
       })
@@ -248,6 +250,7 @@ const ModalCheck = ({
         Tipo_Pagamento: a.Tipo_Pagamento,
         Data_Transacao: a.Data_Transacao,
         Valor_Bruto: parseBRL(parsePagMoney(a.Valor_Bruto)),
+        Serial_Leitor: a.Serial_Leitor,
       })
     })
 
@@ -381,6 +384,9 @@ const ModalCheck = ({
       const filteredBack = filterBackData(backData)
 
       if (backData.length > 0 && pagData.data.length > 0) {
+
+        console.log("FilteredBack", filteredBack)
+
         const cancelledData = backData.filter(
           (t) => t.status === "cancelamento"
         )

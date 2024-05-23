@@ -33,7 +33,7 @@ const Operator = ({ user }) => {
   const { idOperator } = useParams()
   const [errorsVerify, setErrorsVerify] = useState({})
   const [resetPassword, setResetPassword] = useState(null)
-  const [action] = useState(idOperator === "new")
+  const [,] = useState(idOperator === "new")
   const [loading, setLoading] = useState(true)
   const [buttonLoading, setButtonLoading] = useState(false)
 
@@ -63,6 +63,7 @@ const Operator = ({ user }) => {
   const [allowCourtesy, setAllowCourtesy] = useState(false)
   const [allowDuplicate, setAllowDuplicate] = useState(false)
   const [isWaiter, setIsWaiter] = useState(false)
+  const [isNeedPassword, setIsNeedPassword] = useState(true)
   const [hasCashless, setHasCashless] = useState(false)
   const [printReceipt, setPrintReceipt] = useState(false)
   const [allowRefound, setAllowRefound] = useState(false)
@@ -84,7 +85,6 @@ const Operator = ({ user }) => {
 
   const hasCashlessConf = async (user) => {
     if (user && user.uid) {
-      console.log(user.uid)
       const clientKey = (
         await firebase
           .database()
@@ -142,6 +142,7 @@ const Operator = ({ user }) => {
       setAllowRefound(operator.allow_refound)
       setAllowCashbackCashless(operator.allow_cashback_cashless)
       setDeviceCode(operator.device_code)
+      setIsNeedPassword(operator.isNeedPassword)
 
       setLoading(false)
     } else if (idOperator !== "new") {
@@ -156,7 +157,7 @@ const Operator = ({ user }) => {
             setUsername(operator.username)
             if (operator.photo && operator.photo.length > 0)
               setPhoto(operator.photo)
-
+            
             setRawList(list)
 
             setStatus(Boolean(operator.status))
@@ -177,6 +178,7 @@ const Operator = ({ user }) => {
             setAllowCourtesy(Boolean(operator.allow_courtesy))
             setAllowDuplicate(Boolean(operator.allow_duplicate))
             setIsWaiter(Boolean(operator.is_waiter))
+            setIsNeedPassword(Boolean(operator.isNeedPassword))
             if (operator.has_service_tax !== null) {
               setHasServiceTax(Boolean(operator.has_service_tax))
             } else {
@@ -273,13 +275,13 @@ const Operator = ({ user }) => {
     if (hasCashless) formData.append("has_cashless", +hasCashless)
     if (printReceipt) formData.append("print_receipt", +printReceipt)
     if (allowRefound) formData.append("allow_refound", +allowRefound)
+    if (isNeedPassword) formData.append("isNeedPassword", +isNeedPassword)
     if (allowCashbackCashless)
       formData.append("allow_cashback_cashless", +allowCashbackCashless)
     formData.append("has_service_tax", +hasServiceTax)
     formData.append("service_tax", hasServiceTax ? serviceTax : 0)
     formData.append("print_mode", printMode)
     formData.append("device_code", deviceCode)
-    console.log(productList.map((p) => p.id))
     formData.append("products", JSON.stringify(productList.map((p) => p.id)))
 
     return formData
@@ -374,17 +376,9 @@ const Operator = ({ user }) => {
     try {
       setButtonLoading(true)
       if (verifyWaiterTax() || verifyInputs())
-        throw { message: "Um ou mais campos possui erro!" }
+        throw new Error("Um ou mais campos possui erro!")
 
-      // "Taxa garçom product - logic"
-      // 1. Verificar se hasServiceTax
       if (hasServiceTax) {
-        // 2. Verificar se existe produto "Taxa garçom"
-
-        // 3. Caso não, cadastrar produto (e grupo)
-
-        console.log("All prods", allProds)
-        console.log("prodsGroups", prodsGroups)
 
         if (!allProds.find((p) => p.name.includes("Taxa Garçom"))) {
           const waiterGroup = prodsGroups.find((g) =>
@@ -413,8 +407,6 @@ const Operator = ({ user }) => {
             })
           }
         }
-
-        // 4. Caso sim, não fazer nada
       }
 
       if (idOperator === "new" || idOperator === "clone") {
@@ -442,34 +434,33 @@ const Operator = ({ user }) => {
   const isEmpty = (str) => {
     return !str || str.length === 0
   }
+
   const nameInputVerify = (name) => {
-    if (isEmpty(name))
-      return (errorsVerify.name = "É necessário preencher este campo")
-    //if (!/^[a-zA-Z ]*$/.test(name)) return (errorsVerify.name = 'Esse campo só aceita letras.');
-    errorsVerify.name = null
-    return false
+    if (isEmpty(name)) return setErrorsVerify({ ...errorsVerify, name: "É necessário preencher este campo" })
+    else return setErrorsVerify({ ...errorsVerify, name: null })
   }
+  
   const usernameInputVerify = (username) => {
-    if (!/^[a-z]{1}(\w)+$/.test(username))
-      return (errorsVerify.username =
-        "Esse campo somente aceita letras e números. (Mín. 2 caracteres)")
-    errorsVerify.username = null
-    return false
+    if (!/^[a-z]{1}(\w)+$/.test(username)) {
+      return setErrorsVerify({ ...errorsVerify, username: "Esse campo somente aceita letras e números. (Mín. 2 caracteres)" })
+    } else return setErrorsVerify({ ...errorsVerify, username: null })
+
   }
+  
   const passwordInputVerify = (password) => {
     if (!/^\S{4,}/.test(password))
-      return (errorsVerify.password = "Mínimo 4 caracteres")
+      return setErrorsVerify({ ...errorsVerify, password: "Mínimo 4 caracteres" })
     if (!/^\S*$/i.test(password))
-      return (errorsVerify.password = "Não pode espaço em branco no campo")
-    errorsVerify.password = null
-    return false
+      return setErrorsVerify({ ...errorsVerify, password: "Não pode espaço em branco no campo" })
+
+    return setErrorsVerify({ ...errorsVerify, password: null })
   }
 
   const serviceTaxInputVerify = (serviceTax) => {
     if (!/^[0-9]{1,3}/i.test(serviceTax))
       return (errorsVerify.serviceTax = "Valor Inválido.")
-    errorsVerify.serviceTax = null
-    return false
+
+    return setErrorsVerify({ ...errorsVerify, serviceTax: null })
   }
 
   const handleImage = (data) => {
@@ -491,6 +482,10 @@ const Operator = ({ user }) => {
 
   return (
     <>
+      <ModalResetPassword
+        id={resetPassword}
+        onClose={() => setResetPassword(null)}
+      />
       <form>
         <Card>
           <CardContent>
@@ -828,7 +823,7 @@ const Operator = ({ user }) => {
                 </TextField>
               </Grid>
 
-              {printMode == "recibo" && (
+              {printMode === "recibo" && (
                 <Grid item>
                   <FormControlLabel
                     label="Imprimir 2 Vias do Recibo"
@@ -919,6 +914,19 @@ const Operator = ({ user }) => {
                         <GreenSwitch
                           checked={allowDuplicate}
                           onChange={(e) => setAllowDuplicate(e.target.checked)}
+                        />
+                      }
+                    />
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      label="Solicitar senha"
+                      name="isWaiter"
+                      value={isNeedPassword}
+                      control={
+                        <GreenSwitch
+                          checked={isNeedPassword}
+                          onChange={(e) => setIsNeedPassword(e.target.checked)}
                         />
                       }
                     />
@@ -1044,10 +1052,6 @@ const Operator = ({ user }) => {
           </CardContent>
         </Card>
       </form>
-      <ModalResetPassword
-        id={resetPassword}
-        onClose={() => setResetPassword(null)}
-      />
     </>
   )
 }

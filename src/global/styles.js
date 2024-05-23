@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core';
 
 
-const colors = {
+export const colors = {
   blue: { color: '#3B94FF' },
   ligthBlue: { color: '#4FC3F7' },
   lightGray: { color: '#B4B4B4' },

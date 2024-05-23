@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Button } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import EaseGrid from '../../../components/EaseGrid';
 import ButtonRound from '../../../components/ButtonRound';
 import Api from '../../../api';
 import StatusColumn from '../../../components/EaseGrid/Columns/Status';
 
-const Device = () => {
+const Device = ({ user }) => {
   const history = useHistory();
   const [data, setData] = useState([]);
   const columns = [
@@ -42,7 +43,13 @@ const Device = () => {
     Api.get('/device/getList')
       .then(({ data }) => {
         if (data.success) {
-          setData(data.devices.sort((a,b) => {
+          setData(data.devices
+            .filter(device => {
+              if (!(user.role === "master" || user.role === "admin")) {
+                return (device.name !== "NEUTRO")
+              } else return device
+            })
+            .sort((a,b) => {
             const dataA = new Date(a.created_at).getTime();
             const dataB = new Date(b.created_at).getTime();
             return dataA > dataB ? -1: dataA < dataB? 1: 0;
@@ -87,4 +94,6 @@ const Device = () => {
   );
 };
 
-export default Device;
+const mapStateToProps = ({ user }) => ({ user });
+
+export default connect(mapStateToProps)(Device);
