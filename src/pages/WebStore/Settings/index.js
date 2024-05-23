@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
+import { KeyboardDatePicker, TimePicker } from '@material-ui/pickers'
 import {
   Grid,
   TextField,
@@ -10,12 +11,14 @@ import {
   CircularProgress,
   Card,
   CardContent
-} from '@material-ui/core';
-import { connect } from 'react-redux';
+} from '@material-ui/core'
+import { connect } from 'react-redux'
 import { formatDate } from '../../../utils/date'
+import 'react-quill/dist/quill.snow.css'
 
-import { GreenSwitch, StatusSwitch } from '../../../components/Switch';
-import ImagePicker from '../../../components/ImagePicker';
+import { GreenSwitch, StatusSwitch } from '../../../components/Switch'
+import ImagePicker from '../../../components/ImagePicker'
+import ReactQuill from 'react-quill'
 
 const Manager = ({ events, event, user }) => {
 
@@ -51,8 +54,8 @@ const Manager = ({ events, event, user }) => {
   const [keepOnline, setKeepOnline] = useState(false);
   const [progEnd, setProgEnd] = useState(false);
   const [end, setEnd] = useState({
-    date: null,
-    hour: null,
+    date: new Date(),
+    hour: new Date(),
   })
 
   useEffect(() => {
@@ -95,7 +98,7 @@ const Manager = ({ events, event, user }) => {
       // emailInputVerify(email) ||
       // codeInputVerify(code) ||
       // descriptionInputVerify(description)
-      false
+      true
     );
   };
 
@@ -176,7 +179,7 @@ const Manager = ({ events, event, user }) => {
               <Divider />
             </Grid>
 
-            <Grid item xl={12} lg={12} md={6} sm={12} xs={12}>
+            <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
               <Grid container spacing={2}>
                 <Grid item xl={2} lg={2} xs={12} direction='column'>
                   <Typography>Nome</Typography>
@@ -208,127 +211,124 @@ const Manager = ({ events, event, user }) => {
                   <Typography>{eventData.state}</Typography>
                 </Grid>
               </Grid>
+              <Divider />
             </Grid>
 
-            <Grid item xl={12} lg={12} md={6} sm={12} xs={12}>
-              <Grid container spacing={2}>
-                <Grid item xl={6} lg={6} xs={12}>
-                  <TextField
-                    label='Endereço'
-                    name='address'
-                    value={address}
-                    onChange={(e) => {
-                      const value = e.target.value.slice(0, 80);
-                      setAddress(value);
-                    }}
-                    error={Boolean(errorsVerify?.address)}
-                    helperText={errorsVerify?.address}
-                    variant='outlined'
-                    size='small'
-                    fullWidth
-                  />
-                </Grid>
+            <Grid item container spacing={2} direction='row-reverse'>
 
-                <Grid item xl={6} lg={6} xs={12}>
-                  <TextField
-                    multiline
-                    label='Descrição'
-                    name='description'
-                    value={description}
-                    onChange={(e) => {
-                      const value = e.target.value.slice(0, 80);
-                      setDescription(value);
-                    }}
-                    error={Boolean(errorsVerify?.description)}
-                    helperText={errorsVerify?.description}
-                    variant='outlined'
-                    size='small'
-                    fullWidth
-                    minRows={4}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
+              {/* right side */}
+              <Grid item xl={6} lg={6} md={12} sm={12} xs={12} style={{ height: "100%" }}>
 
-            <Grid container spacing={2}>
-              <Grid item>
-                <FormControlLabel
-                  label='Possui classificação etária'
-                  name='target'
-                  value={target}
-                  control={
-                    <GreenSwitch
-                      checked={target}
-                      onChange={(e) => setTarget(e.target.checked)}
+                <Grid container spacing={2} direction='column' style={{ height: "100%" }}>
+
+                  <Grid item xl={12} lg={12} xs={12} style={{ flex: "unset" }}>
+                    <Typography style={{ fontWeight: 'bold' }}>Descrição</Typography>
+                  </Grid>
+
+                  <Grid item xl={12} lg={12} xs={12} style={{ flex: 1 }}>
+                    <ReactQuill
+                      theme="snow"
+                      value={description}
+                      onChange={setDescription}
+                      style={{
+                        borderRadius: 6,
+                        height: "100%",
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
                     />
-                  }
-                />
-              </Grid>
-              {target && (
-                <Grid item>
-                  <TextField
-                    label='Idade'
-                    name='targetAge'
-                    value={targetAge}
-                    onChange={(e) => {
-                      const value = e.target.value.slice(0, 80);
-                      setTargetAge(value);
-                    }}
-                    error={Boolean(errorsVerify?.targetAge)}
-                    helperText={errorsVerify?.targetAge}
-                    variant='outlined'
-                    size='small'
-                    fullWidth
-                  />
+                  </Grid>
                 </Grid>
-              )}
-            </Grid>
+              </Grid>
 
-            <Grid
-              item
-              xl={12}
-              lg={12}
-              md={6}
-              sm={12}
-              xs={12}
-              style={{ marginBottom: 12 }}
-            >
-              <Grid container direction="row" spacing={2}>
-                <Grid
-                  style={{ textAlign: "center" }}
-                  item
-                  xl={3}
-                  lg={4}
-                  md={6}
-                  sm={6}
-                  xs={6}
-                >
-                  <ImagePicker
-                    label="Imagem do Evento"
-                    name="image"
-                    image={image}
-                    setImage={handleImage}
-                  />
-                  <small>Tamanho: 262×100 (png)</small>
-                </Grid>
-                <Grid
-                  style={{ textAlign: "center" }}
-                  item
-                  xl={3}
-                  lg={4}
-                  md={6}
-                  sm={6}
-                  xs={6}
-                >
-                  <ImagePicker
-                    label="Imagem do Layout/Mapa do Evento"
-                    name="layout"
-                    image={eventLayout}
-                    setImage={handleImageLayout}
-                  />
-                  <small>Tamanho: 262×100 (png)</small>
+              {/* left side */}
+              <Grid item xl={6} lg={6} md={12} sm={12} xs={12}>
+                <Grid container spacing={2} direction='column'>
+
+                  <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
+                    <Typography style={{ fontWeight: 'bold' }}>Informações gerais</Typography>
+                  </Grid>
+
+                  <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
+                    <Grid container spacing={2}>
+                      <Grid item xl={12} lg={12} xs={12}>
+                        <TextField
+                          label='Endereço'
+                          name='address'
+                          value={address}
+                          onChange={(e) => {
+                            const value = e.target.value.slice(0, 80);
+                            setAddress(value);
+                          }}
+                          error={Boolean(errorsVerify?.address)}
+                          helperText={errorsVerify?.address}
+                          variant='outlined'
+                          size='small'
+                          fullWidth
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid item>
+                      <FormControlLabel
+                        label='Possui classificação etária'
+                        name='target'
+                        value={target}
+                        control={
+                          <GreenSwitch
+                            checked={target}
+                            onChange={(e) => setTarget(e.target.checked)}
+                          />
+                        }
+                      />
+                    </Grid>
+                    {target && (
+                      <Grid item>
+                        <TextField
+                          label='Idade'
+                          name='targetAge'
+                          value={targetAge}
+                          onChange={(e) => {
+                            const value = e.target.value.slice(0, 80);
+                            setTargetAge(value);
+                          }}
+                          error={Boolean(errorsVerify?.targetAge)}
+                          helperText={errorsVerify?.targetAge}
+                          variant='outlined'
+                          size='small'
+                          fullWidth
+                        />
+                      </Grid>
+                    )}
+                  </Grid>
+
+                  <Grid item xl={12} lg={12} md={6} sm={12} xs={12} style={{ marginBottom: 12 }}>
+                    <Grid container direction="row" spacing={2}>
+                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ textAlign: "center" }}>
+                        <ImagePicker
+                          label="Imagem do Evento"
+                          name="image"
+                          image={image}
+                          setImage={handleImage}
+                        />
+                        <small>Tamanho: 262×100 (png)</small>
+                      </Grid>
+                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ textAlign: "center" }}>
+                        <ImagePicker
+                          label="Imagem do Layout/Mapa do Evento"
+                          name="layout"
+                          image={eventLayout}
+                          setImage={handleImageLayout}
+                        />
+                        <small>Tamanho: 262×100 (png)</small>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                  </Grid>
                 </Grid>
               </Grid>
+
             </Grid>
 
             <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -354,7 +354,7 @@ const Manager = ({ events, event, user }) => {
               </Grid>
             </Grid>
 
-            <Grid container spacing={2}>
+            <Grid item container spacing={2}>
               <Grid item>
                 <FormControlLabel
                   label='Possui encerramento programado'
@@ -369,30 +369,39 @@ const Manager = ({ events, event, user }) => {
                 />
               </Grid>
               {progEnd && (
-                <Grid item>
-                  <TextField
-                    name='end.date'
+                <Grid item lg={2}>
+                  <KeyboardDatePicker
+                    autoOk
+                    label='Data'
                     value={end.date}
-                    onChange={(e) => handleDateMask(e.target.value)}
-                    variant='outlined'
-                    size='small'
-                    type='date'
+                    onChange={handleDateMask}
+                    minDate={new Date()}
+                    minDateMessage='A data final deve ser maior que hoje'
+                    inputVariant='outlined'
+                    variant='inline'
+                    format='DD/MM/YYYY'
                     fullWidth
-                    placeholder={"xx/xx/xxxx"}
+                    size='small'
+                    style={{ backgroundColor: '#fff' }}
                   />
                 </Grid>
               )}
               {progEnd && (
-                <Grid item>
-                  <TextField
-                    name='end.hour'
+                <Grid item lg={2}>
+                  <TimePicker
+                    autoOk
+                    ampm={false}
+                    label='Hora'
                     value={end.hour}
-                    onChange={(e) => handleHourMask(e.target.value)}
-                    variant='outlined'
+                    onChange={handleHourMask}
+                    minDate={new Date()}
+                    minDateMessage='A data final deve ser maior que hoje'
+                    inputVariant='outlined'
+                    variant='inline'
+                    format='HH:mm'
                     size='small'
                     fullWidth
-                    type='time'
-                    placeholder={"xx:xx"}
+                    style={{ backgroundColor: '#fff' }}
                   />
                 </Grid>
               )}
@@ -414,6 +423,7 @@ const Manager = ({ events, event, user }) => {
                 </Grid>
               </Grid>
             </Grid>
+
           </Grid>
         </CardContent>
       </Card>

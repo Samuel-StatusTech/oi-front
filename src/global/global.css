@@ -2,6 +2,17 @@
 	font-family: 'Open Sans', Roboto, 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
+.ql-toolbar {
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+}
+
+.ql-container {
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	flex: 1;
+}
+
 iframe {
 	display: none;
 }
