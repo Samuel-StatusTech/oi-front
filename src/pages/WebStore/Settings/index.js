@@ -113,7 +113,7 @@ const Manager = ({ events, event, user }) => {
   };
 
   const handleCancel = () => {
-    history.push('/dashboard/manager');
+    history.push('/dashboard/webstore');
   };
 
   const handleDateMask = (val) => {
