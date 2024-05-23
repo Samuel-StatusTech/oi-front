@@ -13,7 +13,6 @@ const WSOverview = ({ event }) => {
   const { user } = useStore(store).getState("user")
 
   const [showReleaseModal, setShowReleaseModal] = useState(false)
-  const [singleInfo, setSingleInfo] = useState(null)
   const [releases, setReleases] = useState([])
 
   const deleteRelease = (rInfo) => {
@@ -28,7 +27,6 @@ const WSOverview = ({ event }) => {
   }
 
   const editSingle = (info) => {
-    setSingleInfo(info)
     setShowReleaseModal(true)
   }
 
@@ -59,7 +57,7 @@ const WSOverview = ({ event }) => {
         }
       })
     }
-  }, [user])
+  }, [event, user])
 
   return (
     <div

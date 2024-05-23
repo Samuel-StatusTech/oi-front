@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import {
   Grid,
   Button,
@@ -13,12 +13,8 @@ import {
   DialogActions,
   DialogContent,
 } from "@material-ui/core"
-import GridIcon from "@material-ui/icons/Apps"
-import ListIcon from "@material-ui/icons/List"
 import { useHistory } from "react-router-dom"
-import csvtojson from "csvtojson"
 
-import CardProduct from "../../../components/Card/product"
 import InputMoney from "../../../components/Input/Money"
 import EaseGrid from "../../../components/EaseGrid"
 import ButtonRound from "../../../components/ButtonRound"
@@ -28,7 +24,6 @@ import { format } from "currency-formatter"
 import * as txt from "./text"
 import * as fn from "./utils"
 
-import { Favorite, FavoriteBorder, FlashOn } from "@material-ui/icons/"
 import productsIcon from "../../../assets/icons/ic_produtos.svg"
 import useStyles from "../../../global/styles"
 
@@ -36,26 +31,21 @@ const TicketsPage = () => {
   const styles = useStyles()
 
   const history = useHistory()
-  const tableRef = useRef(null)
   const [data, setData] = useState([])
   const [search, setSearch] = useState("")
-  const [type, setType] = useState("todos")
+  const [type] = useState("todos")
   const [group, setGroup] = useState("todos")
   const [status, setStatus] = useState("todos")
   const [groupList, setGroupList] = useState([])
-  const [isGrid, setGrid] = useState(true)
-  const [placeholder, setPlaceholder] = useState(0)
   const [loading, setLoading] = useState(false)
   const [newData, setNewData] = useState(null)
   const [errData, setErrData] = useState([])
   const [confirmDialogShow, setConfirmDialogShow] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
-  const fileinput = useRef(null)
   const [dialogMessage, setDialogMessage] = useState(
     "Deseja realmente cadastrar esses produtos?"
   )
   const [isRegisterMade, setIsRegisterMade] = useState(false)
-  const [hasImportedGroup, setHasImportedGroup] = useState(false)
 
   const columns = [
     {
@@ -117,20 +107,29 @@ const TicketsPage = () => {
   ]
 
   useEffect(() => {
-    Api.get(`/group/getList`).then(async ({ data }) => {
-      const { success, groups } = data
+    Api.get(`/ecommerce/product/getList`).then(async ({ data }) => {
+
+      const { success } = data
 
       if (success) {
+        let groups = []
+
+        data.products.forEach(p => {
+          if (groups.every(g => g.id !== p.group.id) && Boolean(p.group.status)) groups.push(p.group)
+        })
+        setData(data.products
+          .sort((a, b) => (a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase())))
+        )
+        console.log(groups)
+
         setGroupList([
           { id: "todos", name: "Todos" },
-          // { id: "combo", name: "Combos" },
           ...groups
-            .filter(g => g.type === 'ingresso')
             .sort((a, b) => {
-            if (a.name < b.name) return -1
-            if (a.name > b.name) return 1
-            return 0
-          }),
+              if (a.name < b.name) return -1
+              if (a.name > b.name) return 1
+              return 0
+            }),
         ])
       } else {
         alert("Erro ao carregar os grupos")
@@ -138,8 +137,16 @@ const TicketsPage = () => {
     })
   }, [])
 
+  const handleQuery = useCallback(async (props) => {
+    try {
+      fn.handleQuery(props, setData, group, search, status, type)
+    } catch (error) {
+      console.log(error)
+    }
+  }, [group, search, status, type])
+
   useEffect(() => {
-    if (groupList.length == 0) return
+    if (groupList.length === 0) return
 
     const group = localStorage.getItem("GROUP_SAVED")
 
@@ -149,11 +156,7 @@ const TicketsPage = () => {
     } else {
       handleQuery({})
     }
-  }, [groupList])
-
-  const handleCreateSimple = () => {
-    history.push("/dashboard/product/simple/new")
-  }
+  }, [groupList, handleQuery])
 
   const disabelAll = async () => {
     if (loading) {
@@ -170,31 +173,6 @@ const TicketsPage = () => {
       handleQuery({})
       setLoading(false)
     }
-  }
-
-  const handleQuery = async (props) => {
-    try {
-      fn.handleQuery(props, setData, group, search, status, type)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  var time
-
-  const handleType = (e) => {
-    setType(e.target.value)
-    setGroup("todos")
-    localStorage.setItem("GROUP_SAVED", "todos")
-
-    if (time) {
-      clearTimeout(time)
-      time = null
-    }
-
-    time = setTimeout(() => {
-      handleQuery({ type: e.target.value, group: "todos" })
-    }, 100)
   }
 
   const handleGroup = (e) => {
@@ -256,9 +234,7 @@ const TicketsPage = () => {
       })
     )
   }
-  const forceUpdate = () => {
-    setPlaceholder((o) => o + 1)
-  }
+
   const editType = {
     combo: "/dashboard/product/combo",
     complement: "/dashboard/product/complement",
@@ -266,7 +242,7 @@ const TicketsPage = () => {
   const handleEdit = (row) => {
     const url = editType?.[row.type]
       ? `${editType[row.type]}/${row.id}`
-      : `/dashboard/product/simple/${row.id}`
+      : `/dashboard/webstore/tickets/simple/${row.id}`
     history.push(url)
   }
 
@@ -356,8 +332,6 @@ const TicketsPage = () => {
       await new Promise(async (resolve) => {
         let noAdded = fData.err
         let added = 0
-        let importedCombos = null
-        let combos = []
 
         for (let k = 0; k < fData.arr.length; k++) {
           const i = fData.arr[k]
@@ -366,12 +340,9 @@ const TicketsPage = () => {
           await Api.post(`/product/createProduct`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           })
-            .then(() => {
-              added = added + 1
-            })
-            .catch(() => {
-              noAdded.push(i)
-            })
+            // eslint-disable-next-line no-loop-func
+            .then(() => { added = added + 1 })
+            .catch(() => { noAdded.push(i) })
         }
 
         resolve({ added, noAdded })
@@ -395,107 +366,6 @@ const TicketsPage = () => {
       setIsRegistering(false)
       setIsRegisterMade(true)
     }
-  }
-
-  // upload
-
-  // 3
-  const extractCashValue = (valueStr) => {
-    const realValue = valueStr.substring(3, valueStr.length).replace(",", ".")
-
-    const cleanedNumber = `${realValue
-      .substring(0, realValue.length - 3)
-      .replace(".", "")}${realValue.substring(
-        realValue.length - 3,
-        realValue.length
-      )}`
-    const readableValue = Number(cleanedNumber) * 100
-    return readableValue
-  }
-
-  // 2
-  const getOnlyNeeded = (arr) => {
-    let parsed = []
-
-    arr.forEach((item) => {
-      parsed.push({
-        Nome: item.Nome,
-        Tipo: item.Tipo,
-        Grupo: item.Grupo,
-        Preco: extractCashValue(item.Preco),
-      })
-    })
-
-    return parsed
-  }
-
-  // 1
-  const loadNewData = async (e) => {
-    const file = e.target.files[0]
-    const reader = new FileReader()
-
-    reader.onload = async (f) => {
-      const text = f.target.result
-      const data = await csvtojson({
-        delimiter: [";", "\t"],
-        encoding: "utf-8",
-      }).fromString(text)
-      const neededInfo = getOnlyNeeded(data)
-      setNewData(neededInfo)
-      setConfirmDialogShow(true)
-    }
-
-    reader.readAsText(file, "utf-8")
-  }
-
-  const triggerInputClick = () => {
-    if (fileinput.current) fileinput.current.click()
-  }
-
-  const padValue = (number) => String(number).padStart(2, "0")
-
-  const getDateString = () => {
-    const date = new Date()
-    const d = {
-      year: String(date.getFullYear()),
-      month: padValue(date.getMonth() + 1),
-      day: padValue(date.getDate()),
-    }
-    const h = {
-      hour: padValue(date.getHours()),
-      mins: padValue(date.getMinutes()),
-      secs: padValue(date.getSeconds()),
-    }
-    return `${d.year}-${d.month}-${d.day}_` + `${h.hour}-${h.mins}-${h.secs}`
-  }
-
-  // download
-
-  const parseDataToDownload = () => {
-    let rows = []
-    data.forEach((d) => {
-      rows.push([
-        d.name ?? "Não definido",
-        d.type ?? "Não definido",
-        d.group && d.group.name ? d.group.name : "Não definido",
-        `${format(d.price_sell / 100, { code: "BRL" })}` ?? "Não definido",
-      ])
-    })
-
-    const csvContent =
-      "data:text/csv;charset=UTF-8," +
-      `${["Nome", "Tipo", "Grupo", "Preco"].join(";")}\n` +
-      rows.map((r) => r.join(";")).join("\n")
-
-    return encodeURI(csvContent)
-  }
-
-  const exportData = async () => {
-    const uri = parseDataToDownload()
-    const aEl = document.createElement("a")
-    aEl.setAttribute("href", uri)
-    aEl.setAttribute("download", `Produtos_${getDateString()}.csv`)
-    aEl.click()
   }
 
   const handleCloseBtn = () => {
@@ -623,38 +493,38 @@ const TicketsPage = () => {
             hasSearch={false}
             actionsRight={true}
             actions={[
-              (rowData) => ({
-                icon: () =>
-                  rowData.favorite ? (
-                    <Favorite style={{ color: "#F50057" }} />
-                  ) : (
-                    <FavoriteBorder />
-                  ),
-                tooltip: "Favoritar",
-                onClick: async (event, rowData) => {
-                  try {
-                    const favorite = rowData.favorite ? 0 : 1
-                    await Api.patch(`/product/updateFavorite/${rowData.id}`, {
-                      type: rowData.type,
-                      favorite,
-                    })
-                    const newData = [...data]
-                    newData[rowData.tableData.id].favorite = favorite
-                    setData(newData)
-                  } catch (error) {
-                    alert(error?.message ?? "Ocorreu um erro ao favoritar")
-                  }
-                },
-                hidden: rowData.type === "complement",
-              }),
-              {
-                icon: () => <FlashOn />,
-                tooltip: "Edição rápida",
-                onClick: (event, rowData) => {
-                  rowData.tableData.editing = "update"
-                  forceUpdate()
-                },
-              },
+              // (rowData) => ({
+              //   icon: () =>
+              //     rowData.favorite ? (
+              //       <Favorite style={{ color: "#F50057" }} />
+              //     ) : (
+              //       <FavoriteBorder />
+              //     ),
+              //   tooltip: "Favoritar",
+              //   onClick: async (event, rowData) => {
+              //     try {
+              //       const favorite = rowData.favorite ? 0 : 1
+              //       await Api.patch(`/product/updateFavorite/${rowData.id}`, {
+              //         type: rowData.type,
+              //         favorite,
+              //       })
+              //       const newData = [...data]
+              //       newData[rowData.tableData.id].favorite = favorite
+              //       setData(newData)
+              //     } catch (error) {
+              //       alert(error?.message ?? "Ocorreu um erro ao favoritar")
+              //     }
+              //   },
+              //   hidden: rowData.type === "complement",
+              // }),
+              // {
+              //   icon: () => <FlashOn />,
+              //   tooltip: "Edição rápida",
+              //   onClick: (event, rowData) => {
+              //     rowData.tableData.editing = "update"
+              //     forceUpdate()
+              //   },
+              // },
               {
                 icon: () => (
                   <Button variant="outlined" color="primary" size="small">

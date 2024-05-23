@@ -12,7 +12,7 @@ export const handleQuery = async (
   const selectedGroup = props.group ? props.group : group
   const searchText = props.search !== undefined ? props.search : search
   const selectedStatus = props.status ? props.status : status
-  const url = `/product/getList?type=${props.type ? props.type : type}${
+  const url = `/ecommerce/product/getList?type=${props.type ? props.type : type}${
     selectedGroup !== "todos" ? "&group=" + selectedGroup : ""
   }${searchText && searchText.length > 0 ? `&search=${searchText}` : ""}${
     selectedStatus !== "todos" ? `&status=${selectedStatus}` : ""

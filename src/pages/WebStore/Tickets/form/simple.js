@@ -11,8 +11,6 @@ import {
   Card,
   Checkbox,
   MenuItem,
-  Typography,
-  Divider,
   withStyles,
   Dialog,
   DialogTitle,
@@ -25,15 +23,13 @@ import FavoriteBorder from '@material-ui/icons/FavoriteBorder';
 
 import Api from '../../../../api';
 import InputMoney from '../../../../components/Input/Money';
-import Tooltip from '../../../../components/Tooltip';
-import ImagePicker from '../../../../components/ImagePicker';
 
 const SimpleProduct = ({ user }) => {
   const history = useHistory();
   const { idProduct } = useParams();
-  const { handleSubmit, register, errors } = useForm();
+  const { handleSubmit, register } = useForm();
   const [action] = useState(idProduct === 'new');
-  const [errorsVerify, setErrorsVerify] = useState({});
+  const [errorsVerify] = useState({});
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [groupList, setGroupList] = useState([]);
@@ -312,7 +308,7 @@ const SimpleProduct = ({ user }) => {
 
   // eslint-disable-next-line
   const handleCancel = useCallback(() => {
-    history.push('/dashboard/product');
+    history.push('/dashboard/webstore/tickets');
   });
 
   if (loading) {
@@ -420,10 +416,11 @@ const SimpleProduct = ({ user }) => {
           }}>
 
             <Grid container spacing={2}>
-              <Grid item lg={12} md={12} sm={12} xs={12}>
+              <Grid item lg={8} md={8} sm={12} xs={12}>
                 <Grid container spacing={2} direction='row'>
-                  <Grid item lg={4} md={6} sm={12} xs={12}>
+                  <Grid item lg={8} md={8} sm={12} xs={12}>
                     <Grid container spacing={2}>
+
                       <Grid item xs={12}>
                         <Grid container>
                           <Grid item xs={4}>
@@ -450,9 +447,11 @@ const SimpleProduct = ({ user }) => {
                           </Grid>
                         </Grid>
                       </Grid>
+
                       <Grid item xs={12}>
                         <Grid container spacing={2}>
-                          <Grid item md={8} xs={12}>
+
+                          <Grid item md={6} xs={12}>
                             <TextField
                               name='name'
                               value={name}
@@ -469,30 +468,20 @@ const SimpleProduct = ({ user }) => {
                               fullWidth
                             />
                           </Grid>
-                          <Grid item md={4} xs={12}>
-                            <div style={{
-                              border: "1px solid #CCC",
-                              borderRadius: 4,
-                              padding: "10px 14px",
-                              position: "relative"
-                            }}>
-                              <span style={{
-                                position: "absolute",
-                                backgroundColor: "#FFF",
-                                top: 0,
-                                left: 12,
-                                transform: "translateY(-50%)",
-                                fontSize: 12,
-                                color: "#888",
-                                display: "block",
-                                padding: 2
-                              }}>Tipo</span>
-                              <span style={{
-                                // 
-                              }}>Ingresso</span>
-                            </div>
+
+                          <Grid item xs={6}>
+                            <InputMoney
+                              name='priceSell'
+                              value={priceSell}
+                              onChange={({ value }) => setPriceSell(value)}
+                              label='Preço de venda'
+                              variant='outlined'
+                              disabled={hasVariable || hasCourtesy}
+                              size='small'
+                              fullWidth
+                            />
                           </Grid>
-                          <Grid item xs={12}>
+                          <Grid item lg={6} md={6} sm={12} xs={12}>
                             <TextField
                               name='group'
                               value={group}
@@ -516,400 +505,32 @@ const SimpleProduct = ({ user }) => {
                                 ))}
                             </TextField>
                           </Grid>
+
+                          <Grid item>
+                            <Button variant='outlined' color='primary' onClick={handleNewLot}>
+                              Adicionar lote
+                            </Button>
+                          </Grid>
                         </Grid>
                       </Grid>
                     </Grid>
+
                   </Grid>
                 </Grid>
-              </Grid>
 
-              <Grid item lg={12} md={12} sm={12} xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <InputMoney
-                      name='priceSell'
-                      value={priceSell}
-                      onChange={({ value }) => setPriceSell(value)}
-                      label='Preço de venda'
-                      variant='outlined'
-                      disabled={hasVariable || hasCourtesy}
-                      size='small'
-                      fullWidth
-                    />
+                <Grid item lg={12} md={12} sm={12} xs={12} style={{ marginTop: 24 }}>
+                  <Grid container spacing={2}>
+                    <Grid item>
+                      <Button variant='outlined' color='secondary' onClick={handleCancel}>
+                        Cancelar
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button type='submit' variant='outlined' color='primary' disabled={!canSave}>
+                        {buttonLoading ? <CircularProgress size={25} /> : 'Salvar'}
+                      </Button>
+                    </Grid>
                   </Grid>
-                  {/* {type === 'bar' ? (
-        <Grid item>
-          <InputMoney
-            name='priceCost'
-            value={priceCost}
-            onChange={({ value }) => setPriceCost(value)}
-            label='Preço de custo'
-            variant='outlined'
-            disabled={hasVariable || hasCourtesy}
-            size='small'
-            fullWidth
-          />
-        </Grid>
-      ) : null} */}
-
-                  {/* <Grid item>
-        <Grid container alignItems='center'>
-          <Grid item>
-            <FormControlLabel
-              name='hasVariable'
-              control={
-                <GreenSwitch
-                  checked={hasVariable}
-                  onChange={(e) => setHasVariable(e.target.checked)}
-                  disabled={hasCourtesy}
-                />
-              }
-              label='Valor variável'
-              inputRef={register}
-            />
-          </Grid>
-          <Grid item>
-            <Tooltip
-              title='O valor de venda será variável e deverá ser digitado a cada venda'
-              placement='right'
-            />
-          </Grid>
-        </Grid>
-      </Grid> */}
-
-                  <Grid item>
-                    <FormControlLabel
-                      name='hasCourtesy'
-                      control={<GreenSwitch checked={hasCourtesy} onChange={(e) => setHasCourtesy(e.target.checked)} />}
-                      label='Produto cortesia'
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              <Grid item lg={12} md={12} sm={12} xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <TextField
-                      value={warehouseType}
-                      onChange={(e) => setWarehouseType(e.target.value)}
-                      label='Estoque'
-                      variant='outlined'
-                      size='small'
-                      fullWidth
-                      select
-                    >
-                      <MenuItem value='controled'>Controlado</MenuItem>
-                      <MenuItem value='notControled'>Não controlado</MenuItem>
-                      <MenuItem value='soldOut'>Esgotado</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    <TextField
-                      name='warehouse'
-                      value={warehouse}
-                      onChange={(e) => setWarehouse(e.target.value)}
-                      label='Estoque Atual'
-                      disabled={!isControlled}
-                      variant='outlined'
-                      type='number'
-                      size='small'
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              {/* <Grid item lg={12} md={12} sm={12} xs={12}>
-    <Typography>Controle de impressão</Typography>
-    <Divider />
-  </Grid>
-
-  <Grid item lg={12} md={12} sm={12} xs={12}>
-    <Grid container spacing={2}>
-      <Grid item>
-        <FormControlLabel
-          name='printTicket'
-          control={<GreenSwitch checked={printTicket} onChange={(e) => setPrintTicket(e.target.checked)} />}
-          label='Imprimir ficha'
-          inputRef={register}
-        />
-      </Grid>
-      <Grid item>
-        <FormControlLabel
-          name='printQrcode'
-          control={<GreenSwitch checked={printQrcode} onChange={(e) => setPrintQrcode(e.target.checked)} />}
-          label='Imprimir QRCode'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-      <Grid item>
-        {type === 'bar' && (
-          <FormControlLabel
-            name='numberCopy'
-            control={<GreenSwitch checked={numberCopy == 2} onChange={(e) => setNumberCopy(e.target.checked ? 2 : 1)} />}
-            label='Imprimir segunda via'
-            inputRef={register}
-            disabled={!printTicket}
-          />
-        )}
-        <FormControlLabel
-          name='printGroup'
-          control={<GreenSwitch checked={printGroup} onChange={(e) => setPrintGroup(e.target.checked)} />}
-          label='Imprimir grupo'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-    </Grid>
-  </Grid>
-
-  <Grid item lg={12} md={12} sm={12} xs={12}>
-    <Grid container spacing={2}>
-      <Grid item>
-        <FormControlLabel
-          name='printLocal'
-          control={<GreenSwitch checked={printLocal} onChange={(e) => setPrintLocal(e.target.checked)} />}
-          label='Imprimir local'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-      <Grid item>
-        <FormControlLabel
-          name='printDate'
-          control={<GreenSwitch checked={printDate} onChange={(e) => setPrintDate(e.target.checked)} />}
-          label='Imprimir data'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-      <Grid item>
-        <FormControlLabel
-          name='printValue'
-          control={<GreenSwitch checked={printValue} onChange={(e) => setPrintValue(e.target.checked)} />}
-          label='Imprimir valor'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-    </Grid>
-  </Grid>
-
-  {type === 'estacionamento' ? (
-    <Grid item>
-      <FormControlLabel
-        name='printPlate'
-        control={<GreenSwitch checked={printPlate} onChange={(e) => setPrintPlate(e.target.checked)} />}
-        label='Imprimir placa'
-        inputRef={register}
-        disabled={!printTicket}
-      />
-    </Grid>
-  ) : null}
-
-  {type === 'ingresso' ? (
-    <Grid item>
-      <FormControlLabel
-        name='hasCut'
-        control={<GreenSwitch checked={hasCut} onChange={(e) => setHasCut(e.target.checked)} />}
-        label='Aviso de corte'
-        inputRef={register}
-        disabled={!printTicket}
-      />
-    </Grid>
-  ) : null}
-
-  <Grid item lg={12} md={12} sm={12} xs={12}>
-    <Grid container spacing={2}>
-      {type === 'bar' && (
-        <Grid item>
-          <Grid container alignItems='center'>
-            <Grid item>
-              <FormControlLabel
-                name='hasControl'
-                control={
-                  <GreenSwitch checked={hasControl} onChange={(e) => setHasControl(e.target.checked)} />
-                }
-                label='Imprime senha de controle'
-                inputRef={register}
-                disabled={!printTicket}
-              />
-            </Grid>
-            <Grid item>
-              <Tooltip
-                title='A cada venda, será impressa no ticket uma senha sequencial para acompanhamento do pedido'
-                placement='right'
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-      )}
-    </Grid>
-  </Grid>
-
-  {type === 'estacionamento' ? (
-    <>
-      <Grid item lg={12} md={12} sm={12} xs={12}>
-        <Grid container spacing={2}>
-          <Grid item>
-            <FormControlLabel
-              name='hasTolerance'
-              control={
-                <GreenSwitch checked={hasTolerance} onChange={(e) => setHasTolerance(e.target.checked)} />
-              }
-              label='Controle de tolerância'
-              inputRef={register}
-            />
-          </Grid>
-          <Grid item>
-            <TextField
-              name='timeTolerance'
-              value={timeTolerance}
-              onChange={(e) =>
-                e.target.value > 0 && e.target.value < 100 ? setTimeTolerance(e.target.value) : null
-              }
-              label='Tempo limite (em minutos)'
-              inputRef={register}
-              variant='outlined'
-              size='small'
-              type='number'
-              disabled={!hasTolerance}
-              fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position='end'>
-                    <Tooltip
-                      title='Inserir quanto tempo (em minutos) esse ticket terá de tolerância '
-                      placement='right'
-                    />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-
-      <Grid item lg={12} md={12} sm={12} xs={12}>
-        <FormControlLabel
-          name='printTolerance'
-          control={
-            <GreenSwitch checked={printTolerance} onChange={(e) => setPrintTolerance(e.target.checked)} />
-          }
-          label='Imprimir tolerância'
-          inputRef={register}
-          disabled={!printTicket}
-        />
-      </Grid>
-
-      <Grid item lg={12} md={12} sm={12} xs={12}>
-        <Grid container spacing={2}>
-          <Grid item>
-            <FormControlLabel
-              name='takeTolerance'
-              control={
-                <GreenSwitch checked={takeTolerance} onChange={(e) => setTakeTolerance(e.target.checked)} />
-              }
-              label='Cobrar após tolerância?'
-              inputRef={register}
-            />
-          </Grid>
-          <Grid item>
-            <InputMoney
-              name='valueTolerance'
-              value={valueTolerance}
-              onChange={({ value }) => setValueTolerance(value)}
-              label='Valor da taxa da tolerância'
-              inputRef={register}
-              // error={Boolean(errors?.valueTolerance)}
-              // helperText={errors?.valueTolerance?.message}
-              variant='outlined'
-              disabled={!takeTolerance}
-              fullWidth
-              size='small'
-            />
-          </Grid>
-        </Grid>
-      </Grid>
-    </>
-  ) : null} */}
-
-              {/* {type === 'bar' ? (
-    <Grid item>
-      <Grid container alignItems='center'>
-        <Grid item>
-          <FormControlLabel
-            name='painelControl'
-            control={
-              <GreenSwitch checked={painelControl} onChange={(e) => setPainelControl(e.target.checked)} />
-            }
-            label='Enviar para o controle de pedidos'
-            inputRef={register}
-            // disabled={!printTicket}
-          />
-        </Grid>
-        <Grid item>
-          <Tooltip
-            title='A cada venda, esse produto irá para a fila de controle de pedidos'
-            placement='right'
-          />
-        </Grid>
-      </Grid>
-    </Grid>
-  ) : null} */}
-
-              <Grid item lg={12} md={12} sm={12} xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <Button variant='outlined' color='secondary' onClick={handleCancel}>
-                      Cancelar
-                    </Button>
-                  </Grid>
-                  <Grid item>
-                    <Button type='submit' variant='outlined' color='primary' disabled={!canSave}>
-                      {buttonLoading ? <CircularProgress size={25} /> : 'Salvar'}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2} xs={6} style={{
-              paddingLeft: 24,
-              borderLeft: "1px solid #CCC",
-              justifyContent: "flex-start",
-              marginRight: 64
-            }}>
-              <Grid item xs={12}>
-                <TextField
-                  name='group'
-                  value={group}
-                  onChange={(e) => setGroup(e.target.value)}
-                  label='Lote'
-                  variant='outlined'
-                  size='small'
-                  style={{ minWidth: 100 }}
-                  select
-                  fullWidth
-                >
-                  {groupList
-                    .filter((group) => {
-                      if (group.type === type) return true;
-                      return false;
-                    })
-                    .map((groupItem) => (
-                      <MenuItem key={groupItem.id} value={groupItem.id}>
-                        {groupItem.name}
-                      </MenuItem>
-                    ))}
-                </TextField>
-
-                <Grid item>
-                  <Button style={{ marginTop: 16 }} variant='outlined' color='primary' onClick={handleNewLot}>
-                    Adicionar lote
-                  </Button>
                 </Grid>
               </Grid>
             </Grid>
