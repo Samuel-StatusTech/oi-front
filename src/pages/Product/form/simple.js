@@ -252,6 +252,8 @@ const SimpleProduct = ({ user }) => {
 
         if (data.error) {
           alert(data.error);
+        } else if (data.code === "ER_DUP_ENTRY") {
+          alert('Erro. Verifique as informações do produto e tente novamente')
         } else {
           alert('Erro não esperado');
         }
@@ -280,7 +282,7 @@ const SimpleProduct = ({ user }) => {
       });
       handleCancel();
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     } finally {
       setButtonLoading(false);
     }

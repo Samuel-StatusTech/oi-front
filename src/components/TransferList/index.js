@@ -169,6 +169,7 @@ export default function TransferList({
         <>
           <Grid item md={6} xs={12}>
             <CustomList
+              key={1}
               title="Produtos"
               items={left}
               setItems={setLeft}
@@ -178,7 +179,7 @@ export default function TransferList({
               selectAll={selectAll}
               isSearch
               groupList={groupList}
-              isGroupFilter
+              isGroupFilter={true}
             />
           </Grid>
           <Grid item md={1} xs={12}>
@@ -207,6 +208,7 @@ export default function TransferList({
           </Grid>
           <Grid item md={5} xs={12}>
             <CustomList
+              key={2}
               title="Selecionados"
               items={right}
               setItems={setRight}
@@ -216,7 +218,7 @@ export default function TransferList({
               selectAll={selectAll}
               isSearch
               groupList={groupList}
-              isGroupFilter
+              isGroupFilter={true}
             />
           </Grid>
         </>

@@ -85,7 +85,6 @@ const Operator = ({ user }) => {
 
   const hasCashlessConf = async (user) => {
     if (user && user.uid) {
-      console.log(user.uid)
       const clientKey = (
         await firebase
           .database()

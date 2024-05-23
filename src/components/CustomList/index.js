@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
@@ -97,9 +97,13 @@ const CustomList = ({
     );
   };
 
-  const filteredItems = items.filter((value) =>
-    isGroupFilter && group !== 'todos' ? value.group_id === group : true
-  )
+  const [filteredItems, setFilteredItems] = useState([])
+
+  useEffect(() => {
+    setFilteredItems(items.filter((value) =>
+      isGroupFilter && group !== 'todos' ? (value.group ? value.group.id : value.group_id) === group : true
+    ))
+  }, [group, isGroupFilter, items])
 
   return (
     <Card>
