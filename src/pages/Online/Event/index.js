@@ -5,20 +5,17 @@ import { useHistory } from 'react-router-dom';
 
 import { loadEvents } from '../../../action';
 import EaseGrid from '../../../components/EaseGrid';
-import ButtonRound from '../../../components/ButtonRound';
 // import Drawer from "./drawer";
 import Api from '../../../api';
-import { compareDateBetween, formatDate, formatDateToDB } from '../../../utils/date';
-import StatusColumn from '../../../components/EaseGrid/Columns/Status';
+import { compareDateBetween, formatDateToDB } from '../../../utils/date';
 import OnlineColumn from '../../../components/EaseGrid/Columns/Online';
 import { useState } from 'react';
-import { Between } from '../../../components/Input/Date';
 
 const Event = ({ events, loadEvents }) => {
   const history = useHistory();
   const [data, setData] = useState(events);
-  const [cityList, setCityList] = useState({});
-  const [localList, setLocalList] = useState({});
+  const [, setCityList] = useState({});
+  const [, setLocalList] = useState({});
   const [loading, setLoading] = useState(false);
   const columns = [
     { title: 'Nome do evento', field: 'name' },
@@ -52,6 +49,7 @@ const Event = ({ events, loadEvents }) => {
   const updateLists = (events) => {
     let city = {};
     let local = {};
+    // eslint-disable-next-line array-callback-return
     events.map((map) => {
       city[map.city] = map.city;
       local[map.local] = map.local;
@@ -64,11 +62,11 @@ const Event = ({ events, loadEvents }) => {
     history.push(`/dashboard/online-events/${id}`);
   };
 
-  const [iniValue, setIniValue] = useState(new Date());
-  const [endValue, setEndValue] = useState(new Date());
-  const [selectType, setSelectType] = useState(1);
+  const [iniValue] = useState(new Date());
+  const [endValue] = useState(new Date());
+  const [selectType] = useState(1);
 
-  const filterDate = () => {
+  const filterDate = useEffect(() => {
     if (selectType === 1) {
       setData(events);
     } else {
@@ -82,7 +80,7 @@ const Event = ({ events, loadEvents }) => {
       });
       setData(filteredDate);
     }
-  };
+  }, [endValue, events, iniValue, selectType]);
   // See for changes on any input, to update the search
   useEffect(() => {
     try {
@@ -93,7 +91,7 @@ const Event = ({ events, loadEvents }) => {
     } finally {
       setLoading(false);
     }
-  }, [iniValue, endValue, selectType]);
+  }, [iniValue, endValue, selectType, filterDate]);
   return (
     <Grid container direction='column' spacing={2}>
       <Grid item lg md sm xs>

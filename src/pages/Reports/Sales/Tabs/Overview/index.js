@@ -22,6 +22,7 @@ import useStyles from "../../../../../global/styles"
 import Bar from "../../../../../components/Chart/Bar"
 import CardValue from "./CardValue"
 import sellsPDF from "../../../../../utils/sellsPdf"
+import { getPaymentFromProducts } from "../../../../../utils/toolbox/getPaymentFromProducts"
 
 export default (props) => {
 
@@ -207,7 +208,9 @@ export default (props) => {
 
   const searchByGroups = async (dateURL, totals) => {
     let prods = []
-    let cPays = { money: 0, credit: 0, debit: 0, pix: 0 }
+    let skProds = []
+    let gProds = []
+    
 
     for (let i = 1; i <= selectedGroups.length; i++) {
       const grp = selectedGroups[i - 1]
@@ -253,55 +256,39 @@ export default (props) => {
 
       if (overview.productInfo.productList)
         prods = [...prods, ...overview.productInfo.productList]
+      
+      const sProds = await Api.get(`/order/getList/${event}?status=todos&type=${productType}${dateURL}&group=${grp.id}${courtesiesURL}&per_page=10000000000&page=0`).then(res => res.data.orders ?? [])
 
-      const tPayments =
-        overview.paymentInfo.money +
-        overview.paymentInfo.credit +
-        overview.paymentInfo.debit +
-        overview.paymentInfo.pix
-
-      const percents = {
-        money: overview.paymentInfo.money / tPayments,
-        credit: overview.paymentInfo.credit / tPayments,
-        debit: overview.paymentInfo.debit / tPayments,
-        pix: overview.paymentInfo.pix / tPayments,
-      }
-
-      const vals = {
-        money: total * percents.money,
-        credit: total * percents.credit,
-        debit: total * percents.debit,
-        pix: total * percents.pix,
-      }
-
-      const newPayments = {
-        money: (Number(totals.payments.money) + vals.money).toFixed(2),
-        credit: (Number(totals.payments.credit) + vals.credit).toFixed(2),
-        debit: (Number(totals.payments.debit) + vals.debit).toFixed(2),
-        pix: (Number(totals.payments.pix) + vals.pix).toFixed(2),
-      }
-      totals.payments = newPayments
-
-      if (i === selectedGroups.length) {
-        setCardInfo(totals.cardInfo)
-        setPayment(totals.payments)
-
-        let filteredProds = []
-        prods.forEach((p) => {
-          if (
-            filteredProds.findIndex(
-              (fp) =>
-                fp.id === p.id &&
-                fp.quantity === p.quantity &&
-                fp.price_total === p.price_total
-            ) < 0
-          )
-            filteredProds.push(p)
-        })
-
-        setProducts(filteredProds)
-      }
+      skProds = skProds.concat(sProds)
+      
+      gProds = [
+        ...gProds,
+        ...overview.productInfo.productList,
+      ]
     }
+
+    const totalsFromProducts = getPaymentFromProducts(skProds, gProds)
+
+    totals.payments = totalsFromProducts
+
+    setCardInfo(totals.cardInfo)
+    setPayment(totalsFromProducts)
+    setCrudPays(totalsFromProducts)
+
+    let filteredProds = []
+    prods.forEach((p) => {
+      if (
+        filteredProds.findIndex(
+          (fp) =>
+            fp.id === p.id &&
+            fp.quantity === p.quantity &&
+            fp.price_total === p.price_total
+        ) < 0
+      )
+        filteredProds.push(p)
+    })
+
+    setProducts(filteredProds)
   }
 
   const handleSearch = async () => {
@@ -337,9 +324,7 @@ export default (props) => {
           else searchByGroups(dateURL, totals)
         }
       }
-    } catch (error) {
-      console.log(error)
-    } finally {
+    } catch (error) {} finally {
       setLoading(false)
     }
   }
@@ -389,6 +374,10 @@ export default (props) => {
     }
   }
 
+  const checkTotalsEquality = (totals) => {
+    return totals.all === cardInfo.totalRecipe
+  }
+
   const exportPdfReport = async () => {
     if (loadingReport) return
     setLoadingReport(true)
@@ -405,6 +394,8 @@ export default (props) => {
       all: +payment.money + +payment.debit + +payment.credit + +payment.pix
     }
 
+    const isTotalOk = checkTotalsEquality(totals)
+
     sellsPDF({
       event: eventData,
       products,
@@ -412,9 +403,12 @@ export default (props) => {
       dateIni: getDateIni(),
       dateEnd: getDateEnd(),
       operators: ["Todos"],
-      totals,
+      totals: isTotalOk ? totals : {
+        ...totals,
+        all: cardInfo.totalRecipe
+      },
       crudePays,
-      isOverview: selectedGroups.length === 0,
+      isOverview: isTotalOk,
       prodType: productType,
       mustDownload: true,
     })
@@ -459,11 +453,10 @@ export default (props) => {
                   >
                     <MenuItem value="all" style={{ display: "none" }}>
                       Selecione os grupos
-                      {`${
-                        selectedGroups.length > 0
+                      {`${selectedGroups.length > 0
                           ? ` (${selectedGroups.length})`
                           : ""
-                      }`}
+                        }`}
                     </MenuItem>
                     {groupList
                       .filter((group) => {

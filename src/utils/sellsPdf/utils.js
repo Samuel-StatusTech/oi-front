@@ -1,4 +1,3 @@
-import { formatDate } from "../../utils/date"
 import { format } from "currency-formatter"
 
 export const getTable = ({

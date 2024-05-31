@@ -8,51 +8,18 @@ import {
   Divider,
   Button,
   CircularProgress,
-  MenuItem,
   Card,
   CardContent,
 } from '@material-ui/core';
 import { KeyboardDatePicker, KeyboardTimePicker } from '@material-ui/pickers';
-import Tooltip from '../../../components/Tooltip';
 
 import Api from '../../../api';
 
-import InputMoney from '../../../components/Input/Money';
 import InputPercent from '../../../components/Input/Percent';
 import ImagePicker from '../../../components/ImagePicker';
 import { useForm } from 'react-hook-form';
-import { GreenSwitch, StatusSwitch } from '../../../components/Switch';
-import { getMaxDateToday, getMinDateToday, formatDateToDB } from '../../../utils/date';
-
-const stateList = [
-  { key: 'AC', name: 'Acre' },
-  { key: 'AL', name: 'Alagoas' },
-  { key: 'AP', name: 'Amapá' },
-  { key: 'AM', name: 'Amazonas' },
-  { key: 'BA', name: 'Bahia' },
-  { key: 'CE', name: 'Ceará' },
-  { key: 'DF', name: 'Distrito Federal' },
-  { key: 'ES', name: 'Espírito Santo' },
-  { key: 'GO', name: 'Goías' },
-  { key: 'MA', name: 'Maranhão' },
-  { key: 'MT', name: 'Mato Grosso' },
-  { key: 'MS', name: 'Mato Grosso do Sul' },
-  { key: 'MG', name: 'Minas Gerais' },
-  { key: 'PA', name: 'Pará' },
-  { key: 'PB', name: 'Paraíba' },
-  { key: 'PR', name: 'Paraná' },
-  { key: 'PE', name: 'Pernambuco' },
-  { key: 'PI', name: 'Piauí' },
-  { key: 'RJ', name: 'Rio de Janeiro' },
-  { key: 'RN', name: 'Rio Grande do Norte' },
-  { key: 'RS', name: 'Rio Grande do Sul' },
-  { key: 'RO', name: 'Rondônia' },
-  { key: 'RR', name: 'Roraíma' },
-  { key: 'SC', name: 'Santa Catarina' },
-  { key: 'SP', name: 'São Paulo' },
-  { key: 'SE', name: 'Sergipe' },
-  { key: 'TO', name: 'Tocantins' },
-];
+import { GreenSwitch } from '../../../components/Switch';
+import { formatDateToDB } from '../../../utils/date';
 
 const Event = () => {
   const history = useHistory();
@@ -60,7 +27,7 @@ const Event = () => {
   const { handleSubmit, register, errors } = useForm();
   const [action] = useState(idEvent === 'new');
   const [loading, setLoading] = useState(true);
-  const [buttonLoading, setButtonLoading] = useState(false);
+  const [, setButtonLoading] = useState(false);
   const [status, setStatus] = useState(true);
   const [image, setImage] = useState('');
   const [logoPrint, setLogoPrint] = useState('');
@@ -83,7 +50,7 @@ const Event = () => {
   const [taxActive, setTaxActive] = useState(0);
   const [taxPaybackCash, setTaxPaybackCash] = useState(0);
   const [taxPaybackPercent, setTaxPaybackPercent] = useState(0);
-  const [logoFixed, setLogoFixed] = useState('');
+  const [, setLogoFixed] = useState('');
   const [taxPaybackType, setTaxPaybackType] = useState(true);
 
   const [hasOnline, setHasOnline] = useState(true);
