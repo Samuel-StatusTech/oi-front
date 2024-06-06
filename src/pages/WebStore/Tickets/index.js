@@ -14,6 +14,7 @@ import {
   DialogContent,
 } from "@material-ui/core"
 import { useHistory } from "react-router-dom"
+import { connect } from 'react-redux';
 
 import InputMoney from "../../../components/Input/Money"
 import EaseGrid from "../../../components/EaseGrid"
@@ -27,7 +28,7 @@ import * as fn from "./utils"
 import productsIcon from "../../../assets/icons/ic_produtos.svg"
 import useStyles from "../../../global/styles"
 
-const TicketsPage = () => {
+const TicketsPage = ({ event }) => {
   const styles = useStyles()
 
   const history = useHistory()
@@ -48,31 +49,11 @@ const TicketsPage = () => {
   const [isRegisterMade, setIsRegisterMade] = useState(false)
 
   const columns = [
-    {
-      title: "Tipo",
-      field: "type",
-      lookup: {
-        bar: "Bar",
-        ingresso: "Ingresso",
-        estacionamento: "Estacionamento",
-        combo: "Combo",
-        complement: "Complemento",
-      },
-      editable: "never",
-      cellStyle: {
-        width: "10%",
-        maxWidth: "10%",
-      },
-      headerStyle: {
-        width: "10%",
-        maxWidth: "10%",
-      },
-    },
-    {
-      title: "Grupo",
-      field: "group.name",
-      editable: "never",
-    },
+    // {
+    //   title: "Grupo",
+    //   field: "group.name",
+    //   editable: "never",
+    // },
     { title: "Nome", field: "name" },
     {
       title: "Valor",
@@ -107,33 +88,26 @@ const TicketsPage = () => {
   ]
 
   useEffect(() => {
-    Api.get(`/ecommerce/product/getList`).then(async ({ data }) => {
+    Api.get(`/ecommerce/product/getList?eventId=${event}`).then(async ({ data }) => {
+      // let groups = []
 
-      const { success } = data
+      // data.products.forEach(p => {
+      //   if (groups.every(g => g.id !== p.group.id) && Boolean(p.group.status)) groups.push(p.group)
+      // })
+      setData(data
+        // .sort((a, b) => (a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase())))
+      )
+      // console.log(groups)
 
-      if (success) {
-        let groups = []
-
-        data.products.forEach(p => {
-          if (groups.every(g => g.id !== p.group.id) && Boolean(p.group.status)) groups.push(p.group)
-        })
-        setData(data.products
-          .sort((a, b) => (a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase())))
-        )
-        console.log(groups)
-
-        setGroupList([
-          { id: "todos", name: "Todos" },
-          ...groups
-            .sort((a, b) => {
-              if (a.name < b.name) return -1
-              if (a.name > b.name) return 1
-              return 0
-            }),
-        ])
-      } else {
-        alert("Erro ao carregar os grupos")
-      }
+      setGroupList([
+        { id: "todos", name: "Todos" },
+        // ...groups
+        //   .sort((a, b) => {
+        //     if (a.name < b.name) return -1
+        //     if (a.name > b.name) return 1
+        //     return 0
+        //   }),
+      ])
     })
   }, [])
 
@@ -575,4 +549,7 @@ const TicketsPage = () => {
 export const Icon = () => {
   return <img src={productsIcon} alt="Ícone produtos" />
 }
-export default TicketsPage
+
+const mapStateToProps = ({ event, events }) => ({ event, events });
+
+export default connect(mapStateToProps)(TicketsPage)

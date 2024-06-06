@@ -49,6 +49,7 @@ const SimpleProduct = ({ user }) => {
   const [desc2, setDesc2] = useState('');
   const [type, setType] = useState('ingresso');
   const [group, setGroup] = useState('');
+  const [batch, setBatch] = useState('');
   const [priceSell, setPriceSell] = useState('');
   const [priceCost, setPriceCost] = useState('');
   const [hasVariable, setHasVariable] = useState(false);
@@ -483,10 +484,34 @@ const SimpleProduct = ({ user }) => {
                           </Grid>
                           <Grid item lg={6} md={6} sm={12} xs={12}>
                             <TextField
+                              name='batch'
+                              value={batch}
+                              onChange={(e) => setBatch(e.target.value)}
+                              label='Lote'
+                              variant='outlined'
+                              size='small'
+                              style={{ minWidth: 100 }}
+                              select
+                              fullWidth
+                            >
+                              {groupList
+                                .filter((group) => {
+                                  if (group.type === type) return true;
+                                  return false;
+                                })
+                                .map((groupItem) => (
+                                  <MenuItem key={groupItem.id} value={groupItem.id}>
+                                    {groupItem.name}
+                                  </MenuItem>
+                                ))}
+                            </TextField>
+                          </Grid>
+                          <Grid item lg={6} md={6} sm={12} xs={12}>
+                            <TextField
                               name='group'
                               value={group}
                               onChange={(e) => setGroup(e.target.value)}
-                              label='Lote'
+                              label='Grupo'
                               variant='outlined'
                               size='small'
                               style={{ minWidth: 100 }}
