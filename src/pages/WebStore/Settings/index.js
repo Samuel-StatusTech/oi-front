@@ -16,6 +16,7 @@ import { connect } from 'react-redux'
 import { formatDate } from '../../../utils/date'
 import 'react-quill/dist/quill.snow.css'
 
+import Api from "../../../api"
 import { GreenSwitch, StatusSwitch } from '../../../components/Switch'
 import ImagePicker from '../../../components/ImagePicker'
 import ReactQuill from 'react-quill'
@@ -58,32 +59,131 @@ const Manager = ({ events, event, user }) => {
     hour: new Date(),
   })
 
+  const loadEventData = async () => {
+
+    const evData = await Api.get(`/event/getData/${event}`)
+    if (evData.data.success) {
+
+      const ev = evData.data.event
+
+      setEventData(ev)
+
+      setNominalTicket(Boolean(ev.nominal))
+      setAddress(ev.address)
+      setDescription(ev.description)  // description_loja
+
+      if (ev.event_banner) handleImage(ev.event_banner)
+      if (ev.event_map) handleImageLayout(ev.event_map)
+    }
+  }
+
   useEffect(() => {
-    const evData = events.find((item) => item.id === event)
-    setEventData(evData)
-    setLoading(false);
+    loadEventData().then(() => {
+      setLoading(false)
+    })
     // eslint-disable-next-line
   }, []);
+
+  const generateObj = () => {
+    const obj = {
+      // editable
+      status: Number(status),
+      nominal: Number(nominalTicket),
+      // age_control: age_control,
+      address: address,
+      description: description,
+      event_banner: image,
+      event_map: eventLayout,
+      // keep_online: keepOnline,
+      // has_end_defined: hasEndDefined,
+
+      // not editable
+      org_id: eventData.org_id,
+      name: eventData.name,
+      hotsite_address: eventData.hotsite_address,
+      order_number: eventData.order_number,
+      date_ini: eventData.date_ini,
+      // time_ini: eventData.time_ini,
+      time_ini: new Date(eventData.date_ini).getTime(),
+      date_end: eventData.date_end,
+      local: eventData.local,
+      city: eventData.city,
+      state: eventData.state,
+      print_valid: Number(eventData.print_valid),
+      print_logo: Number(eventData.print_logo),
+      days: eventData.days,
+      has_cashless: Number(eventData.has_cashless),
+      has_tax_active: Number(eventData.has_tax_active),
+      allow_cashback: Number(eventData.allow_cashback),
+      has_tax_cashback: Number(eventData.has_tax_cashback),
+      tax_active: eventData.tax_active,
+      tax_payback_cash: eventData.tax_payback_cash,
+      tax_payback_percent: eventData.tax_payback_percent,
+      logo: eventData.logo,
+      logo_print: eventData.logo_print
+    }
+
+    console.log(obj)
+
+    return obj
+  }
+
+  const generateFD = (obj) => {
+    let fd = new FormData()
+
+    fd.append("name", obj.name)
+    fd.append("status", obj.status)
+    fd.append("logo", obj.logo)
+    fd.append("logo_print", obj.logo_print)
+    fd.append("date_ini", obj.date_ini)
+    fd.append("time_ini", obj.time_ini)
+    fd.append("date_end", obj.date_end)
+    fd.append("local", obj.local)
+    fd.append("city", obj.city)
+    fd.append("state", obj.state)
+    fd.append("print_valid", obj.print_valid)
+    fd.append("description", obj.description)
+    fd.append("order_number", obj.order_number)
+    fd.append("print_logo", obj.print_logo)
+    fd.append("days", obj.days)
+    fd.append("has_cashless", obj.has_cashless)
+    fd.append("has_tax_active", obj.has_tax_active)
+    fd.append("allow_cashback", obj.allow_cashback)
+    fd.append("has_tax_cashback", obj.has_tax_cashback)
+    fd.append("tax_active", obj.tax_active)
+    fd.append("tax_payback_cash", obj.tax_payback_cash)
+    fd.append("tax_payback_percent", obj.tax_payback_percent)
+    fd.append("hotsite_address", obj.hotsite_address)
+    fd.append("address", obj.address)
+    fd.append("nominal", obj.nominal)
+    fd.append("event_banner", obj.event_banner)
+    fd.append("event_map", obj.event_map)
+
+    return fd
+  }
 
   const handleEdit = async () => {
 
     try {
       setButtonLoading(true);
-      // await Api.put(`/manager/updateManager/${idManager}`, {
-      //   status,
-      //   nominalTicket,
 
-      //   description,
-      //   address,
-      //   image,
-      //   eventLayout,
-      //   target,
-      //   targetValue: target ? targetAge : undefined,
-      //   keepOnline,
-      //   progEnd,
-      //   end: progEnd ? end : undefined
-      // });
+      const obj = generateObj()
+      const fd = generateFD(obj)
+
+      console.log(fd, event)
+
+      setButtonLoading(false);
+
+      await Api.put(`/event/updateEvent/${event}`, fd, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      })
+        .catch(() => {
+          alert("Houve um erro ao atualizar os dados. Tente novamente mais tarde.")
+        })
       handleCancel();
+
     } catch (e) {
       console.log(e);
     } finally {
@@ -93,19 +193,15 @@ const Manager = ({ events, event, user }) => {
 
   const verifyInputs = () => {
     return (
-      // nameInputVerify(name) ||
-      // (action ? passwordInputVerify(password) : false) ||
-      // emailInputVerify(email) ||
-      // codeInputVerify(code) ||
-      // descriptionInputVerify(description)
-      true
+      !address ||
+      !description
     );
   };
 
   const handleSubmit = () => {
     try {
       // eslint-disable-next-line no-throw-literal
-      if (verifyInputs()) throw { message: 'Um ou mais campos possui erro!' };
+      if (verifyInputs()) throw { message: 'Verifique os campos e tente novamente' };
       handleEdit();
     } catch (error) {
       alert(error.message);
@@ -301,14 +397,16 @@ const Manager = ({ events, event, user }) => {
                     )}
                   </Grid>
 
-                  <Grid item xl={12} lg={12} md={6} sm={12} xs={12} style={{ marginBottom: 12 }}>
-                    <Grid container direction="row" spacing={2}>
+                  {/* Fotos */}
+                  <Grid item container xl={12} lg={12} md={6} sm={12} xs={12} style={{ marginBottom: 12 }}>
+                    <Grid item container direction="row" spacing={2}>
                       <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ textAlign: "center" }}>
                         <ImagePicker
                           label="Imagem do Evento"
                           name="image"
                           image={image}
                           setImage={handleImage}
+                          style={{ maxHeight: 80 }}
                         />
                         <small>Tamanho: 262×100 (png)</small>
                       </Grid>
@@ -318,13 +416,11 @@ const Manager = ({ events, event, user }) => {
                           name="layout"
                           image={eventLayout}
                           setImage={handleImageLayout}
+                          style={{ maxHeight: 80 }}
                         />
                         <small>Tamanho: 262×100 (png)</small>
                       </Grid>
                     </Grid>
-                  </Grid>
-
-                  <Grid container spacing={2}>
                   </Grid>
                 </Grid>
               </Grid>
@@ -334,9 +430,7 @@ const Manager = ({ events, event, user }) => {
             <Grid item lg={12} md={12} sm={12} xs={12}>
               <Typography style={{ fontWeight: 'bold' }}>Painel de controle</Typography>
               <Divider />
-            </Grid>
 
-            <Grid item lg={12} md={12} sm={12} xs={12}>
               <Grid container spacing={2}>
                 <Grid item>
                   <FormControlLabel

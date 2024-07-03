@@ -36,15 +36,13 @@ import ReservationForm from "../pages/Register/Reservation/form"
 
 /*              VENDA ONLINE                */
 import { Icon as OnlineIcon } from "../pages/Online/Icon"
-import OnlineEventList from "../pages/Online/Event"
 import WSOverview from "../pages/WebStore/Overview"
 import WSSettings from "../pages/WebStore/Settings"
 import WSStatement from "../pages/WebStore/Statement"
 import TicketsPage from "../pages/WebStore/Tickets"
 import TicketSimpleForm from "../pages/WebStore/Tickets/form/simple"
-import OnlineEventForm from "../pages/Online/Event/form"
-import OnlineProductList from "../pages/Online/Product"
-import OnlineProductForm from "../pages/Online/Product/form"
+import BatchesPage from "../pages/WebStore/Batches"
+import BatchesForm from "../pages/WebStore/Batches/form/simple"
 /*              VENDA ONLINE                */
 
 /*              GERENCIAL                */
@@ -343,6 +341,74 @@ export default [
         ],
       },
       {
+        title: "Ingressos",
+        path: "/tickets",
+        content: <TicketsPage />,
+        allow: {
+          allow_only_ecommerce: true,
+        },
+        paths: [
+          {
+            title: "Ingressos",
+            route: "/tickets",
+          },
+        ],
+      },
+      {
+        path: "/tickets/simple/:idProduct",
+        hide: true,
+        content: <TicketSimpleForm />,
+        allow: {
+          allow_only_ecommerce: true,
+          allow_register: 1,
+          allow_operation: 0,
+        },
+        paths: [
+          {
+            title: "Ingressos",
+            route: "/tickets",
+          },
+          {
+            title: "Simples",
+            route: "/simple",
+          },
+        ],
+      },
+      {
+        title: "Lotes",
+        path: "/batches",
+        content: <BatchesPage />,
+        allow: {
+          allow_only_ecommerce: true,
+        },
+        paths: [
+          {
+            title: "Lotes",
+            route: "/batches",
+          },
+        ],
+      },
+      {
+        path: "/batches/simple/:idProduct",
+        hide: true,
+        content: <BatchesForm />,
+        allow: {
+          allow_only_ecommerce: true,
+          allow_register: 1,
+          allow_operation: 0,
+        },
+        paths: [
+          {
+            title: "Lotes",
+            route: "/batches",
+          },
+          {
+            title: "Novo",
+            route: "/simple",
+          },
+        ],
+      },
+      {
         title: "Estoques",
         path: "/warehouse",
         icon: WarehouseIcon,
@@ -516,100 +582,6 @@ export default [
           },
         ],
       },
-      /*
-      {
-        title: "Mesas",
-        path: "/reservation",
-        //content: <ReservationList />,
-        content: <EmBreve />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Mesas",
-            route: "/reservation",
-          },
-        ],
-      },
-      {
-        path: "/reservation/:idReservation",
-        hide: true,
-        content: <ReservationForm />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Mesas",
-            route: "/reservation",
-          },
-        ],
-      },
-      {
-        title: "Listas",
-        path: "/list",
-        //content: <ListsList />,
-        content: <EmBreve />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Listas",
-            route: "/list",
-          },
-        ],
-      },
-      {
-        path: "/list/:idList",
-        hide: true,
-        content: <ListsData />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Listas",
-            route: "/list",
-          },
-        ],
-      },
-      {
-        title: "Códigos Garçons",
-        path: "/waiter",
-        content: <WaiterList />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Códigos Garçons",
-            route: "/waiter",
-          },
-        ],
-      },
-      {
-        path: "/waiter/:idWaiter",
-        hide: true,
-        content: <WaiterForm />,
-        allow: {
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Códigos Garçons",
-            route: "/waiter",
-          },
-        ],
-      },
-      */
     ],
   },
   {
@@ -652,48 +624,6 @@ export default [
           {
             title: "Configurações",
             route: "/settings",
-          },
-        ],
-      },
-      {
-        title: "Ingressos a Venda",
-        path: "/webstore/tickets",
-        content: <TicketsPage />,
-        allow: {
-          allow_only_ecommerce: true,
-        },
-        paths: [
-          {
-            title: "Loja virtual",
-            route: "/webstore",
-          },
-          {
-            title: "Ingressos",
-            route: "/tickets",
-          },
-        ],
-      },
-      {
-        path: "/webstore/tickets/simple/:idProduct",
-        hide: true,
-        content: <TicketSimpleForm />,
-        allow: {
-          allow_only_ecommerce: true,
-          allow_register: 1,
-          allow_operation: 0,
-        },
-        paths: [
-          {
-            title: "Loja Virtual",
-            route: "/webstore",
-          },
-          {
-            title: "Ingressos",
-            route: "/tickets",
-          },
-          {
-            title: "Novo",
-            route: "/simple",
           },
         ],
       },

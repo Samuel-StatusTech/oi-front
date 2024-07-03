@@ -12,19 +12,16 @@ import {
   Checkbox,
   MenuItem,
   withStyles,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   CardContent,
 } from '@material-ui/core';
 import Favorite from '@material-ui/icons/Favorite';
 import FavoriteBorder from '@material-ui/icons/FavoriteBorder';
+import { connect } from 'react-redux';
 
 import Api from '../../../../api';
 import InputMoney from '../../../../components/Input/Money';
 
-const SimpleProduct = ({ user }) => {
+const SimpleProduct = ({ event }) => {
   const history = useHistory();
   const { idProduct } = useParams();
   const { handleSubmit, register } = useForm();
@@ -32,56 +29,23 @@ const SimpleProduct = ({ user }) => {
   const [errorsVerify] = useState({});
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [batchList, setBatchList] = useState([]);
   const [groupList, setGroupList] = useState([]);
-  const [newLotModal, setNewLotModal] = useState(false);
-
-  // Modal novo lote
-  const [newLotName, setNewLotName] = useState("");
-  const [newLotQnt, setNewLotQnt] = useState("");
-  const [newLotDate, setNewLotDate] = useState("");
 
   // Dados do produto
   const [status, setStatus] = useState(true);
   const [favorite, setFavorite] = useState(false);
   const [name, setName] = useState('');
-  const [image, setImage] = useState('');
-  const [desc, setDesc] = useState('');
-  const [desc2, setDesc2] = useState('');
+  const [image, setImage] = useState(null);
   const [type, setType] = useState('ingresso');
   const [group, setGroup] = useState('');
   const [batch, setBatch] = useState('');
   const [priceSell, setPriceSell] = useState('');
-  const [priceCost, setPriceCost] = useState('');
-  const [hasVariable, setHasVariable] = useState(false);
   const [hasCourtesy, setHasCourtesy] = useState(false);
-  const [warehouse, setWarehouse] = useState(0);
+  const [quantity, setQuantity] = useState(0);
   const [warehouseType, setWarehouseType] = useState('notControled');
-  const [isControlled, setIsControlled] = useState(true);
 
-  // Dados da impressão
-  const [printQrcode, setPrintQrcode] = useState(false);
-  const [printTicket, setPrintTicket] = useState(true);
-  const [printLocal, setPrintLocal] = useState(true);
-  const [printDate, setPrintDate] = useState(true);
-  const [printValue, setPrintValue] = useState(true);
-  const [hasControl, setHasControl] = useState(false);
-  const [startAt, setStartAt] = useState(1);
-  const [canSave, setCanSave] = useState(false);
-  // Dados do bar
-  const [numberCopy, setNumberCopy] = useState(1);
-  const [painelControl, setPainelControl] = useState(false);
-
-  // Dados do ingresso
-  const [printGroup, setPrintGroup] = useState(false);
-  const [hasCut, setHasCut] = useState(false);
-
-  // Dados do estacionamento
-  const [printPlate, setPrintPlate] = useState(false);
-  const [printTolerance, setPrintTolerance] = useState(false);
-  const [hasTolerance, setHasTolerance] = useState(false);
-  const [timeTolerance, setTimeTolerance] = useState(0);
-  const [takeTolerance, setTakeTolerance] = useState(false);
-  const [valueTolerance, setValueTolerance] = useState('');
+  const [canSave, setCanSave] = useState(true);
 
   const GreenSwitch = withStyles({
     switchBase: {
@@ -109,15 +73,23 @@ const SimpleProduct = ({ user }) => {
   }, [group, groupList, type]);
 
   useEffect(() => {
-    setCanSave(true);
-  }, [warehouse, isControlled]);
+    console.log(priceSell)
+    setCanSave(!!name && !!batch && !!group)
+  }, [name, batch, group, priceSell]);
 
   useEffect(() => {
-    setIsControlled(warehouseType === 'controled');
-  }, [warehouseType]);
-  useEffect(() => {
-    if (!action) {
+    if (!action) {  // edit
       Promise.all([
+        Api.get(`/${event}/batches`)
+          .then(({ data }) => {
+
+            if (Array.isArray(data)) {
+              setBatchList(data);
+            } else {
+              alert('Erro ao carregar os lotes');
+              handleCancel();
+            }
+          }),
         Api.get(`/group/getList`).then(({ data }) => {
           const { success, groups } = data;
 
@@ -128,106 +100,88 @@ const SimpleProduct = ({ user }) => {
             handleCancel();
           }
         }),
-        Api.get(`/product/getProduct/${idProduct}`).then(({ data }) => {
-          const { success, product } = data;
-          if (success) {
-            setStatus(product.status === 1);
-            setFavorite(product.favorite === 1);
-            setName(product.name);
-            setImage(product.image);
-            setDesc(product.description1);
-            setDesc2(product.description2);
-            setType(product.type);
-            setGroup(product.group_id);
-            setPriceSell(product.price_sell);
-            setPriceCost(product.price_cost);
-            setHasVariable(product.has_variable === 1);
-            setWarehouse(product.quantity);
-            setWarehouseType(product.warehouse_type);
-            setPrintQrcode(product.print_qrcode === 1);
-            setPrintTicket(product.print_ticket === 1);
-            setPrintLocal(product.print_local === 1);
-            setPrintDate(product.print_date === 1);
-            setPrintValue(product.print_value === 1);
-            setHasControl(product.has_control === 1);
-            setPainelControl(product.painel_control === 1);
-            setStartAt(product.start_at);
-            setHasCourtesy(product.has_courtesy);
-            setNumberCopy(product.number_copy);
-            setPrintGroup(product.print_group === 1);
-            setHasCut(product.has_cut === 1);
-            setPrintPlate(product.print_plate === 1);
-            setPrintTolerance(product.print_tolerance === 1);
-            setHasTolerance(product.has_tolerance === 1);
-            setTimeTolerance(product.time_tolerance);
-            setTakeTolerance(product.take_tolerance === 1);
-            setValueTolerance(product.value_tolerance / 100);
+        Api.get(`/ecommerce/product/getList?eventId=${event}`).then(({ data }) => {
+
+          if (Array.isArray(data)) {
+
+            const t = data.find(tk => tk.id === idProduct)
+            if (t) {
+              setBatch(t.batch_id);
+              setName(t.name);
+              setImage(t.image ?? null)
+              setType(t.type);
+              setPriceSell(t.price_sell);
+              setHasCourtesy(t.has_courtesy);
+              setWarehouseType(t.warehouse_type);
+              setQuantity(t.quantity)
+              setStatus(t.active === 1);
+              setFavorite(t.favorite === 1);
+            }
+
           } else {
-            alert('Não foi possível carregar os dados do gerente');
+            alert('Não foi possível carregar os dados do ticket');
             handleCancel();
           }
         }),
       ]).finally(() => {
         setLoading(false);
       });
-    } else {
-      Api.get(`/group/getList`)
-        .then(({ data }) => {
-          const { success, groups } = data;
+    } else {  // new
+      Promise.all([
+        Api.get(`/${event}/batches`)
+          .then(({ data }) => {
 
-          if (success) {
-            setGroupList(groups);
-          } else {
-            alert('Erro ao carregar os grupos');
-            handleCancel();
-          }
-        })
+            if (Array.isArray(data)) {
+              setBatchList(data);
+            } else {
+              alert('Erro ao carregar os lotes');
+              handleCancel();
+            }
+          }),
+        Api.get(`/group/getList`)
+          .then(({ data }) => {
+            const { success, groups } = data;
+
+            if (success) {
+              setGroupList(groups);
+            } else {
+              alert('Erro ao carregar os grupos');
+              handleCancel();
+            }
+          })
+
+      ])
         .finally(() => {
           setLoading(false);
-        });
+        })
+
     }
     // eslint-disable-next-line
   }, []);
 
-  const returnFormData = () => {
-    /*if (0 > priceSell || priceSell > 100000) {
-      alert('Preço de venda não pode ser maior que R$99.999,00');
-      return;
-    }*/
+  const handleBatch = async (batch_id) => {
+    try {
+      setBatch(batch_id)
+      setQuantity(batchList.find(b => b.id === batch_id).quantity ?? 0)
+    } catch (error) {
+      // ...
+    }
+  }
 
+  const returnFormData = () => {
     const formData = new FormData();
 
-    formData.append('group_id', group);
-    formData.append('image', image);
+    // formData.append('group_id', group);
     formData.append('name', name);
-    formData.append('type', type);
-    formData.append('description1', desc);
-    formData.append('description2', desc2);
+    formData.append('batch_id', batch);
     formData.append('price_sell', priceSell ? priceSell : 0);
-    formData.append('price_cost', priceCost ? priceCost : 0);
-    formData.append('has_variable', hasVariable);
-    formData.append('has_courtesy', hasCourtesy);
-    formData.append('status', status);
-    formData.append('favorite', favorite);
-    formData.append('warehouse', warehouse > 0 ? warehouse : 0);
+    formData.append('has_courtesy', Number(hasCourtesy));
     formData.append('warehouse_type', warehouseType);
-    formData.append('print_qrcode', printQrcode);
-    formData.append('print_ticket', printTicket);
-    formData.append('print_local', printLocal);
-    formData.append('print_date', printDate);
-    formData.append('print_value', printValue);
-    formData.append('has_control', hasControl);
-    formData.append('start_at', startAt);
-    formData.append('number_copy', numberCopy);
-    formData.append('painel_control', painelControl);
-    formData.append('print_group', printGroup);
-    formData.append('has_cut', hasCut);
-    formData.append('print_plate', printPlate);
-    formData.append('print_tolerance', printTolerance);
-    formData.append('has_tolerance', hasTolerance);
-    formData.append('time_tolerance', timeTolerance);
-    formData.append('take_tolerance', takeTolerance);
-    formData.append('value_tolerance', valueTolerance * 100);
+    formData.append('quantity', Number(quantity));
+    formData.append('active', Number(status));
+    formData.append('favorite', Number(favorite));
+    // if (image) formData.append('image', image);
+    formData.append('image', image);
 
     return formData;
   };
@@ -246,7 +200,7 @@ const SimpleProduct = ({ user }) => {
         return false;
       }
 
-      await Api.post('/product/createProduct', formData, {
+      await Api.post(`${event}/ecommerce_products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -291,14 +245,17 @@ const SimpleProduct = ({ user }) => {
       setButtonLoading(false);
     }
   };
+
   const isEmpty = (str) => {
     return !str || str.length === 0;
   };
+
   const nameInputVerify = (name) => {
     if (isEmpty(name)) return (errorsVerify.name = 'É necessário preencher este campo');
     errorsVerify.name = null;
     return false;
   };
+
   const onSubmit = () => {
     if (action) {
       handleSave();
@@ -309,7 +266,7 @@ const SimpleProduct = ({ user }) => {
 
   // eslint-disable-next-line
   const handleCancel = useCallback(() => {
-    history.push('/dashboard/webstore/tickets');
+    history.push('/dashboard/tickets');
   });
 
   if (loading) {
@@ -322,92 +279,8 @@ const SimpleProduct = ({ user }) => {
     );
   }
 
-  const handleNewLot = () => {
-    setNewLotModal(true)
-  }
-
-  const registerNewLot = () => {
-    setNewLotModal(true)
-  }
-
-  const handleCloseModal = () => {
-    setNewLotName("")
-    setNewLotQnt("")
-    setNewLotDate("")
-    setNewLotModal(false)
-  }
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Dialog
-        open={newLotModal}
-        onClose={handleCloseModal}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Cadastrar Lote</DialogTitle>
-        <DialogContent>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                name='newLotName'
-                value={newLotName}
-                onChange={(e) => setNewLotName(e.target.value)}
-                label='Lote'
-                variant='outlined'
-                size='small'
-                style={{ minWidth: 100 }}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                name='quantity'
-                value={newLotQnt}
-                onChange={(e) => setNewLotQnt(e.target.value)}
-                label='Quantidade'
-                variant='outlined'
-                size='small'
-                style={{ minWidth: 100 }}
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                name='date'
-                value={newLotDate}
-                onChange={(e) => setNewLotDate(e.target.value)}
-                label='Expiração'
-                variant='outlined'
-                size='small'
-                style={{ minWidth: 100 }}
-                fullWidth
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            type="button"
-            onClick={registerNewLot}
-            variant="outlined"
-            color="primary"
-          >
-            Cadastrar
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={handleCloseModal}
-            style={{ cursor: "pointer" }}
-          >
-            Cancelar
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <Card>
         <CardContent>
 
@@ -477,7 +350,7 @@ const SimpleProduct = ({ user }) => {
                               onChange={({ value }) => setPriceSell(value)}
                               label='Preço de venda'
                               variant='outlined'
-                              disabled={hasVariable || hasCourtesy}
+                              disabled={hasCourtesy}
                               size='small'
                               fullWidth
                             />
@@ -486,7 +359,7 @@ const SimpleProduct = ({ user }) => {
                             <TextField
                               name='batch'
                               value={batch}
-                              onChange={(e) => setBatch(e.target.value)}
+                              onChange={(e) => handleBatch(e.target.value)}
                               label='Lote'
                               variant='outlined'
                               size='small'
@@ -494,16 +367,11 @@ const SimpleProduct = ({ user }) => {
                               select
                               fullWidth
                             >
-                              {groupList
-                                .filter((group) => {
-                                  if (group.type === type) return true;
-                                  return false;
-                                })
-                                .map((groupItem) => (
-                                  <MenuItem key={groupItem.id} value={groupItem.id}>
-                                    {groupItem.name}
-                                  </MenuItem>
-                                ))}
+                              {batchList.map((batchItem) => (
+                                <MenuItem key={batchItem.id} value={batchItem.id}>
+                                  {batchItem.batch_name}
+                                </MenuItem>
+                              ))}
                             </TextField>
                           </Grid>
                           <Grid item lg={6} md={6} sm={12} xs={12}>
@@ -520,7 +388,7 @@ const SimpleProduct = ({ user }) => {
                             >
                               {groupList
                                 .filter((group) => {
-                                  if (group.type === type) return true;
+                                  if (group.type === 'ingresso' || group.type === 'ecommerce') return true;
                                   return false;
                                 })
                                 .map((groupItem) => (
@@ -530,11 +398,17 @@ const SimpleProduct = ({ user }) => {
                                 ))}
                             </TextField>
                           </Grid>
-
-                          <Grid item>
-                            <Button variant='outlined' color='primary' onClick={handleNewLot}>
-                              Adicionar lote
-                            </Button>
+                          <Grid item lg={6} md={6} sm={12} xs={12}>
+                            <TextField
+                              name='quantity'
+                              value={quantity}
+                              label='Quantidade'
+                              variant='outlined'
+                              size='small'
+                              style={{ minWidth: 100 }}
+                              fullWidth
+                              disabled={true}
+                            />
                           </Grid>
                         </Grid>
                       </Grid>
@@ -566,4 +440,6 @@ const SimpleProduct = ({ user }) => {
   );
 };
 
-export default SimpleProduct;
+const mapStateToProps = ({ event }) => ({ event });
+
+export default connect(mapStateToProps)(SimpleProduct);

@@ -35,8 +35,10 @@ const TicketsPage = ({ event }) => {
   const [data, setData] = useState([])
   const [search, setSearch] = useState("")
   const [type] = useState("todos")
+  const [batch, setBatch] = useState("todos")
   const [group, setGroup] = useState("todos")
   const [status, setStatus] = useState("todos")
+  const [batchList, setBatchList] = useState([])
   const [groupList, setGroupList] = useState([])
   const [loading, setLoading] = useState(false)
   const [newData, setNewData] = useState(null)
@@ -49,12 +51,20 @@ const TicketsPage = ({ event }) => {
   const [isRegisterMade, setIsRegisterMade] = useState(false)
 
   const columns = [
-    // {
-    //   title: "Grupo",
-    //   field: "group.name",
-    //   editable: "never",
-    // },
     { title: "Nome", field: "name" },
+    {
+      title: "Lote",
+      field: "batch",
+      render: ({ batch_id }) => {
+        let batchName = "Não definido"
+
+        const b = batchList.find(b => b.id === batch_id)
+
+        if (b) batchName = b.batch_name
+
+        return batchName
+      }
+    },
     {
       title: "Valor",
       field: "price_sell",
@@ -71,7 +81,7 @@ const TicketsPage = ({ event }) => {
     {
       title: "Situação",
       field: "status",
-      render: ({ status }) => (status && status !== "0" ? "Ativo" : "Inativo"),
+      render: ({ active }) => Boolean(active) ? "Ativo" : "Inativo",
       editComponent: (props) => (
         <Select
           value={props.value}
@@ -87,29 +97,57 @@ const TicketsPage = ({ event }) => {
     },
   ]
 
+  const loadData = useCallback(async () => {
+
+    let tickets = []
+    let groups = []
+    let batches = []
+
+    await Api
+      .get(`/ecommerce/product/getList?eventId=${event}`)
+      .then(async ({ data }) => {
+        if (Array.isArray(data)) tickets = data
+      })
+
+    await Api
+      .get(`/group/getList`)
+      .then(async ({ data }) => {
+
+        if (data.success) {
+          groups = data.groups
+        } else {
+          alert("Erro ao carregar os grupos")
+        }
+      })
+
+    await Api
+      .get(`/${event}/batches`)
+      .then(async ({ data }) => {
+
+        if (Array.isArray(data)) {
+          batches = data
+        } else {
+          alert("Erro ao carregar os lotes")
+        }
+      })
+
+    setData(tickets.sort((a, b) => (a.name.toLowerCase().localeCompare(b.name.toLowerCase()))))
+
+    setGroupList([
+      { id: "todos", name: "Todos" },
+      ...groups.sort((a, b) => (a.name.toLowerCase().localeCompare(b.name.toLowerCase())))
+    ])
+
+    setBatchList([
+      { id: "todos", batch_name: "Todos" },
+      ...batches.sort((a, b) => (a.batch_name.toLowerCase().localeCompare(b.batch_name.toLowerCase())))
+    ])
+
+  }, [event])
+
   useEffect(() => {
-    Api.get(`/ecommerce/product/getList?eventId=${event}`).then(async ({ data }) => {
-      // let groups = []
-
-      // data.products.forEach(p => {
-      //   if (groups.every(g => g.id !== p.group.id) && Boolean(p.group.status)) groups.push(p.group)
-      // })
-      setData(data
-        // .sort((a, b) => (a.group.name.toLowerCase().localeCompare(b.group.name.toLowerCase())))
-      )
-      // console.log(groups)
-
-      setGroupList([
-        { id: "todos", name: "Todos" },
-        // ...groups
-        //   .sort((a, b) => {
-        //     if (a.name < b.name) return -1
-        //     if (a.name > b.name) return 1
-        //     return 0
-        //   }),
-      ])
-    })
-  }, [])
+    loadData()
+  }, [loadData])
 
   const handleQuery = useCallback(async (props) => {
     try {
@@ -132,38 +170,16 @@ const TicketsPage = ({ event }) => {
     }
   }, [groupList, handleQuery])
 
-  const disabelAll = async () => {
-    if (loading) {
-      return false
-    }
-
-    if (
-      window.confirm("Você tem certeza que deseja inativar todos os produtos?")
-    ) {
-      setLoading(true)
-      await Api.put("/product/disableAll", {
-        products: data.map((item) => item.id),
-      })
-      handleQuery({})
-      setLoading(false)
-    }
+  const handleBatch = (e) => {
+    const val = e.target.value
+    setBatch(val)
   }
 
-  const handleGroup = (e) => {
-    const type = e.target.value
-    setGroup(type)
-    localStorage.setItem("GROUP_SAVED", e.target.value)
-    if (type === "combo") {
-      const comboList = data.filter((product) => product.type === "combo")
-      setData(comboList)
-    } else {
-      handleQuery({ group: e.target.value })
-    }
-  }
   const handleStatus = (e) => {
     setStatus(e.target.value)
     handleQuery({ status: e.target.value })
   }
+
   const handleSearch = (e) => {
     setSearch(e.target.value)
     handleQuery({ search: e.target.value })
@@ -209,20 +225,9 @@ const TicketsPage = ({ event }) => {
     )
   }
 
-  const editType = {
-    combo: "/dashboard/product/combo",
-    complement: "/dashboard/product/complement",
-  }
   const handleEdit = (row) => {
-    const url = editType?.[row.type]
-      ? `${editType[row.type]}/${row.id}`
-      : `/dashboard/webstore/tickets/simple/${row.id}`
+    const url = `/dashboard/tickets/simple/${row.id}`
     history.push(url)
-  }
-
-  const deleteType = {
-    combo: "/product/combo",
-    complement: "/product/complement",
   }
 
   const handleDelete = async (row) => {
@@ -232,9 +237,7 @@ const TicketsPage = ({ event }) => {
       }
 
       setLoading(true)
-      const url = deleteType?.[row.type]
-        ? `${deleteType[row.type]}/${row.id}`
-        : `/product/simple/${row.id}`
+      const url = `/product/simple/${row.id}`
       const { data } = await Api.delete(url)
 
       if (!data) {
@@ -349,7 +352,7 @@ const TicketsPage = ({ event }) => {
   }
 
   const handleCreateTicket = () => {
-    history.push("/dashboard/webstore/tickets/simple/new")
+    history.push("/dashboard/tickets/simple/new")
   }
 
   return (
@@ -415,17 +418,17 @@ const TicketsPage = ({ event }) => {
           <Grid container direction="row" spacing={2}>
             <Grid item>
               <FormControl variant="outlined" size="small" fullWidth>
-                <InputLabel>Grupo</InputLabel>
+                <InputLabel>Lote</InputLabel>
                 <Select
-                  value={group}
-                  onChange={handleGroup}
-                  label="Grupo"
+                  value={batch}
+                  onChange={handleBatch}
+                  label="Lote"
                   variant="outlined"
                   fullWidth
                 >
-                  {groupList.map((groupItem) => (
-                    <MenuItem key={groupItem.id} value={groupItem.id}>
-                      {groupItem.name}
+                  {batchList.map((batchItem) => (
+                    <MenuItem key={batchItem.id} value={batchItem.id}>
+                      {batchItem.batch_name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -462,43 +465,30 @@ const TicketsPage = ({ event }) => {
 
         <Grid item lg md sm xs>
           <EaseGrid
-            data={data}
+            data={
+              data
+                .filter(t => {
+                  let state = true
+
+                  // batch
+                  if (batch !== "todos") state = (t.batch_id === batch)
+
+                  // group
+                  // if (group && group.id !== "todos") state = (t.group_id === group.id)
+
+                  // search
+                  if (!!search) state = t.name.toLowerCase().includes(search.toLowerCase())
+
+                  // status
+                  if (status !== "todos") state = t.active === +status
+
+                  return state
+                })
+            }
             columns={columns}
             hasSearch={false}
             actionsRight={true}
             actions={[
-              // (rowData) => ({
-              //   icon: () =>
-              //     rowData.favorite ? (
-              //       <Favorite style={{ color: "#F50057" }} />
-              //     ) : (
-              //       <FavoriteBorder />
-              //     ),
-              //   tooltip: "Favoritar",
-              //   onClick: async (event, rowData) => {
-              //     try {
-              //       const favorite = rowData.favorite ? 0 : 1
-              //       await Api.patch(`/product/updateFavorite/${rowData.id}`, {
-              //         type: rowData.type,
-              //         favorite,
-              //       })
-              //       const newData = [...data]
-              //       newData[rowData.tableData.id].favorite = favorite
-              //       setData(newData)
-              //     } catch (error) {
-              //       alert(error?.message ?? "Ocorreu um erro ao favoritar")
-              //     }
-              //   },
-              //   hidden: rowData.type === "complement",
-              // }),
-              // {
-              //   icon: () => <FlashOn />,
-              //   tooltip: "Edição rápida",
-              //   onClick: (event, rowData) => {
-              //     rowData.tableData.editing = "update"
-              //     forceUpdate()
-              //   },
-              // },
               {
                 icon: () => (
                   <Button variant="outlined" color="primary" size="small">
@@ -528,7 +518,7 @@ const TicketsPage = ({ event }) => {
             }}
           />
         </Grid>
-
+        {/* 
         <Grid
           item
           style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}
@@ -540,7 +530,7 @@ const TicketsPage = ({ event }) => {
           >
             Inativar Produtos
           </ButtonRound>
-        </Grid>
+        </Grid> */}
       </Grid>
     </>
   )

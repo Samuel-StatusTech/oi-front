@@ -86,6 +86,10 @@ const Event = () => {
   const [hasCashlessConfig, setHasCashlessConfig] = useState(false);
   const [taxPaybackType, setTaxPaybackType] = useState(true);
   const [errorsVerify, setErrorsVerify] = useState({});
+  const [event_banner, setEventBanner] = useState("");
+  const [event_map, setEventMap] = useState("");
+
+
   useEffect(() => {
     if (!action) {
       Api.get(`/event/getData/${idEvent}`)
@@ -125,6 +129,9 @@ const Event = () => {
             setTaxPaybackCash(event.tax_payback_cash / 100);
             setTaxPaybackPercent(event.tax_payback_percent !== 0 ? event.tax_payback_percent : 0);
             setTaxPaybackType(event.has_tax_cashback && event.tax_payback_cash !== 0);
+
+            setEventBanner(event.event_banner);
+            setEventMap(event.event_map);
           } else {
             alert('Não foi possível carregar os dados do evento');
             handleCancel();
@@ -141,10 +148,10 @@ const Event = () => {
 
   useEffect(() => {
     Api.get(`/getLogoFixed`)
-    .then(({ data }) => {
-      const { logoFixed } = data;
-      setLogoFixed(logoFixed);
-    });
+      .then(({ data }) => {
+        const { logoFixed } = data;
+        setLogoFixed(logoFixed);
+      });
     firebase.auth().onAuthStateChanged(hasCashlessConf)
     hasCashlessConf();
   }, []);
@@ -174,6 +181,8 @@ const Event = () => {
     formData.append('tax_active', taxActive * 100);
     formData.append('tax_payback_cash', taxPaybackType ? taxPaybackCash * 100 : 0);
     formData.append('tax_payback_percent', taxPaybackType ? 0 : taxPaybackPercent !== 0 ? taxPaybackPercent : 0);
+    formData.append('event_banner', event_banner);
+    formData.append('event_map', event_map);
 
     return formData;
   };
@@ -195,6 +204,7 @@ const Event = () => {
 
   const handleEdit = async (body) => {
     try {
+      console.log(body)
       setButtonLoading(true);
       await Api.put(`/event/updateEvent/${idEvent}`, body, {
         headers: {
@@ -213,11 +223,11 @@ const Event = () => {
     const timeIniInput = timeIniInputVerify(timeIni);
     const localInput = localInputVerify(local);
     const cityInput = cityInputVerify(city);
-    setErrorsVerify({...errorsVerify, name: nameInput, timeIni: timeIniInput, local: localInput, city: cityInput})
+    setErrorsVerify({ ...errorsVerify, name: nameInput, timeIni: timeIniInput, local: localInput, city: cityInput })
     return Boolean(nameInput) || Boolean(timeIniInput) || Boolean(localInput) || Boolean(cityInput);
   }
   const onSubmit = () => {
-    if(verifyErrors()){
+    if (verifyErrors()) {
       return;
     }
     if (hasTaxCashback) {
@@ -239,19 +249,19 @@ const Event = () => {
         return;
       }
     }
-    if(dateIni == null) {
+    if (dateIni == null) {
       alert('Por favor preencha a data de início do evento');
       return;
     }
-    if(timeIni == null) {
+    if (timeIni == null) {
       alert('Por favor preencha a hora de início do evento');
       return;
     }
-    if(timeIni == null) {
+    if (timeIni == null) {
       alert('Por favor preencha a hora de início do evento');
       return;
     }
-    if(!state) {
+    if (!state) {
       alert('Por favor preencha o estado');
       return;
     }
@@ -268,44 +278,44 @@ const Event = () => {
   const handleCancel = () => {
     history.replace('/dashboard/event');
   };
-  const hasCashlessConf = async(user) => {
-    if(user && user.uid) {
-      const clientKey = (await firebase.database().ref('Managers/'+user.uid+'/client').once('value')).val()
+  const hasCashlessConf = async (user) => {
+    if (user && user.uid) {
+      const clientKey = (await firebase.database().ref('Managers/' + user.uid + '/client').once('value')).val()
       const hasCashlessC = (await firebase.database().ref(`Clients/${clientKey}/cashless`).once('value')).val();
       setHasCashlessConfig(hasCashlessC);
     }
   }
   const nameInputVerify = (value) => {
 
-    if(!value){
-      setErrorsVerify({...errorsVerify, name: 'É necessário preencher o campo'});
+    if (!value) {
+      setErrorsVerify({ ...errorsVerify, name: 'É necessário preencher o campo' });
       return 'É necessário preencher o campo';
     }
-    setErrorsVerify({...errorsVerify, name: null});
+    setErrorsVerify({ ...errorsVerify, name: null });
     return null;
   }
   const timeIniInputVerify = (value) => {
-    if(!value){
-      setErrorsVerify({...errorsVerify, timeIni: 'É necessário preencher o campo'});
+    if (!value) {
+      setErrorsVerify({ ...errorsVerify, timeIni: 'É necessário preencher o campo' });
       return 'É necessário preencher o campo';
     }
-    setErrorsVerify({...errorsVerify, timeIni: null});
+    setErrorsVerify({ ...errorsVerify, timeIni: null });
     return null;
-  } 
+  }
   const localInputVerify = (value) => {
-    if(!value){
-      setErrorsVerify({...errorsVerify, local: 'É necessário preencher o campo'});
+    if (!value) {
+      setErrorsVerify({ ...errorsVerify, local: 'É necessário preencher o campo' });
       return 'É necessário preencher o campo';
     }
-    setErrorsVerify({...errorsVerify, local: null});
+    setErrorsVerify({ ...errorsVerify, local: null });
     return null;
   }
   const cityInputVerify = (value) => {
-    if(!value){
-      setErrorsVerify({...errorsVerify, city: 'É necessário preencher o campo'});
+    if (!value) {
+      setErrorsVerify({ ...errorsVerify, city: 'É necessário preencher o campo' });
       return 'É necessário preencher o campo';
     }
-    setErrorsVerify({...errorsVerify, city: null});
+    setErrorsVerify({ ...errorsVerify, city: null });
     return null;
   }
   if (loading) {
@@ -317,7 +327,7 @@ const Event = () => {
       </Grid>
     );
   }
-  
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
@@ -327,7 +337,7 @@ const Event = () => {
               <Grid container direction='row' spacing={2}>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
                   <Grid container direction='row' spacing={2}>
-                    <Grid style={{textAlign:'center'}} item xl={3} lg={4} md={6} sm={6} xs={6}>
+                    <Grid style={{ textAlign: 'center' }} item xl={3} lg={4} md={6} sm={6} xs={6}>
                       <ImagePicker
                         label='Imagem do evento'
                         name='image'
@@ -338,19 +348,19 @@ const Event = () => {
                       <small>Tamanho: 512x256 (png)</small>
                     </Grid>
                     {!logoFixed &&
-                        <Grid style={{textAlign:'center'}} item xl={3} lg={4} md={6} sm={6} xs={6}>
-                          <ImagePicker
-                            label='Logo (impressão)'
-                            name='imageLogo'
-                            inputRef={register}
-                            image={logoPrint}
-                            setImage={setLogoPrint}
-                          />
-                            <small>Tamanho: 262×100 (png)</small>
-                        </Grid>
+                      <Grid style={{ textAlign: 'center' }} item xl={3} lg={4} md={6} sm={6} xs={6}>
+                        <ImagePicker
+                          label='Logo (impressão)'
+                          name='imageLogo'
+                          inputRef={register}
+                          image={logoPrint}
+                          setImage={setLogoPrint}
+                        />
+                        <small>Tamanho: 262×100 (png)</small>
+                      </Grid>
                     }
                   </Grid>
-                  <div style={{height: 20, marginTop: '1rem'}}></div>
+                  <div style={{ height: 20, marginTop: '1rem' }}></div>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <TextField
@@ -359,7 +369,7 @@ const Event = () => {
                         value={name}
                         onChange={(e) => {
                           const value = e.target.value.slice(0, 80);
-                          setName(value); 
+                          setName(value);
                           nameInputVerify(value);
                         }}
                         inputRef={register}
@@ -405,7 +415,7 @@ const Event = () => {
                         label='Hora de início'
                         name='timeIni'
                         value={timeIni}
-                        onChange={(e) => { 
+                        onChange={(e) => {
                           setTimeIni(e);
                           timeIniInputVerify(e);
                         }}
@@ -425,7 +435,7 @@ const Event = () => {
                       <KeyboardDatePicker
                         label='Data de término'
                         name='dateEnd'
-                        value={typeof(dateEnd) == "number" && dateEnd <= 0 ? null : dateEnd}
+                        value={typeof (dateEnd) == "number" && dateEnd <= 0 ? null : dateEnd}
                         onChange={setDateEnd}
                         inputRef={register}
                         inputVariant='outlined'
@@ -446,7 +456,7 @@ const Event = () => {
                         value={local}
                         onChange={(e) => {
                           const value = e.target.value.slice(0, 80);
-                          setLocal(value); 
+                          setLocal(value);
                           localInputVerify(value)
                         }}
                         inputRef={register}
@@ -464,7 +474,7 @@ const Event = () => {
                         value={city}
                         onChange={(e) => {
                           const value = e.target.value.slice(0, 80);
-                          setCity(value); 
+                          setCity(value);
                           cityInputVerify(value)
                         }}
                         inputRef={register}
@@ -563,119 +573,119 @@ const Event = () => {
               </Grid>
             </Grid>
 
-            { hasCashlessConfig && (<><Grid item lg={12} md={12} sm={12} xs={12}>
+            {hasCashlessConfig && (<><Grid item lg={12} md={12} sm={12} xs={12}>
               <Typography style={{ fontWeight: 'bold' }}>Configurações Cashless</Typography>
               <Divider />
             </Grid>
 
-            <Grid item lg={12} md={12} sm={12} xs={12}>
-              <Grid container spacing={2}>
-                <Grid item xl={3} lg={3} md={3} sm={4} xs={6}>
-                  <FormControlLabel
-                    label='Esse evento opera Cashless'
-                    name='hasCashless'
-                    value={hasCashless}
-                    inputRef={register}
-                    control={<GreenSwitch checked={hasCashless} onChange={(e) => setHasCashless(e.target.checked)} />}
-                  />
-                </Grid>
-                <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
-                  <Grid container>
-                    <Grid item>
-                      <Tooltip title='Taxa cobrada para abertura de um novo cartão' placement='right'>
-                        <FormControlLabel
-                          label='Cobrar Taxa de Ativação'
-                          name='hasTaxActive'
-                          value={hasTaxActive}
+              <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid container spacing={2}>
+                  <Grid item xl={3} lg={3} md={3} sm={4} xs={6}>
+                    <FormControlLabel
+                      label='Esse evento opera Cashless'
+                      name='hasCashless'
+                      value={hasCashless}
+                      inputRef={register}
+                      control={<GreenSwitch checked={hasCashless} onChange={(e) => setHasCashless(e.target.checked)} />}
+                    />
+                  </Grid>
+                  <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
+                    <Grid container>
+                      <Grid item>
+                        <Tooltip title='Taxa cobrada para abertura de um novo cartão' placement='right'>
+                          <FormControlLabel
+                            label='Cobrar Taxa de Ativação'
+                            name='hasTaxActive'
+                            value={hasTaxActive}
+                            inputRef={register}
+                            control={
+                              <GreenSwitch checked={hasTaxActive} onChange={(e) => setHasTaxActive(e.target.checked)} />
+                            }
+                          />
+                        </Tooltip>
+                      </Grid>
+                      <Grid item hidden={!hasTaxActive}>
+                        <InputMoney
+                          label='Valor'
+                          name='taxActive'
+                          value={taxActive}
                           inputRef={register}
-                          control={
-                            <GreenSwitch checked={hasTaxActive} onChange={(e) => setHasTaxActive(e.target.checked)} />
-                          }
+                          onChange={(e) => setTaxActive(e.value)}
+                          variant='outlined'
+                          size='small'
                         />
-                      </Tooltip>
-                    </Grid>
-                    <Grid item hidden={!hasTaxActive}>
-                      <InputMoney
-                        label='Valor'
-                        name='taxActive'
-                        value={taxActive}
-                        inputRef={register}
-                        onChange={(e) => setTaxActive(e.value)}
-                        variant='outlined'
-                        size='small'
-                      />
+                      </Grid>
                     </Grid>
                   </Grid>
-                </Grid>
-                <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
-                  <Tooltip
-                    title='O sistema irá permitir que a taxa de ativação possa ser devolvida ao cliente'
-                    placement='right'
-                  >
-                    <FormControlLabel
-                      label='Devolução da Taxa de Ativação'
-                      name='allowCashback'
-                      value={allowCashback}
-                      inputRef={register}
-                      control={
-                        <GreenSwitch checked={allowCashback} onChange={(e) => setAllowCashback(e.target.checked)} />
-                      }
-                    />
-                  </Tooltip>
-                </Grid>
-
-                <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
-                  <Grid container spacing={2} alignItems='center'>
-                    <Grid item>
-                      <Tooltip title='Taxa cobrada para devolução do saldo de créditos em um cartão.' placement='right'>
-                        <FormControlLabel
-                          label='Cobrar Taxa de Devolução'
-                          name='hasTaxCashback'
-                          value={hasTaxCashback}
-                          inputRef={register}
-                          control={
-                            <GreenSwitch
-                              checked={hasTaxCashback}
-                              onChange={(e) => setHasTaxCashback(e.target.checked)}
-                            />
-                          }
-                        />
-                      </Tooltip>
-                    </Grid>
-                    <Grid item hidden={!hasTaxCashback || !taxPaybackType}>
-                      <InputMoney
-                        label='Valor Fixo'
-                        name='taxPaybackCash'
-                        value={taxPaybackCash}
-                        inputRef={register}
-                        onChange={({ value }) => setTaxPaybackCash(value)}
-                        size='small'
-                      />
-                    </Grid>
-                    <Grid item hidden={!hasTaxCashback || taxPaybackType}>
-                      <InputPercent
-                        label='Porcentagem'
-                        name='taxPaybackPercent'
-                        value={taxPaybackPercent}
-                        inputRef={register}
-                        onChange={({ value }) => setTaxPaybackPercent(value)}
-                        size='small'
-                      />
-                    </Grid>
-                    <Grid item hidden={!hasTaxCashback}>
+                  <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
+                    <Tooltip
+                      title='O sistema irá permitir que a taxa de ativação possa ser devolvida ao cliente'
+                      placement='right'
+                    >
                       <FormControlLabel
-                        label={taxPaybackType ? 'Valor Fixo' : 'Porcentagem'}
-                        name='taxPaybackType'
-                        value={taxPaybackType}
+                        label='Devolução da Taxa de Ativação'
+                        name='allowCashback'
+                        value={allowCashback}
                         inputRef={register}
                         control={
-                          <GreenSwitch checked={taxPaybackType} onChange={(e) => setTaxPaybackType(e.target.checked)} />
+                          <GreenSwitch checked={allowCashback} onChange={(e) => setAllowCashback(e.target.checked)} />
                         }
                       />
+                    </Tooltip>
+                  </Grid>
+
+                  <Grid item xl={3} lg={3} md={3} sm={4} xs={6} hidden={!hasCashless}>
+                    <Grid container spacing={2} alignItems='center'>
+                      <Grid item>
+                        <Tooltip title='Taxa cobrada para devolução do saldo de créditos em um cartão.' placement='right'>
+                          <FormControlLabel
+                            label='Cobrar Taxa de Devolução'
+                            name='hasTaxCashback'
+                            value={hasTaxCashback}
+                            inputRef={register}
+                            control={
+                              <GreenSwitch
+                                checked={hasTaxCashback}
+                                onChange={(e) => setHasTaxCashback(e.target.checked)}
+                              />
+                            }
+                          />
+                        </Tooltip>
+                      </Grid>
+                      <Grid item hidden={!hasTaxCashback || !taxPaybackType}>
+                        <InputMoney
+                          label='Valor Fixo'
+                          name='taxPaybackCash'
+                          value={taxPaybackCash}
+                          inputRef={register}
+                          onChange={({ value }) => setTaxPaybackCash(value)}
+                          size='small'
+                        />
+                      </Grid>
+                      <Grid item hidden={!hasTaxCashback || taxPaybackType}>
+                        <InputPercent
+                          label='Porcentagem'
+                          name='taxPaybackPercent'
+                          value={taxPaybackPercent}
+                          inputRef={register}
+                          onChange={({ value }) => setTaxPaybackPercent(value)}
+                          size='small'
+                        />
+                      </Grid>
+                      <Grid item hidden={!hasTaxCashback}>
+                        <FormControlLabel
+                          label={taxPaybackType ? 'Valor Fixo' : 'Porcentagem'}
+                          name='taxPaybackType'
+                          value={taxPaybackType}
+                          inputRef={register}
+                          control={
+                            <GreenSwitch checked={taxPaybackType} onChange={(e) => setTaxPaybackType(e.target.checked)} />
+                          }
+                        />
+                      </Grid>
                     </Grid>
                   </Grid>
-                </Grid>
-                {/* <Grid item lg={12} md={12} sm={12} xs={12}>
+                  {/* <Grid item lg={12} md={12} sm={12} xs={12}>
                         <Tooltip title="O sistema irá permitir que caso haja saldo disponivel em um cartão, poderá ser feita a devolução. Com a opção de descontar ou não, uma taxa para devolução" placement='right'>
                             <FormControlLabel
                                 control={
@@ -688,8 +698,8 @@ const Event = () => {
                             />
                         </Tooltip>
                     </Grid> */}
-              </Grid>
-            </Grid></>)}
+                </Grid>
+              </Grid></>)}
 
             <Grid item lg={12} md={12} sm={12} xs={12}>
               <Grid container spacing={2}>
