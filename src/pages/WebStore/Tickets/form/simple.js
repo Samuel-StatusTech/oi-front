@@ -74,8 +74,8 @@ const SimpleProduct = ({ event }) => {
 
   useEffect(() => {
     console.log(priceSell)
-    setCanSave(!!name && !!batch && !!group)
-  }, [name, batch, group, priceSell]);
+    setCanSave(!!name && !!batch)
+  }, [name, batch, priceSell]);
 
   useEffect(() => {
     if (!action) {  // edit
@@ -163,6 +163,7 @@ const SimpleProduct = ({ event }) => {
     try {
       setBatch(batch_id)
       setQuantity(batchList.find(b => b.id === batch_id).quantity ?? 0)
+      setPriceSell(batchList.find(b => b.id === batch_id).price_sell ?? "0")
     } catch (error) {
       // ...
     }
@@ -189,10 +190,10 @@ const SimpleProduct = ({ event }) => {
   const handleSave = async () => {
     try {
       setButtonLoading(true);
-      if (!group) {
-        alert('Selecione um grupo');
-        return false;
-      }
+      // if (!group) {
+      //   alert('Selecione um grupo');
+      //   return false;
+      // }
 
       const formData = returnFormData();
 
@@ -233,7 +234,7 @@ const SimpleProduct = ({ event }) => {
         return false;
       }
 
-      await Api.put(`/product/updateProduct/${idProduct}`, formData, {
+      await Api.put(`${event}/ecommerce_products/${idProduct}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -325,6 +326,7 @@ const SimpleProduct = ({ event }) => {
                       <Grid item xs={12}>
                         <Grid container spacing={2}>
 
+                          {/* name */}
                           <Grid item md={6} xs={12}>
                             <TextField
                               name='name'
@@ -343,18 +345,22 @@ const SimpleProduct = ({ event }) => {
                             />
                           </Grid>
 
-                          <Grid item xs={6}>
-                            <InputMoney
-                              name='priceSell'
-                              value={priceSell}
-                              onChange={({ value }) => setPriceSell(value)}
-                              label='Preço de venda'
+                          {/* qnt */}
+                          <Grid item lg={6}
+                            md={6} sm={12} xs={12}>
+                            <TextField
+                              name='quantity'
+                              value={quantity}
+                              label='Quantidade'
                               variant='outlined'
-                              disabled={hasCourtesy}
                               size='small'
+                              style={{ minWidth: 100 }}
                               fullWidth
+                              disabled={true}
                             />
                           </Grid>
+
+                          {/* batch */}
                           <Grid item lg={6} md={6} sm={12} xs={12}>
                             <TextField
                               name='batch'
@@ -374,7 +380,22 @@ const SimpleProduct = ({ event }) => {
                               ))}
                             </TextField>
                           </Grid>
+
+                          {/* price */}
                           <Grid item lg={6} md={6} sm={12} xs={12}>
+                            <InputMoney
+                              name='priceSell'
+                              value={priceSell}
+                              label='Preço de venda'
+                              variant='outlined'
+                              size='small'
+                              fullWidth
+                              disabled={true}
+                            />
+                          </Grid>
+
+                          {/* group */}
+                          {/* <Grid item lg={6} md={6} sm={12} xs={12}>
                             <TextField
                               name='group'
                               value={group}
@@ -397,19 +418,7 @@ const SimpleProduct = ({ event }) => {
                                   </MenuItem>
                                 ))}
                             </TextField>
-                          </Grid>
-                          <Grid item lg={6} md={6} sm={12} xs={12}>
-                            <TextField
-                              name='quantity'
-                              value={quantity}
-                              label='Quantidade'
-                              variant='outlined'
-                              size='small'
-                              style={{ minWidth: 100 }}
-                              fullWidth
-                              disabled={true}
-                            />
-                          </Grid>
+                          </Grid> */}
                         </Grid>
                       </Grid>
                     </Grid>

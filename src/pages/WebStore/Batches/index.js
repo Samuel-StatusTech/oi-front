@@ -15,6 +15,7 @@ import * as fn from "./utils"
 
 import productsIcon from "../../../assets/icons/ic_produtos.svg"
 import useStyles from "../../../global/styles"
+import { format } from "currency-formatter";
 
 const BatchesPage = ({ event }) => {
   const styles = useStyles()
@@ -32,7 +33,7 @@ const BatchesPage = ({ event }) => {
     const d = new Date(date)
 
     const day = String(d.getDate()).padStart(2, "0")
-    const month = String(d.getMonth()).padStart(2, "0")
+    const month = String(d.getMonth() + 1).padStart(2, "0")
     const year = d.getFullYear()
 
     return `${day}/${month}/${year}`
@@ -41,6 +42,7 @@ const BatchesPage = ({ event }) => {
   const columns = [
     { title: "Nome", field: "batch_name" },
     { title: "Quantidade", field: "quantity" },
+    { title: "Preço", field: "price_sell", render: ({ price_sell }) => format(price_sell / 100, { code: "BRL" }) },
     {
       title: "Data expiração",
       field: "data_expiracao",

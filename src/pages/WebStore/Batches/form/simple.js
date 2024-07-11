@@ -13,6 +13,7 @@ import { KeyboardDatePicker } from '@material-ui/pickers';
 import { connect } from "react-redux"
 
 import Api from '../../../../api';
+import InputMoney from '../../../../components/Input/Money';
 
 const SimpleProduct = ({ event, user }) => {
   const history = useHistory();
@@ -27,6 +28,7 @@ const SimpleProduct = ({ event, user }) => {
   // Dados do lote
   const [batch_name, setBatchName] = useState('');
   const [batch_qnt, setBatchQnt] = useState('');
+  const [priceSell, setPriceSell] = useState('');
   const [batch_exp, setBatchExp] = useState(new Date());
 
   const loadData = async () => {
@@ -41,6 +43,7 @@ const SimpleProduct = ({ event, user }) => {
             if (thisBatch) {
               setBatchName(thisBatch.batch_name)
               setBatchQnt(thisBatch.quantity)
+              setPriceSell(thisBatch.price_sell)
               setBatchExp(thisBatch.data_expiracao)
             }
           } else {
@@ -67,7 +70,8 @@ const SimpleProduct = ({ event, user }) => {
 
     let obj = {
       batch_name: batch_name,
-      quantity: batch_qnt,
+      quantity: +batch_qnt,
+      price_sell: +priceSell,
       data_expiracao: sendableDate,
     }
 
@@ -121,7 +125,7 @@ const SimpleProduct = ({ event, user }) => {
         return false;
       }
 
-      await Api.put(`/batches/updateBatch/${idProduct}`, obj);
+      await Api.put(`/${event}/batches/${idProduct}`, obj);
       handleCancel();
     } catch (e) {
       console.log(e);
@@ -169,25 +173,13 @@ const SimpleProduct = ({ event, user }) => {
             justifyContent: "space-between"
           }}>
 
-            <Grid container spacing={2} item lg={8} md={8} sm={12} xs={12}>
-              <Grid item xs={12}>
+            <Grid container spacing={2} item lg={6} md={6} sm={12} xs={12}>
+              <Grid item xs={6}>
                 <TextField
                   name='batchName'
                   value={batch_name}
                   onChange={(e) => setBatchName(e.target.value)}
                   label='Lote'
-                  variant='outlined'
-                  size='small'
-                  style={{ minWidth: 100 }}
-                  fullWidth
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  name='quantity'
-                  value={batch_qnt}
-                  onChange={(e) => setBatchQnt(e.target.value)}
-                  label='Quantidade'
                   variant='outlined'
                   size='small'
                   style={{ minWidth: 100 }}
@@ -206,6 +198,31 @@ const SimpleProduct = ({ event, user }) => {
                   inputVariant='outlined'
                   variant='inline'
                   format='DD/MM/YYYY'
+                  size='small'
+                  fullWidth
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <TextField
+                  name='quantity'
+                  value={batch_qnt}
+                  onChange={(e) => setBatchQnt(e.target.value)}
+                  label='Quantidade'
+                  variant='outlined'
+                  size='small'
+                  style={{ minWidth: 100 }}
+                  fullWidth
+                />
+              </Grid>
+
+              <Grid item xs={6}>
+                <InputMoney
+                  name='priceSell'
+                  value={priceSell}
+                  onChange={({ value }) => setPriceSell(value)}
+                  label='Preço de venda'
+                  variant='outlined'
                   size='small'
                   fullWidth
                 />
