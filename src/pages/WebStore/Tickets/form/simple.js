@@ -172,7 +172,6 @@ const SimpleProduct = ({ event }) => {
   const returnFormData = () => {
     const formData = new FormData();
 
-    // formData.append('group_id', group);
     formData.append('name', name);
     formData.append('batch_id', batch);
     formData.append('price_sell', priceSell ? priceSell : 0);
@@ -181,7 +180,6 @@ const SimpleProduct = ({ event }) => {
     formData.append('quantity', Number(quantity));
     formData.append('active', Number(status));
     formData.append('favorite', Number(favorite));
-    // if (image) formData.append('image', image);
     formData.append('image', image);
 
     return formData;
