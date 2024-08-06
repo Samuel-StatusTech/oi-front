@@ -111,8 +111,8 @@ const SimpleProduct = ({ event }) => {
               setImage(t.image ?? null)
               setType(t.type);
               setPriceSell(t.price_sell);
-              setHasCourtesy(t.has_courtesy);
-              setWarehouseType(t.warehouse_type);
+              // setHasCourtesy(t.has_courtesy);
+              // setWarehouseType(t.warehouse_type);
               setQuantity(t.quantity)
               setStatus(t.active === 1);
               setFavorite(t.favorite === 1);
@@ -176,7 +176,7 @@ const SimpleProduct = ({ event }) => {
     formData.append('name', name);
     formData.append('batch_id', batch);
     formData.append('price_sell', priceSell ? priceSell : 0);
-    formData.append('has_courtesy', Number(hasCourtesy));
+    formData.append('has_courtesy', !Number.isNaN(Number(hasCourtesy)) ? Number(hasCourtesy) : 0);
     formData.append('warehouse_type', warehouseType);
     formData.append('quantity', Number(quantity));
     formData.append('active', Number(status));

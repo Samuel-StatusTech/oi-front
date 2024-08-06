@@ -56,6 +56,10 @@ const WSOverview = ({ event }) => {
           })
         }
       })
+
+      Api.get(`${event}/ecommerce/sells_dash`).then(({ data }) => {
+        console.log(data)
+      })
     }
   }, [event, user])
 
