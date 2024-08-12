@@ -5,28 +5,17 @@ import Chart from 'react-apexcharts';
 import { Typography } from '@material-ui/core';
 import useStyles from '../../../global/styles';
 import { getGraphData } from './options';
+import { formatDate } from '../../../utils/date';
 
 
 const Payments = ({ history = [], total, loading, toggleDailyModal }) => {
   const styles = useStyles();
 
-  let seriesData = [{ data: history }]
-  let labels = []
-
-  const processInfo = () => {
-    history.forEach((day, k) => {
-      seriesData.push(day.x)
-      labels.push(k)
-    })
-  }
-
-  processInfo(history, 'Dinheiro')
-
-  const mockData = getGraphData(history) ?? undefined
+  const mockData = getGraphData(history, history.map(d => formatDate(d.timeLabel))) ?? undefined
 
   return (
     <div style={total === 0 ? customStyles.textWrapper : customStyles.normal} >
-      <Typography className={styles.h2} style={{ textAlign: 'center', }}>
+      <Typography className={styles.h2} style={{ textAlign: 'center' }}>
         {loading ? <Skeleton animation='wave' width='80%' /> : 'Vendas diárias'}
       </Typography>
       {

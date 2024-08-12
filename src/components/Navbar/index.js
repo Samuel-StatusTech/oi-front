@@ -81,7 +81,7 @@ const Navbar = ({ toggle, event }) => {
         if (data.success) {
           const { operators } = data;
 
-          let lastGettedSync = new Date(operators[0].last_sync).getTime()
+          let lastGettedSync = operators.length > 0 ? new Date(operators[0].last_sync).getTime() : null
 
           operators.forEach(op => {
             if (new Date(op.last_sync).getTime() > lastGettedSync) {
@@ -89,7 +89,7 @@ const Navbar = ({ toggle, event }) => {
             }
           })
 
-          setSync(lastGettedSync)
+          if (lastGettedSync) setSync(lastGettedSync)
         }
       })
   };

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react"
 import {
   Dialog,
@@ -21,7 +22,7 @@ const DailySellsModal = ({ show, closeFn, data, date }) => {
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="lg">
-      <DialogTitle>Vendas online pela loja virtual - {formatDate(date)}</DialogTitle>
+      <DialogTitle>Vendas online pela loja virtual {!!date ? ` - ${formatDate(date)}` : ""}</DialogTitle>
       <DialogContent>
         <div
           style={{

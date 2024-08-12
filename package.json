@@ -68,6 +68,7 @@
     ]
   },
   "devDependencies": {
-    "@types/quill": "^2.0.14"
+    "@types/quill": "^2.0.14",
+    "@types/react-router-dom": "^5.3.3"
   }
 }

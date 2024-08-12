@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react"
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useState } from "react"
 import { connect, useStore } from "react-redux"
 import { store } from "../../../store/index"
 import Overview from "./Tabs/Overview"
@@ -8,18 +9,29 @@ import Api from "../../../api"
 export const releasesPerPage = 100
 
 const WSOverview = ({ event }) => {
+
   const [eventData, setEventData] = useState(null)
 
   const { user } = useStore(store).getState("user")
 
   const [showReleaseModal, setShowReleaseModal] = useState(false)
-  const [releases, setReleases] = useState([])
+  const [histData, setHistData] = useState([])
 
-  const deleteRelease = (rInfo) => {
-    const newArr = releases.filter((r) => r.id !== rInfo.id)
-    Api.delete(`/financialops/${rInfo.id}`)
-    setReleases(newArr)
-  }
+  const [prodList, setProdList] = useState([])
+  const [payment, setPayment] = useState({
+    gross: {
+      money: 0,
+      credit: 0,
+      debit: 0,
+      pix: 0,
+    },
+    net: {
+      credit: 0,
+      debit: 0,
+      pix: 0,
+    },
+    withdraw: 0
+  })
 
   const toggleModal = () => {
     if (showReleaseModal) setShowReleaseModal(false)
@@ -30,38 +42,110 @@ const WSOverview = ({ event }) => {
     setShowReleaseModal(true)
   }
 
-  const getReleases = async () => {
-    const req = await Api.get("/financialops", {
-      params: {
-        type: "todos",
-        per_page: 100000,
-        page: 1,
-      },
-    })
+  const calcCards = (orders) => {
 
-    return req.status === 200 ? req.data.financialop : []
-  }
+    let data = {
+      gross: { money: 0, credit: 0, debit: 0, pix: 0 },
+      net: { credit: 0, debit: 0, pix: 0 },
+      withdraw: 0
+    }
 
-  useEffect(() => {
-    if (user) {
-      getReleases().then((ops) => setReleases(ops))
-
-      Api.get("/event/getSelect?status=todos").then(({ data }) => {
-        const eData = data.events.find((ev) => ev.id === event)
-        if (eData) {
-          setEventData({
-            ...eData,
-            clientName: user.client_name,
-            clientDocument: user.client_document,
-          })
+    orders.forEach(o => {
+      o.payments.forEach(p => {
+        switch (p.payment_type) {
+          case "pix":
+            data.gross.pix += p.price
+            break;
+          case "credit":
+            data.gross.credit += p.price
+            break;
+          default:
+            break;
         }
       })
+    })
 
-      Api.get(`${event}/ecommerce/sells_dash`).then(({ data }) => {
-        console.log(data)
+    setPayment(data)
+  }
+
+  const calcProds = (orders) => {
+
+    let data = []
+
+    orders.forEach(o => {
+      o.products.forEach(p => {
+        const idx = data.findIndex(l => l.id === p.id)
+
+        if (idx < 0) {
+          const obj = {
+            id: p.id,
+            name: p.name,
+            batch_name: p.batch_name,
+            quantity: p.quantity,
+            price_unit: p.price_unit
+          }
+
+          data.push(obj)
+        } else {
+          data = data.map((prod, k) => k !== idx ? prod : ({ ...prod, quantity: prod.quantity + p.quantity }))
+        }
       })
-    }
-  }, [event, user])
+    })
+
+    // calc total
+
+    data = data.map(prod => ({ ...prod, price_total: prod.quantity * prod.price_unit }))
+
+    setProdList(data)
+  }
+
+  const loadHistory = (hist) => {
+    const history = hist.map((d, k) => ({
+      x: k,
+      y: d["sum(payments.price)"],
+      qnt: d.qtde,
+      timeLabel: new Date(d.dt).getTime()
+    }))
+
+    setHistData(history)
+  }
+
+  const loadData = useCallback(async (params = "") => {
+    let dataPromises = []
+
+    dataPromises.push(Api.get("/event/getSelect?status=todos").then(({ data }) => {
+      const eData = data.events.find((ev) => ev.id === event)
+      if (eData) {
+        setEventData({
+          ...eData,
+          clientName: user.client_name,
+          clientDocument: user.client_document,
+        })
+      }
+    }))
+
+    dataPromises.push(Api.get(`${event}/ecommerce/sells_dash${params}`).then(({ data }) => {
+      loadHistory(data.sells_in_30)
+    }))
+
+    dataPromises.push(Api.get(`${event}/ecommerce/orders${params}`).then(async ({ data }) => {
+      let ods = []
+
+      let pms = []
+      data.orders.forEach(od => {
+        pms.push(Api.get(`${event}/ecommerce/orders/${od.order_id}`).then(res => {
+          ods.push(res.data)
+        }))
+      })
+
+      await Promise.all(pms).then(() => {
+        calcCards(ods)
+        calcProds(ods)
+      })
+    }))
+
+    await Promise.allSettled(dataPromises)
+  }, [])
 
   return (
     <div
@@ -75,8 +159,10 @@ const WSOverview = ({ event }) => {
         eventData={eventData}
         toggleModal={toggleModal}
         editSingle={editSingle}
-        deleteRelease={deleteRelease}
-        releases={releases}
+        payment={payment}
+        productsList={prodList}
+        histData={histData}
+        loadData={loadData}
       />
     </div>
   )

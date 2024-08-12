@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import {
   Grid,
   Card,
@@ -12,11 +12,7 @@ import {
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
-import Api from "../../../../../api"
-import axios from "axios"
 import { format } from "currency-formatter"
-import { formatDateTimeToDB } from "../../../../../utils/date"
-import { setSizeOptions } from '../../../../../utils/tablerows'
 
 import creditTotalIcon from "../../../../../assets/icons/ic_total-credito.svg"
 import pixTotalIcon from "../../../../../assets/icons/ic_total-pix.svg"
@@ -67,8 +63,10 @@ const CardValue = ({ infos, editSingle }) => {
   )
 }
 
-export default (props) => {
-  const { event } = props
+const Overview = (props) => {
+  const { loadData, event, payment, productsList, histData } = props
+
+  const totalRecipe = payment.gross.pix + payment.gross.credit
 
   const styles = useStyles()
 
@@ -80,232 +78,63 @@ export default (props) => {
   const [ticket, setTicket] = useState("todos")
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date())
+
   const [dailyShow, setDailyModalShow] = useState(false)
-  const [prodsGrid, setProdsGrid] = useState({ columns: [], list: [] })
-  const [dailySells, setDailySells] = useState({ columns: [], list: [] })
-  const [payments, setPayments] = useState({ pix: 0, credit: 0 })
+  const [dailySells, setDailySells] = useState({
+    columns: [
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Data</Typography>,
+        field: "date",
+        render: ({ timeLabel }) => (
+          <td>
+            <span style={{ fontSize: "0.9rem" }}>{formatDate(timeLabel)}</span>
+          </td>
+        ),
+      },
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Quantidade</Typography>,
+        field: "quantity",
+        render: ({ qnt }) => (
+          <td>
+            <span>{qnt}</span>
+          </td>
+        ),
+      },
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
+        field: "value",
+        render: ({ y }) => {
 
-  const [cardInfo, setCardInfo] = useState()
-  const [history, setHistory] = useState([])
-
-  const [payment, setPayment] = useState({
-    gross: {
-      money: 0,
-      credit: 0,
-      debit: 0,
-      pix: 0,
-    },
-    net: {
-      credit: 0,
-      debit: 0,
-      pix: 0,
-    },
+          return (
+            <td>
+              <span style={{ color: "#70E080" }}>
+                {format(y / 100, { code: "BRL" })}
+              </span>
+            </td>
+          )
+        },
+      },
+    ], list: []
   })
+
   const cancelTokenSource = useRef()
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     try {
       setLoading(true)
       if (event) {
-        const dateIniFormatted = formatDateTimeToDB(dateIni)
-        const dateEndFormatted = formatDateTimeToDB(dateEnd)
 
-        const dateURL =
-          selected !== 1
-            ? `?date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
-            : ""
+        let filters = ""
 
-        cancelTokenSource.current = axios.CancelToken.source()
-        const { data } = await Api.get(
-          `/statistical/financialOverview/${event}${dateURL}`,
-          { cancelToken: cancelTokenSource.current.token }
-        )
-        setPayment(data.paymentInfo)
-        setCardInfo(data.cardInfo)
+        // const dateIniFormatted = formatDateTimeToDB(dateIni)
+        // const dateEndFormatted = formatDateTimeToDB(dateEnd)
 
-        const histData = [
-          {
-            x: new Date('2024-04-25').getTime(),
-            y: 7600,
-            qnt: 64
-          },
-          {
-            x: new Date('2024-04-26').getTime(),
-            y: 5400,
-            qnt: 42
-          },
-          {
-            x: new Date('2024-04-27').getTime(),
-            y: 8800,
-            qnt: 88
-          },
-          {
-            x: new Date('2024-04-28').getTime(),
-            y: 9000,
-            qnt: 79
-          },
-          {
-            x: new Date('2024-04-29').getTime(),
-            y: 9200,
-            qnt: 54
-          },
-          {
-            x: new Date('2024-04-30').getTime(),
-            y: 9400,
-            qnt: 91
-          },
-          {
-            x: new Date('2024-05-01').getTime(),
-            y: 9600,
-            qnt: 120
-          },
-        ]
+        // const dateURL =
+        //   selected !== 1
+        //     ? `?date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
+        //     : ""
 
-        setHistory(histData)
-
-        setDailySells({
-          columns: [
-            {
-              title: <Typography style={{ fontWeight: "bold" }}>Data</Typography>,
-              field: "date",
-              render: ({ x }) => (
-                <td>
-                  <span style={{ fontSize: "0.9rem" }}>{formatDate(x)}</span>
-                </td>
-              ),
-            },
-            {
-              title: <Typography style={{ fontWeight: "bold" }}>Quantidade</Typography>,
-              field: "quantity",
-              render: ({ qnt }) => (
-                <td>
-                  <span>{qnt}</span>
-                </td>
-              ),
-            },
-            {
-              title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
-              field: "value",
-              render: ({ y }) => {
-
-                return (
-                  <td>
-                    <span style={{ color: "#70E080" }}>
-                      {format(y / 100, { code: "BRL" })}
-                    </span>
-                  </td>
-                )
-              },
-            },
-          ],
-          list: histData
-        })
-
-        const prodsCols = [
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>Grupo</Typography>,
-            field: "group",
-            render: ({ group_name }) => (
-              <td>
-                <span>{group_name}</span>
-              </td>
-            ),
-          },
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
-            field: "quantity",
-            render: ({ name }) => (
-              <td>
-                <span>{name}</span>
-              </td>
-            ),
-          },
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>Lote</Typography>,
-            field: "lot",
-            render: ({ lot }) => {
-
-              return (
-                <td>
-                  <span>{lot}</span>
-                </td>
-              )
-            },
-          },
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>QNTE</Typography>,
-            field: "qnt",
-            render: ({ qnt }) => {
-
-              return (
-                <td>
-                  <span>{qnt}</span>
-                </td>
-              )
-            },
-          },
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>Valor un.</Typography>,
-            field: "un_value",
-            render: ({ un_value }) => {
-
-              return (
-                <td>
-                  <span>{format(un_value / 100, { code: "BRL" })}</span>
-                </td>
-              )
-            },
-          },
-          {
-            title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
-            field: "value",
-            render: ({ value }) => {
-
-              return (
-                <td>
-                  <span>{format(value / 100, { code: "BRL" })}</span>
-                </td>
-              )
-            },
-          },
-        ]
-
-        const prodsList = [
-          {
-            group_name: "Teste",
-            name: "Ingresso teste",
-            lot: "A111",
-            qnt: 20,
-            un_value: 1200,
-            value: 24000
-          },
-          {
-            group_name: "Teste",
-            name: "Ingresso 2",
-            lot: "A111",
-            qnt: 20,
-            un_value: 1200,
-            value: 24000
-          },
-          {
-            group_name: "Teste",
-            name: "Ingresso 3",
-            lot: "A111",
-            qnt: 20,
-            un_value: 1200,
-            value: 24000
-          },
-        ]
-
-        setProdsGrid({
-          columns: prodsCols,
-          list: prodsList
-        })
-
-        setPayments({
-          pix: 300000,
-          credit: 284000
-        })
+        loadData(filters)
 
         setGroups([])
         setTickets([])
@@ -315,7 +144,7 @@ export default (props) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const downloadPdfData = () => {
     if (!loading) {
@@ -324,12 +153,16 @@ export default (props) => {
   }
 
   useEffect(() => {
+    setDailySells(ds => ({ ...ds, list: histData }))
+  }, [histData])
+
+  useEffect(() => {
     if (selected !== 2) {
       onSearch()
     }
   }, [event, selected])
 
-  const onSearch = () => {
+  const onSearch = useCallback(() => {
     if (cancelTokenSource && cancelTokenSource.current) {
       cancelTokenSource.current.cancel()
       setTimeout(() => {
@@ -338,6 +171,10 @@ export default (props) => {
     } else {
       handleSearch()
     }
+  }, [])
+
+  const toggleModal = () => {
+    setDailyModalShow(!dailyShow)
   }
 
   const infos = {
@@ -346,27 +183,27 @@ export default (props) => {
         title: "Vendas Crédito",
         icon: { src: creditTotalIcon, alt: "Ícone vendas crédito" },
         value: payment.gross.credit,
-        smallLabel: (
-          <>Líquido: {format(payment.net.credit / 100, { code: "BRL" })}</>
-        ),
+        // smallLabel: (
+        //   <>Líquido: {format(payment.net.credit / 100, { code: "BRL" })}</>
+        // ),
       },
       {
         title: "Vendas Pix",
         icon: { src: pixTotalIcon, alt: "Ícone vendas pix" },
         value: payment.gross.pix,
-        smallLabel: (
-          <>Líquido: {format(payment.net.pix / 100, { code: "BRL" })}</>
-        ),
+        // smallLabel: (
+        //   <>Líquido: {format(payment.net.pix / 100, { code: "BRL" })}</>
+        // ),
       },
       {
         title: "Retiradas",
         icon: { src: withdrawIcon, alt: "Ícone Retiradas" },
-        value: payment.gross.money,
+        value: payment.withdraw,
       },
       {
         title: "Saldo",
         icon: { src: totalIcon, alt: "Ícone saldo" },
-        value: payment.gross.debit,
+        value: totalRecipe - (payment.withdraw ?? 0),
       },
     ],
   }
@@ -375,15 +212,15 @@ export default (props) => {
     <>
       <DailySellsModal
         show={dailyShow}
-        closeFn={() => setDailyModalShow(false)}
+        closeFn={toggleModal}
         data={dailySells}
-        date={new Date()}
+      // date={new Date()}
       />
 
       <Grid
         container
         direction="column"
-        spacing={24}
+        spacing={2}
         style={{
           height: "100%",
           gap: 24,
@@ -424,7 +261,7 @@ export default (props) => {
               </TextField>
             </Grid>
 
-            <Grid item lg={9} md={9} sm={10} xs={10}>
+            <Grid item lg={9} md={9} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}
@@ -436,7 +273,7 @@ export default (props) => {
                 size="small"
               />
             </Grid>
-            <Grid item lg={1} md={1} sm={1} xs={1}>
+            <Grid item lg={1} md={1} sm={12} xs={12}>
               <Button
                 className={styles.exportDataBtn}
                 style={{ width: "100%" }}
@@ -447,6 +284,7 @@ export default (props) => {
             </Grid>
           </Grid>
         </Grid>
+
 
         {loading ? (
           <div
@@ -472,7 +310,7 @@ export default (props) => {
             <Grid container spacing={2}>
               {/* total receita */}
               <Grid item xl={2} lg={2} md={12} sm={12} xs={12}>
-                <CardValue infos={cardInfo ?? {}} />
+                <CardValue infos={{ totalRecipe }} />
               </Grid>
 
               {/* cards valores pagamentos */}
@@ -514,9 +352,9 @@ export default (props) => {
                     }}
                   >
                     <Area
-                      history={history}
+                      history={dailySells.list}
                       total={1}
-                      toggleDailyModal={() => setDailyModalShow(true)}
+                      toggleDailyModal={toggleModal}
                     />
                   </Card>
 
@@ -537,9 +375,9 @@ export default (props) => {
                   >
                     <Pizza
                       labels={["Pix", "Crédito"]}
-                      series={Object.entries(payments).map(p => p[1])}
+                      series={[payment.gross.pix, payment.gross.credit]}
                       type={"pie"}
-                      total={payments.pix + payments.credit}
+                      total={payment.gross.pix + payment.gross.credit}
                     />
                   </Card>
                 </Grid>
@@ -557,11 +395,67 @@ export default (props) => {
                   <Typography className={styles.h2}>Produtos vendidos</Typography>
                 </div>
               }
-              data={prodsGrid.list}
-              columns={prodsGrid.columns}
-              pageSize={prodsGrid.list.length}
-              pageSizeOptions={setSizeOptions(prodsGrid.list.length)}
-              paging={true}
+              data={productsList}
+              columns={[
+                {
+                  title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
+                  field: "name",
+                  render: ({ name }) => (
+                    <td>
+                      <span>{name}</span>
+                    </td>
+                  ),
+                },
+                {
+                  title: <Typography style={{ fontWeight: "bold" }}>Lote</Typography>,
+                  field: "batch_name",
+                  render: ({ batch_name }) => {
+
+                    return (
+                      <td>
+                        <span>{batch_name}</span>
+                      </td>
+                    )
+                  },
+                },
+                {
+                  title: <Typography style={{ fontWeight: "bold" }}>QNTE</Typography>,
+                  field: "quantity",
+                  render: ({ quantity }) => {
+
+                    return (
+                      <td>
+                        <span>{quantity}</span>
+                      </td>
+                    )
+                  },
+                },
+                {
+                  title: <Typography style={{ fontWeight: "bold" }}>Valor un.</Typography>,
+                  field: "price_unit",
+                  render: ({ price_unit }) => {
+
+                    return (
+                      <td>
+                        <span>{format(price_unit / 100, { code: "BRL" })}</span>
+                      </td>
+                    )
+                  },
+                },
+                {
+                  title: <Typography style={{ fontWeight: "bold" }}>Valor</Typography>,
+                  field: "price_total",
+                  render: ({ price_total }) => {
+
+                    return (
+                      <td>
+                        <span>{format(price_total / 100, { code: "BRL" })}</span>
+                      </td>
+                    )
+                  },
+                },
+              ]}
+              paging={false}
             />
           </Grid>
         )}
@@ -569,3 +463,5 @@ export default (props) => {
     </>
   )
 }
+
+export default Overview

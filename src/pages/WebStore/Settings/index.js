@@ -43,6 +43,7 @@ const Manager = ({ events, event, user }) => {
 
   // To edit
   const [description, setDescription] = useState('');
+  const [description2, setDescription2] = useState('');
   const [address, setAddress] = useState('');
   const [imageDeleted, setImageDeleted] = useState(false);
   const [image, setImage] = useState(null);
@@ -70,7 +71,8 @@ const Manager = ({ events, event, user }) => {
 
       setNominalTicket(Boolean(ev.nominal))
       setAddress(ev.address)
-      setDescription(ev.description)  // description_loja
+      setDescription(ev.description)
+      setDescription2(ev.description2 ?? "")
 
       if (ev.event_banner) handleImage(ev.event_banner)
       if (ev.event_map) handleImageLayout(ev.event_map)
@@ -92,6 +94,7 @@ const Manager = ({ events, event, user }) => {
       // age_control: age_control,
       address: address,
       description: description,
+      description2: description2,
       event_banner: image,
       event_map: eventLayout,
       // keep_online: keepOnline,
@@ -143,6 +146,7 @@ const Manager = ({ events, event, user }) => {
     fd.append("state", obj.state)
     fd.append("print_valid", obj.print_valid)
     fd.append("description", obj.description)
+    fd.append("description2", obj.description2)
     fd.append("order_number", obj.order_number)
     fd.append("print_logo", obj.print_logo)
     fd.append("days", obj.days)
@@ -324,8 +328,8 @@ const Manager = ({ events, event, user }) => {
                   <Grid item xl={12} lg={12} xs={12} style={{ flex: 1 }}>
                     <ReactQuill
                       theme="snow"
-                      value={description}
-                      onChange={setDescription}
+                      value={description2}
+                      onChange={setDescription2}
                       style={{
                         borderRadius: 6,
                         height: "100%",

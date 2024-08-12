@@ -1,7 +1,6 @@
 import { format } from 'currency-formatter'
-import { formatDate } from "../../../utils/date"
 
-export const getGraphData = (history = []) => {
+export const getGraphData = (history = [], labels = undefined) => {
 
   return {
     series: [{
@@ -36,12 +35,8 @@ export const getGraphData = (history = []) => {
           enabled: false,
         },
         labels: {
-          formatter: (d) => {
-            return formatDate(d)
-          }
+          formatter: (x) => labels ? labels[x] : x
         },
-        // categories: history.map(d => formatDate(d.x, false, true)),
-        // type: 'datetime',
       },
       tootip: {
         show: false

@@ -159,28 +159,34 @@ const Event = () => {
   const returnFormData = () => {
     const formData = new FormData();
 
+    const hotsite_address = name.toLowerCase().replace(" ", "").replace(".", "").replace("-", "").replace("_", "")
+
     formData.append('name', name);
-    formData.append('status', status);
-    formData.append('logo', image);
-    formData.append('logo_print', logoPrint);
+    formData.append('nominal', 1);
+    formData.append('hotsite_address', `http://${hotsite_address}.listapix.com.br`);
+    formData.append('address', "");
+    formData.append('description', description);
+    formData.append('order_number', order_number);
+    formData.append('status', !Number.isNaN(+status) ? + status : 0);
     formData.append('date_ini', formatDateToDB(dateIni));
     formData.append('time_ini', +timeIni);
     formData.append('date_end', formatDateToDB(dateEnd));
     formData.append('local', local);
     formData.append('city', city);
     formData.append('state', state);
-    formData.append('print_valid', printTicket);
-    formData.append('description', description);
-    formData.append('order_number', order_number);
-    formData.append('print_logo', printLogoTicket);
+
+    formData.append('print_valid', !Number.isNaN(+printTicket) ? + printTicket : 0);
+    formData.append('print_logo', !Number.isNaN(+printLogoTicket) ? + printLogoTicket : 0);
     formData.append('days', days);
-    formData.append('has_cashless', hasCashless);
-    formData.append('has_tax_active', hasTaxActive);
+    formData.append('has_cashless', !Number.isNaN(+hasCashless) ? + hasCashless : 0);
+    formData.append('has_tax_active', !Number.isNaN(+hasTaxActive) ? + hasTaxActive : 0);
     formData.append('allow_cashback', allowCashback ? 1 : 0);
-    formData.append('has_tax_cashback', hasTaxCashback);
+    formData.append('has_tax_cashback', !Number.isNaN(+hasTaxCashback) ? + hasTaxCashback : 0);
     formData.append('tax_active', taxActive * 100);
     formData.append('tax_payback_cash', taxPaybackType ? taxPaybackCash * 100 : 0);
     formData.append('tax_payback_percent', taxPaybackType ? 0 : taxPaybackPercent !== 0 ? taxPaybackPercent : 0);
+    formData.append('logo', image);
+    formData.append('logo_print', logoPrint);
     formData.append('event_banner', event_banner);
     formData.append('event_map', event_map);
 
