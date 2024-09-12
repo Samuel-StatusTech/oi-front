@@ -74,7 +74,8 @@ const WSOverview = ({ event }) => {
 
     orders.forEach(o => {
       o.products.forEach(p => {
-        const idx = data.findIndex(l => l.id === p.id)
+        const idx = data.findIndex(l => l.id === p.id)    // orders key item lower
+        console.log(idx)
 
         if (idx < 0) {
           const obj = {
@@ -94,6 +95,8 @@ const WSOverview = ({ event }) => {
 
     // calc total
 
+    console.log(data)
+
     data = data.map(prod => ({ ...prod, price_total: prod.quantity * prod.price_unit }))
 
     setProdList(data)
@@ -102,7 +105,7 @@ const WSOverview = ({ event }) => {
   const loadHistory = (hist) => {
     const history = hist.map((d, k) => ({
       x: k,
-      y: d["sum(payments.price)"],
+      y: +d.price,
       qnt: d.qtde,
       timeLabel: new Date(d.dt).getTime()
     }))
@@ -125,7 +128,7 @@ const WSOverview = ({ event }) => {
     }))
 
     dataPromises.push(Api.get(`${event}/ecommerce/sells_dash${params}`).then(({ data }) => {
-      loadHistory(data.sells_in_30)
+      loadHistory(data.sells)
     }))
 
     dataPromises.push(Api.get(`${event}/ecommerce/orders${params}`).then(async ({ data }) => {

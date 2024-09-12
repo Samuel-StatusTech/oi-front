@@ -163,7 +163,7 @@ const Event = () => {
 
     formData.append('name', name);
     formData.append('nominal', 1);
-    formData.append('hotsite_address', `http://${hotsite_address}.listapix.com.br`);
+    formData.append('hotsite_address', `https://${hotsite_address}.listapix.com.br`);
     formData.append('address', "");
     formData.append('description', description);
     formData.append('order_number', order_number);

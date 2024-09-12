@@ -7,8 +7,6 @@ import {
   Typography,
   CircularProgress,
   Button,
-  TextField,
-  MenuItem
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
@@ -23,7 +21,7 @@ import { Between } from "../../../../../components/Input/DateTime"
 import CardData from "../../../../../components/CardData"
 import Area from "../../../../../components/Chart/Area"
 import DailySellsModal from "../../../../../components/Modals/DailySellsModal"
-import { formatDate } from "../../../../../utils/date"
+import { formatDate, parseUrlDate } from "../../../../../utils/date"
 import Pizza from "../../../../../components/Chart/Pizza"
 import EaseGrid from "../../../../../components/EaseGrid"
 
@@ -72,12 +70,8 @@ const Overview = (props) => {
 
   const [loading, setLoading] = useState(false)
   const [selected, onSelectType] = useState(1)
-  const [groups, setGroups] = useState([])
-  const [group, setGroup] = useState("todos")
-  const [tickets, setTickets] = useState([])
-  const [ticket, setTicket] = useState("todos")
-  const [dateIni, setDateIni] = useState(new Date())
-  const [dateEnd, setDateEnd] = useState(new Date())
+  const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
+  const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
 
   const [dailyShow, setDailyModalShow] = useState(false)
   const [dailySells, setDailySells] = useState({
@@ -118,7 +112,6 @@ const Overview = (props) => {
   })
 
   const cancelTokenSource = useRef()
-
   const handleSearch = useCallback(async () => {
     try {
       setLoading(true)
@@ -126,18 +119,16 @@ const Overview = (props) => {
 
         let filters = ""
 
-        // const dateIniFormatted = formatDateTimeToDB(dateIni)
-        // const dateEndFormatted = formatDateTimeToDB(dateEnd)
+        const dateIniFormatted = parseUrlDate(dateIni)
+        const dateEndFormatted = parseUrlDate(dateEnd)
 
-        // const dateURL =
-        //   selected !== 1
-        //     ? `?date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
-        //     : ""
+        const dateURL =
+          selected !== 1
+            ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
+            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24))}`
 
+        filters = dateURL
         loadData(filters)
-
-        setGroups([])
-        setTickets([])
       }
     } catch (error) {
       console.log(error)
@@ -228,40 +219,7 @@ const Overview = (props) => {
       >
         <Grid item lg={12} md={12} sm={12} xs={12}>
           <Grid container spacing={2}>
-            <Grid item lg={1} md={2} sm={12} xs={12}>
-              <TextField
-                value={group}
-                onChange={(e) => setGroup(e.target.value)}
-                label='Grupo'
-                variant='outlined'
-                size='small'
-                fullWidth
-                select
-              >
-                <MenuItem value='todos'>Todos</MenuItem>
-                {groups.map((g, k) => (
-                  <MenuItem value={g.id} key={k}>{g.name}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item lg={1} md={2} sm={12} xs={12}>
-              <TextField
-                value={ticket}
-                onChange={(e) => setTicket(e.target.value)}
-                label='Ingresso'
-                variant='outlined'
-                size='small'
-                fullWidth
-                select
-              >
-                <MenuItem value='todos'>Todos</MenuItem>
-                {tickets.map((t, k) => (
-                  <MenuItem value={t.id} key={k}>{t.name}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            <Grid item lg={9} md={9} sm={12} xs={12}>
+            <Grid item lg={10} md={10} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}
@@ -273,7 +231,7 @@ const Overview = (props) => {
                 size="small"
               />
             </Grid>
-            <Grid item lg={1} md={1} sm={12} xs={12}>
+            <Grid item lg={2} md={2} sm={12} xs={12}>
               <Button
                 className={styles.exportDataBtn}
                 style={{ width: "100%" }}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { connect, useStore } from "react-redux"
 import { store } from "../../../store/index"
 import Overview from "./Tabs/Overview"
@@ -7,8 +7,8 @@ import Api from "../../../api"
 
 export const releasesPerPage = 100
 
-const WSStatement = ({ event }) => {
-  const [sells, setSells] = useState([])
+const WSWithdraw = ({ event }) => {
+  const [eventData, setEventData] = useState(null)
 
   const { user } = useStore(store).getState("user")
 
@@ -26,12 +26,34 @@ const WSStatement = ({ event }) => {
     else setShowReleaseModal(true)
   }
 
-  const loadData = useCallback(async (params) => {
-
-    Api.get(`/${event}/ecommerce/sells/tickets${params ?? ""}`).then(({ data }) => {
-      setSells(data.tickets)
+  const getReleases = async () => {
+    const req = await Api.get("/financialops", {
+      params: {
+        type: "todos",
+        per_page: 100000,
+        page: 1,
+      },
     })
-  }, [event])
+
+    return req.status === 200 ? req.data.financialop : []
+  }
+
+  useEffect(() => {
+    if (user) {
+      getReleases().then((ops) => setReleases(ops))
+
+      Api.get("/event/getSelect?status=todos").then(({ data }) => {
+        const eData = data.events.find((ev) => ev.id === event)
+        if (eData) {
+          setEventData({
+            ...eData,
+            clientName: user.client_name,
+            clientDocument: user.client_document,
+          })
+        }
+      })
+    }
+  }, [event, user])
 
   return (
     <div
@@ -40,12 +62,12 @@ const WSStatement = ({ event }) => {
       }}
     >
       <Overview
-        loadData={loadData}
         event={event}
         user={user}
+        eventData={eventData}
         toggleModal={toggleModal}
         deleteRelease={deleteRelease}
-        sells={sells}
+        releases={releases}
       />
     </div>
   )
@@ -53,4 +75,4 @@ const WSStatement = ({ event }) => {
 
 const mapStateToProps = ({ event }) => ({ event })
 
-export default connect(mapStateToProps)(WSStatement)
+export default connect(mapStateToProps)(WSWithdraw)

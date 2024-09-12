@@ -1,3 +1,10 @@
+export const parseUrlDate = (d) => {
+  const dt = new Date(d)
+  return dt.getFullYear() + "-" +
+    String(dt.getMonth() + 1).padStart(2, "0") + "-" +
+    String(dt.getDate()).padStart(2, "0")
+}
+
 export const parseDate = (date) => {
   const formDate = new Date(new Date(date).getTime() - 10800000)
   let day = formDate.getDate()

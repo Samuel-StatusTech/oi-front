@@ -30,12 +30,12 @@ const Manager = ({ events, event, user }) => {
 
   // Usuário comum
   const [eventData, setEventData] = useState({
-    name: "Nome do evento",
+    name: "",
     date: new Date(),
-    hour: "12:00",
-    local: "Local do evento",
-    city: "Florianópolis",
-    fu: "UF"
+    hour: "00:00",
+    local: "",
+    city: "",
+    fu: ""
   });
 
   const [status, setStatus] = useState(true);
@@ -53,7 +53,7 @@ const Manager = ({ events, event, user }) => {
   const [targetAge, setTargetAge] = useState(0);
 
   // Panel
-  const [keepOnline, setKeepOnline] = useState(false);
+  const [keep_sells_online, setKeepOnline] = useState(false);
   const [progEnd, setProgEnd] = useState(false);
   const [end, setEnd] = useState({
     date: new Date(),
@@ -67,7 +67,13 @@ const Manager = ({ events, event, user }) => {
 
       const ev = evData.data.event
 
-      setEventData(ev)
+      setEventData({ ...ev, time_ini: ev.time_ini.slice(0, 5) })
+
+      setKeepOnline(Boolean(ev.keep_sells_online))
+      setTarget(Boolean(ev.has_age))
+      setTargetAge(ev.age ?? 0)
+      setProgEnd(Boolean(ev.has_ending))
+      if (ev.ending) setEnd({ date: new Date(ev.ending), hour: new Date(ev.ending) })
 
       setNominalTicket(Boolean(ev.nominal))
       setAddress(ev.address)
@@ -86,19 +92,36 @@ const Manager = ({ events, event, user }) => {
     // eslint-disable-next-line
   }, []);
 
+  const getDateString = () => {
+    const hrs = new Date(end.hour).getHours()
+    const mns = new Date(end.hour).getMinutes()
+
+    let d = new Date(end.date)
+    d.setHours(hrs)
+    d.setMinutes(mns)
+
+    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+
+    console.log(d.toISOString())
+
+    return str
+  }
+
   const generateObj = () => {
     const obj = {
       // editable
       status: Number(status),
       nominal: Number(nominalTicket),
-      // age_control: age_control,
+      has_age: Number(target),
+      age: Number(targetAge),
       address: address,
       description: description,
       description2: description2,
       event_banner: image,
       event_map: eventLayout,
-      // keep_online: keepOnline,
-      // has_end_defined: hasEndDefined,
+      keep_sells_online: Number(keep_sells_online),
+      has_ending: Number(progEnd),
+      ending: getDateString(),
 
       // not editable
       org_id: eventData.org_id,
@@ -126,8 +149,6 @@ const Manager = ({ events, event, user }) => {
       logo_print: eventData.logo_print
     }
 
-    console.log(obj)
-
     return obj
   }
 
@@ -141,6 +162,13 @@ const Manager = ({ events, event, user }) => {
     fd.append("date_ini", obj.date_ini)
     fd.append("time_ini", obj.time_ini)
     fd.append("date_end", obj.date_end)
+
+    fd.append("has_age", obj.has_age)
+    fd.append("age", obj.age)
+    fd.append("keep_sells_online", obj.keep_sells_online)
+    fd.append("has_ending", obj.has_ending)
+    fd.append("ending", obj.ending)
+
     fd.append("local", obj.local)
     fd.append("city", obj.city)
     fd.append("state", obj.state)
@@ -173,8 +201,6 @@ const Manager = ({ events, event, user }) => {
 
       const obj = generateObj()
       const fd = generateFD(obj)
-
-      console.log(fd, event)
 
       setButtonLoading(false);
 
@@ -280,6 +306,12 @@ const Manager = ({ events, event, user }) => {
             </Grid>
 
             <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
+              <Grid container spacing={2}>
+                <Grid item xl={2} lg={2} xs={12} direction='column'>
+                  <Typography>Endereço loja</Typography>
+                  <Typography>{eventData.hotsite_address}</Typography>
+                </Grid>
+              </Grid>
               <Grid container spacing={2}>
                 <Grid item xl={2} lg={2} xs={12} direction='column'>
                   <Typography>Nome</Typography>
@@ -439,11 +471,11 @@ const Manager = ({ events, event, user }) => {
                 <Grid item>
                   <FormControlLabel
                     label='Manter Venda-Online'
-                    name='keepOnline'
-                    value={keepOnline}
+                    name='keep_sells_online'
+                    value={keep_sells_online}
                     control={
                       <GreenSwitch
-                        checked={keepOnline}
+                        checked={keep_sells_online}
                         onChange={(e) => setKeepOnline(e.target.checked)}
                       />
                     }
