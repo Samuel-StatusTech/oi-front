@@ -73,29 +73,33 @@ const WSOverview = ({ event }) => {
     let data = []
 
     orders.forEach(o => {
-      o.products.forEach(p => {
-        const idx = data.findIndex(l => l.id === p.id)    // orders key item lower
-        console.log(idx)
+      if (o.products.some(p => p.name === "Centro Meia")) {
+        o.products.forEach(p => {
+          if (p.name.toLowerCase() === "Centro Meia".toLowerCase()) {
+            const idx = data.findIndex(l => l.name === p.name)    // orders key item lower
+            console.log(idx)
 
-        if (idx < 0) {
-          const obj = {
-            id: p.id,
-            name: p.name,
-            batch_name: p.batch_name,
-            quantity: p.quantity,
-            price_unit: p.price_unit
+            if (idx < 0) {
+              // const obj = {
+              //   name: p.name,
+              //   batch_name: p.batch_name,
+              //   quantity: p.quantity,
+              //   price_unit: p.price_unit,
+              //   price_total: p.price_total
+              // }
+
+              // data.push(obj)
+            } else {
+              // data[idx] = { ...data[idx], quantity: data[idx].quantity + p.quantity }
+            }
           }
-
-          data.push(obj)
-        } else {
-          data = data.map((prod, k) => k !== idx ? prod : ({ ...prod, quantity: prod.quantity + p.quantity }))
-        }
-      })
+        })
+      }
     })
 
     // calc total
 
-    console.log(data)
+    // console.log(data)
 
     data = data.map(prod => ({ ...prod, price_total: prod.quantity * prod.price_unit }))
 

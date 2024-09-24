@@ -11,9 +11,8 @@ import {
 
 import useStyles from "../../../../../global/styles"
 
-import axios from "axios"
 import { format } from "currency-formatter"
-import { formatDatetime } from "../../../../../utils/date"
+import { formatDatetime, parseUrlDate } from "../../../../../utils/date"
 import { formatPhone } from "../../../../../utils/toolbox/formatPhone"
 
 import { Between } from "../../../../../components/Input/DateTime"
@@ -34,65 +33,10 @@ const paymentRelation = {
   cancelled: "Cancelado",
 }
 
-const prodsList = [
-  {
-    transaction: "ABC0123D",
-    name: "Fulano legal",
-    phone: "48984844848",
-    email: "fulano@gmail.com",
-    date: new Date(),
-    payment: "credit",
-    op_code: "19aje8",
-    gateway: "PagSeguro",
-    total: 12000,
-    tax: 120,
-    status: 'payed',
-  },
-  {
-    transaction: "BBC0123D",
-    name: "Fulano 2",
-    phone: "48984844848",
-    email: "fulano@gmail.com",
-    date: new Date(),
-    payment: "credit",
-    op_code: "19aje8",
-    gateway: "Transfeera",
-    total: 12000,
-    tax: 120,
-    status: 'payed',
-  },
-  {
-    transaction: "CBC0123D",
-    name: "Fulano 3",
-    phone: "48984844848",
-    email: "fulano@gmail.com",
-    date: new Date(),
-    payment: "pix",
-    op_code: "19aje8",
-    gateway: "MercadoPago",
-    total: 12000,
-    tax: 120,
-    status: 'payed',
-  },
-  {
-    transaction: "DBC0123D",
-    name: "Fulano 4",
-    phone: "48984844848",
-    email: "fulano@gmail.com",
-    date: new Date(),
-    payment: "pix",
-    op_code: "19aje8",
-    gateway: "MercadoPago",
-    total: 12000,
-    tax: 120,
-    status: 'payed',
-  },
-]
-
 // -----
 
 const Statement = (props) => {
-  const { event } = props
+  const { loadData, event, sells } = props
 
   const styles = useStyles()
 
@@ -106,24 +50,34 @@ const Statement = (props) => {
   const [email, setEmail] = useState("")
   const [status, setStatus] = useState("todos")
 
-  const [dateIni, setDateIni] = useState(new Date())
-  const [dateEnd, setDateEnd] = useState(new Date())
+  const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
+  const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
   const [editModal, setEditModal] = useState({ status: false, data: null })
   const [voucherModal, setVoucherModal] = useState({ status: false, data: null })
-
-  const [sells, setSells] = useState([])
 
   const cancelTokenSource = useRef()
 
 
+  /*
+  {
+            "order_id": "1Xd0lgg1TDIyw-bLAAAJ",
+            "sell_date": "2024-09-04",
+            "eccommerce_product_id": "c9039e00-df8d-4d8f-be4e-b9b4e724391a",
+            "product_name": "Centro Meia",
+            "batch_name": "Infantil",
+            "sold_quantity": 1,
+            "price_unit": 1,
+            "price_total": "1"
+        }
+  */
 
   const sellsColumns = [
     {
       title: <Typography style={{ fontWeight: "bold" }}>Transação</Typography>,
-      field: "transaction",
-      render: ({ transaction }) => (
+      field: "order_id",
+      render: ({ order_id }) => (
         <td>
-          <span>{transaction}</span>
+          <span>{order_id}</span>
         </td>
       ),
     },
@@ -162,12 +116,12 @@ const Statement = (props) => {
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Data/Hora Compra</Typography>,
-      field: "date",
-      render: ({ date }) => {
+      field: "sell_date",
+      render: ({ sell_date }) => {
 
         return (
           <td>
-            <span>{formatDatetime(date)}</span>
+            <span>{formatDatetime(sell_date)}</span>
           </td>
         )
       },
@@ -179,19 +133,19 @@ const Statement = (props) => {
 
         return (
           <td>
-            <span>{paymentTypesRelation[payment]}</span>
+            <span>{paymentTypesRelation[payment] ?? "Pix"}</span>
           </td>
         )
       },
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Total</Typography>,
-      field: "total",
-      render: ({ total }) => {
+      field: "price_total",
+      render: ({ price_total }) => {
 
         return (
           <td>
-            <span>{format(total / 100, { code: "BRL" })}</span>
+            <span>{format(+price_total / 100, { code: "BRL" })}</span>
           </td>
         )
       },
@@ -203,7 +157,7 @@ const Statement = (props) => {
 
         return (
           <td>
-            <span>{`${String((tax / 100).toFixed(2)).replace(".", ",")}%`}</span>
+            <span>{`${String(((tax ?? 0) / 100).toFixed(2)).replace(".", ",")}%`}</span>
           </td>
         )
       },
@@ -263,21 +217,20 @@ const Statement = (props) => {
     try {
       setLoading(true)
       if (event) {
-        // const dateIniFormatted = formatDateTimeToDB(dateIni)
-        // const dateEndFormatted = formatDateTimeToDB(dateEnd)
 
-        // const dateURL =
-        //   selected !== 1
-        //     ? `?date_ini=${dateIniFormatted}&date_end=${dateEndFormatted}`
-        //     : ""
+        let filters = ""
 
-        cancelTokenSource.current = axios.CancelToken.source()
-        // const { data } = await Api.get(
-        //   `/statistical/financialOverview/${event}${dateURL}`,
-        //   { cancelToken: cancelTokenSource.current.token }
-        // )
+        const dateIniFormatted = parseUrlDate(dateIni)
+        const dateEndFormatted = parseUrlDate(dateEnd)
 
-        setSells(prodsList)
+        const dateURL =
+          selected !== 1
+            ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
+            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24).replace("/", "-"))}`
+
+        filters = dateURL
+
+        loadData(filters)
       }
       setLoading(false)
     } catch (error) {
@@ -307,6 +260,10 @@ const Statement = (props) => {
       onSearch()
     }
   }, [event, selected])
+
+  useEffect(() => {
+    onSearch()
+  }, [])
 
   const onSearch = () => {
     if (cancelTokenSource && cancelTokenSource.current) {

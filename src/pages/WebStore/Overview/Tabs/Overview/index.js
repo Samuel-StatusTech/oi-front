@@ -70,7 +70,7 @@ const Overview = (props) => {
 
   const [loading, setLoading] = useState(false)
   const [selected, onSelectType] = useState(1)
-  const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
+  const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
 
   const [dailyShow, setDailyModalShow] = useState(false)
@@ -135,7 +135,7 @@ const Overview = (props) => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selected])
 
   const downloadPdfData = () => {
     if (!loading) {

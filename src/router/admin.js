@@ -39,6 +39,7 @@ import { Icon as OnlineIcon } from "../pages/Online/Icon"
 import WSOverview from "../pages/WebStore/Overview"
 import WSSettings from "../pages/WebStore/Settings"
 import WSStatement from "../pages/WebStore/Statement"
+import WSWithdrawal from "../pages/WebStore/Withdrawal"
 import TicketsPage from "../pages/WebStore/Tickets"
 import TicketSimpleForm from "../pages/WebStore/Tickets/form/simple"
 import BatchesPage from "../pages/WebStore/Batches"
@@ -648,7 +649,7 @@ export default [
       {
         title: "Retiradas",
         path: "/webstore/withdrawals",
-        content: <EmBreve />,
+        content: <WSWithdrawal />,
         allow: {
           allow_only_ecommerce: true,
           allow_only_admin: true,

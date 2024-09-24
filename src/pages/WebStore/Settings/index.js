@@ -73,7 +73,16 @@ const Manager = ({ events, event, user }) => {
       setTarget(Boolean(ev.has_age))
       setTargetAge(ev.age ?? 0)
       setProgEnd(Boolean(ev.has_ending))
-      if (ev.ending) setEnd({ date: new Date(ev.ending), hour: new Date(ev.ending) })
+      if (ev.ending) {
+        const brDate = new Date(ev.ending).toLocaleString("pt-BR", { timeZone: "UTC" })
+        const dateTime = brDate.split(" ")[1].split(":")
+
+        const hourDate = new Date(new Date(new Date(ev.ending).setHours(dateTime[0])).setMinutes(dateTime[1]))
+
+        console.log(hourDate)
+
+        setEnd({ date: new Date(ev.ending), hour: hourDate })
+      }
 
       setNominalTicket(Boolean(ev.nominal))
       setAddress(ev.address)
@@ -100,9 +109,8 @@ const Manager = ({ events, event, user }) => {
     d.setHours(hrs)
     d.setMinutes(mns)
 
-    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
-
-    console.log(d.toISOString())
+    const str = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ` +
+      `${String(hrs).padStart(2, "0")}:${String(mns).padStart(2, "0")}:00`
 
     return str
   }
