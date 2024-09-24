@@ -15,6 +15,7 @@ export const Between = memo(
     toggleDevicesModal,
     onSearch,
     isForDivgs = false,
+    withdrawals = false,
     ...props
   }) => {
     const styles = useStyles()
@@ -53,7 +54,7 @@ export const Between = memo(
     }
 
     const labelFunc = (date, invalidLabel) => {
-      if (selected == 1) return "Todo período"
+      if (selected === 1) return "Todo período"
 
       const dateF = date._d
       const day = `${dateF.getDate() < 10 ? "0" : ""}${dateF.getDate()}`
@@ -67,7 +68,7 @@ export const Between = memo(
     useEffect(() => {
       selectType(props.selected)
       onSelectType && onSelectType(props.selected)
-    }, [props.selected])
+    }, [onSelectType, props.selected])
     return (
       <Grid container spacing={2} alignItems="center">
         {isForDivgs && (

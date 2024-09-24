@@ -28,7 +28,7 @@ const WSStatement = ({ event }) => {
 
   const loadData = useCallback(async (params) => {
 
-    Api.get(`/${event}/ecommerce/sells/tickets${params ?? ""}`).then(({ data }) => {
+    Api.get(`/${event}/ecommerce/sells/extract${params ?? ""}`).then(({ data }) => {
       setSells(data.tickets)
     })
   }, [event])

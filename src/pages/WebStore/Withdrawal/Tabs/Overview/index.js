@@ -1,37 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef, memo, useCallback } from "react"
+import React, { useState, useEffect, useRef, memo } from "react"
 import {
   Grid,
   Typography,
   CircularProgress,
-  Button,
   TextField,
-  MenuItem
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
 
 import { format } from "currency-formatter"
 import { formatDatetime, parseUrlDate } from "../../../../../utils/date"
-import { formatPhone } from "../../../../../utils/toolbox/formatPhone"
 
 import { Between } from "../../../../../components/Input/DateTime"
-import SellDetailsModal from "../../../../../components/Modals/SellDetails"
-import SendVoucherModal from "../../../../../components/Modals/SendVoucher"
 import EaseGrid from "../../../../../components/EaseGrid"
-
-const paymentTypesRelation = {
-  credit: "Crédito",
-  debit: "Débito",
-  pix: "Pix"
-}
-
-const paymentRelation = {
-  payed: "Pago",
-  analysis: "Em análise",
-  notApproved: "Não aprovado",
-  cancelled: "Cancelado",
-}
 
 // -----
 
@@ -45,31 +27,14 @@ const Statement = (props) => {
 
   // Filters
   const [transaction, setTransaction] = useState("")
-  const [name, setName] = useState("")
-  const [phone, setPhone] = useState("")
-  const [email, setEmail] = useState("")
-  const [status, setStatus] = useState("todos")
+  const [ticket, setTicket] = useState("")
+  const [batch, setBatch] = useState("")
 
   const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
-  const [editModal, setEditModal] = useState({ status: false, data: null })
-  const [voucherModal, setVoucherModal] = useState({ status: false, data: null })
+  // const [editModal, setEditModal] = useState({ status: false, data: null })
 
   const cancelTokenSource = useRef()
-
-
-  /*
-  {
-            "order_id": "1Xd0lgg1TDIyw-bLAAAJ",
-            "sell_date": "2024-09-04",
-            "eccommerce_product_id": "c9039e00-df8d-4d8f-be4e-b9b4e724391a",
-            "product_name": "Centro Meia",
-            "batch_name": "Infantil",
-            "sold_quantity": 1,
-            "price_unit": 1,
-            "price_total": "1"
-        }
-  */
 
   const sellsColumns = [
     {
@@ -82,58 +47,31 @@ const Statement = (props) => {
       ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Nome</Typography>,
-      field: "name",
-      render: ({ name }) => (
+      title: <Typography style={{ fontWeight: "bold" }}>Lote</Typography>,
+      field: "batch_name",
+      render: ({ batch_name }) => (
         <td>
-          <span>{name}</span>
+          <span>{batch_name}</span>
         </td>
       ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Telefone</Typography>,
-      field: "phone",
-      render: ({ phone }) => {
-
-        return (
-          <td>
-            <span>{formatPhone(phone)}</span>
-          </td>
-        )
-      },
+      title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
+      field: "product_name",
+      render: ({ product_name }) => (
+        <td>
+          <span>{product_name}</span>
+        </td>
+      ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>E-mail</Typography>,
-      field: "email",
-      render: ({ email }) => {
-
-        return (
-          <td>
-            <span>{email}</span>
-          </td>
-        )
-      },
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Data/Hora Compra</Typography>,
+      title: <Typography style={{ fontWeight: "bold" }}>Data/Hora Venda</Typography>,
       field: "sell_date",
       render: ({ sell_date }) => {
 
         return (
           <td>
             <span>{formatDatetime(sell_date)}</span>
-          </td>
-        )
-      },
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Pgto</Typography>,
-      field: "payment",
-      render: ({ payment }) => {
-
-        return (
-          <td>
-            <span>{paymentTypesRelation[payment] ?? "Pix"}</span>
           </td>
         )
       },
@@ -150,68 +88,7 @@ const Statement = (props) => {
         )
       },
     },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Taxa</Typography>,
-      field: "tax",
-      render: ({ tax }) => {
-
-        return (
-          <td>
-            <span>{`${String(((tax ?? 0) / 100).toFixed(2)).replace(".", ",")}%`}</span>
-          </td>
-        )
-      },
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
-      field: "status",
-      render: ({ status }) => {
-
-        return (
-          <td>
-            <span>{paymentRelation[status]}</span>
-          </td>
-        )
-      },
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold", textAlign: "center" }}>Opções</Typography>,
-      field: "payment",
-      render: (sell) => {
-
-        return (
-          <td>
-            <div style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-            }}>
-              <Button style={{
-                color: "#FF7043"
-              }} onClick={() => handleEdit(sell)}>Editar</Button>
-              <Button style={{
-                color: "#3B94FF"
-              }} onClick={() => handleSend(sell)}>Enviar</Button>
-            </div>
-          </td>
-        )
-      },
-    }
   ]
-
-  const handleEdit = useCallback((sell) => {
-    setEditModal({
-      status: true,
-      data: sell
-    })
-  }, [])
-
-  const handleSend = (sell) => {
-    setVoucherModal({
-      status: true,
-      data: sell
-    })
-  }
 
   const handleSearch = async () => {
     try {
@@ -226,33 +103,20 @@ const Statement = (props) => {
         const dateURL =
           selected !== 1
             ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
-            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24).replace("/", "-"))}`
+            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24)).replace("/", "-")}`
 
-        filters = dateURL
+        const transactionFilter = transaction ? `&order=${transaction.trim()}` : ""
+        const orderFilter = ticket ? `&ticket=${ticket.trim()}` : ""
+        const batchFilter = batch ? `&batch=${batch.trim()}` : ""
+
+        filters = dateURL + transactionFilter + orderFilter + batchFilter
 
         loadData(filters)
       }
       setLoading(false)
     } catch (error) {
-      console.log(error)
       setLoading(false)
     }
-  }
-
-  const handleUpdate = (changes) => {
-    const { status, payment } = changes
-
-    console.log({ status, payment })
-
-    // update Api ...
-  }
-
-  const handleSendVoucher = (changes) => {
-    const { status, payment } = changes
-
-    console.log({ status, payment })
-
-    // update Api ...
   }
 
   useEffect(() => {
@@ -278,23 +142,14 @@ const Statement = (props) => {
 
   return (
     <>
-      {editModal.data && (
+      {/* {editModal.data && (
         <SellDetailsModal
           show={editModal.status}
           closeFn={() => setEditModal({ status: false, data: null })}
           data={editModal.data}
           handleUpdate={handleUpdate}
         />
-      )}
-
-      {voucherModal.data && (
-        <SendVoucherModal
-          show={voucherModal.status}
-          closeFn={() => setVoucherModal({ status: false, data: null })}
-          data={voucherModal.data}
-          handleSend={handleSendVoucher}
-        />
-      )}
+      )} */}
 
       <Grid
         container
@@ -309,7 +164,7 @@ const Statement = (props) => {
 
           {/* Filters */}
           <Grid item container spacing={2}>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
+            <Grid item lg={1} md={1} sm={12} xs={12}>
               <TextField
                 value={transaction}
                 onChange={(e) => setTransaction(e.target.value)}
@@ -319,58 +174,28 @@ const Statement = (props) => {
                 fullWidth
               />
             </Grid>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
+            <Grid item lg={1} md={1} sm={12} xs={12}>
               <TextField
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                label='Nome'
+                value={ticket}
+                onChange={(e) => setTicket(e.target.value)}
+                label='Ingresso'
                 variant='outlined'
                 size='small'
                 fullWidth
               />
             </Grid>
-            <Grid item lg={3} md={3} sm={12} xs={12}>
+            <Grid item lg={1} md={1} sm={12} xs={12}>
               <TextField
-                value={phone}
-                onChange={(e) => setPhone(formatPhone(e.target.value))}
-                label='Telefone'
+                value={batch}
+                onChange={(e) => setBatch(e.target.value)}
+                label='Lote'
                 variant='outlined'
                 size='small'
                 fullWidth
               />
             </Grid>
-            <Grid item lg={3} md={3} sm={12} xs={12}>
-              <TextField
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                label='E-mail'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
-              <TextField
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                label='Status'
-                variant='outlined'
-                size='small'
-                fullWidth
-                select
-              >
-                <MenuItem value='todos'>Todos</MenuItem>
-                <MenuItem value='payed'>Pago</MenuItem>
-                <MenuItem value='analysis'>Em análise</MenuItem>
-                <MenuItem value='notApproved'>Não aprovado</MenuItem>
-                <MenuItem value='cancelled'>Cancelado</MenuItem>
-              </TextField>
-            </Grid>
-          </Grid>
 
-          {/* Date */}
-          <Grid container spacing={2}>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
+            <Grid item lg={9} md={9} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}
@@ -380,6 +205,7 @@ const Statement = (props) => {
                 onSelectType={onSelectType}
                 onSearch={onSearch}
                 size="small"
+                withdrawals={true}
               />
             </Grid>
           </Grid>

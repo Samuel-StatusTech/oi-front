@@ -17,11 +17,12 @@ import { format } from "currency-formatter"
 
 const SellDetailsModal = ({ show, closeFn, data, handleUpdate }) => {
 
-  const [status, setStatus] = useState('analysis')
+  const [status, setStatus] = useState('awaiting')
   const [payType, setPayType] = useState('pix')
 
   const update = () => {
     handleUpdate({
+      order_id: data.order_id,
       status: status,
       payment: payType,
     })
@@ -33,8 +34,8 @@ const SellDetailsModal = ({ show, closeFn, data, handleUpdate }) => {
   }
 
   useEffect(() => {
-    setStatus(data.status)
-    setPayType(data.payment)
+    if (data.status) setStatus(data.status)
+    if (data.payment) setPayType(data.payment)
   }, [data])
 
   return (
@@ -57,29 +58,29 @@ const SellDetailsModal = ({ show, closeFn, data, handleUpdate }) => {
 
           <Grid item xl={12} lg={12} md={6} sm={12} xs={12}>
             <Grid container spacing={2}>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Data/Hora da Compra</Typography>
-                <Typography>{formatDatetime(data.date)}</Typography>
+                <Typography>{formatDatetime(data.created_at)}</Typography>
               </Grid>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Nº transação</Typography>
-                <Typography>{data.transaction}</Typography>
+                <Typography>{data.order_id}</Typography>
               </Grid>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              {/* <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Código operadora</Typography>
                 <Typography>{data.op_code}</Typography>
               </Grid>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Gateway</Typography>
                 <Typography>{data.gateway}</Typography>
-              </Grid>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              </Grid> */}
+              <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Valor</Typography>
-                <Typography>{format(data.total / 100, { code: "BRL" })}</Typography>
+                <Typography>{format(+data.price_total / 100, { code: "BRL" })}</Typography>
               </Grid>
-              <Grid item xl={2} lg={2} xs={12} direction='column'>
+              <Grid item xl={3} lg={3} xs={12} direction='column'>
                 <Typography style={{ fontWeight: "bold" }}>Validado no Evento</Typography>
-                <Typography>{Boolean(data.validated) ? "Sim" : "Não"}</Typography>
+                <Typography>{Boolean(data.status === "validated") ? "Sim" : "Não"}</Typography>
               </Grid>
             </Grid>
           </Grid>
@@ -120,10 +121,8 @@ const SellDetailsModal = ({ show, closeFn, data, handleUpdate }) => {
                   fullWidth
                   select
                 >
-                  <MenuItem value='payed'>Pago</MenuItem>
-                  <MenuItem value='analysis'>Em análise</MenuItem>
-                  <MenuItem value='notApproved'>Não aprovado</MenuItem>
-                  <MenuItem value='cancelled'>Cancelado</MenuItem>
+                  <MenuItem value='awaiting'>Aguardando</MenuItem>
+                  <MenuItem value='paid'>Pago</MenuItem>
                 </TextField>
               </Grid>
             </Grid>

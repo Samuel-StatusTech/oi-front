@@ -79,8 +79,6 @@ const Manager = ({ events, event, user }) => {
 
         const hourDate = new Date(new Date(new Date(ev.ending).setHours(dateTime[0])).setMinutes(dateTime[1]))
 
-        console.log(hourDate)
-
         setEnd({ date: new Date(ev.ending), hour: hourDate })
       }
 

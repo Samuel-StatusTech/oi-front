@@ -7,9 +7,7 @@ import {
   DialogActions,
   Grid,
   TextField,
-  MenuItem,
   Typography,
-  Divider,
 } from "@material-ui/core"
 
 const SendVoucherModal = ({ show, closeFn, data, handleSend }) => {
@@ -32,7 +30,7 @@ const SendVoucherModal = ({ show, closeFn, data, handleSend }) => {
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="sm">
-      <DialogTitle>Confirmar envio de voucher por email ({data.transaction})</DialogTitle>
+      <DialogTitle>Confirmar envio de voucher por email ({data.order_id})</DialogTitle>
       <DialogContent>
         <div
           style={{
@@ -63,7 +61,7 @@ const SendVoucherModal = ({ show, closeFn, data, handleSend }) => {
                 </Grid>
               </Grid>
             ) : (
-              <Grid item xl={4} lg={4} xs={12} direction='column'>
+              <Grid item xl={12} lg={12} xs={12} direction='column'>
                 <TextField
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

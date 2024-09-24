@@ -19,6 +19,7 @@ import { Between } from "../../../../../components/Input/DateTime"
 import SellDetailsModal from "../../../../../components/Modals/SellDetails"
 import SendVoucherModal from "../../../../../components/Modals/SendVoucher"
 import EaseGrid from "../../../../../components/EaseGrid"
+import Api from "../../../../../api"
 
 const paymentTypesRelation = {
   credit: "Crédito",
@@ -27,10 +28,8 @@ const paymentTypesRelation = {
 }
 
 const paymentRelation = {
-  payed: "Pago",
-  analysis: "Em análise",
-  notApproved: "Não aprovado",
-  cancelled: "Cancelado",
+  paid: "Pago",
+  awaiting: "Aguardando",
 }
 
 // -----
@@ -48,7 +47,7 @@ const Statement = (props) => {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
-  const [status, setStatus] = useState("todos")
+  const [status, setStatus] = useState("")
 
   const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
@@ -56,20 +55,6 @@ const Statement = (props) => {
   const [voucherModal, setVoucherModal] = useState({ status: false, data: null })
 
   const cancelTokenSource = useRef()
-
-
-  /*
-  {
-            "order_id": "1Xd0lgg1TDIyw-bLAAAJ",
-            "sell_date": "2024-09-04",
-            "eccommerce_product_id": "c9039e00-df8d-4d8f-be4e-b9b4e724391a",
-            "product_name": "Centro Meia",
-            "batch_name": "Infantil",
-            "sold_quantity": 1,
-            "price_unit": 1,
-            "price_total": "1"
-        }
-  */
 
   const sellsColumns = [
     {
@@ -93,11 +78,11 @@ const Statement = (props) => {
     {
       title: <Typography style={{ fontWeight: "bold" }}>Telefone</Typography>,
       field: "phone",
-      render: ({ phone }) => {
+      render: ({ fone }) => {
 
         return (
           <td>
-            <span>{formatPhone(phone)}</span>
+            <span>{formatPhone(fone)}</span>
           </td>
         )
       },
@@ -117,11 +102,11 @@ const Statement = (props) => {
     {
       title: <Typography style={{ fontWeight: "bold" }}>Data/Hora Compra</Typography>,
       field: "sell_date",
-      render: ({ sell_date }) => {
+      render: ({ created_at }) => {
 
         return (
           <td>
-            <span>{formatDatetime(sell_date)}</span>
+            <span>{formatDatetime(created_at)}</span>
           </td>
         )
       },
@@ -226,31 +211,49 @@ const Statement = (props) => {
         const dateURL =
           selected !== 1
             ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
-            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24).replace("/", "-"))}`
+            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24)).replace("/", "-")}`
 
-        filters = dateURL
+        const transactionFilter = transaction ? `&order=${transaction.trim()}` : ""
+        const nameFilter = name ? `&name=${name.trim()}` : ""
+        const phoneFilter = phone ? `&fone=${phone.replace(/\D/g, "")}` : ""
+        const emailFilter = email ? `&email=${email.trim()}` : ""
+        const statusFilter = status ? `&status=${status.trim()}` : ""
+
+        filters = dateURL + transactionFilter + nameFilter + phoneFilter + emailFilter + statusFilter
 
         loadData(filters)
       }
       setLoading(false)
     } catch (error) {
-      console.log(error)
       setLoading(false)
     }
   }
 
-  const handleUpdate = (changes) => {
-    const { status, payment } = changes
+  const handleUpdate = async (changes) => {
+    const { order_id, status, payment } = changes
 
-    console.log({ status, payment })
+    const details = await Api.get(`/${event}/ecommerce/orders/${order_id}`)
 
-    // update Api ...
+    if (details.data) {
+      await Api.put(`/${event}/ecommerce/orders/${order_id}`, {
+        products: details.data.products,
+        status,
+        payments: [
+          {
+            ...details.data.payment[0],
+            payment_type: payment
+          },
+        ]
+      }).then(() => {
+        handleSearch()
+      })
+    }
   }
 
-  const handleSendVoucher = (changes) => {
-    const { status, payment } = changes
+  const handleSendVoucher = (info) => {
+    const { email } = info
 
-    console.log({ status, payment })
+    console.log({ email })
 
     // update Api ...
   }
@@ -359,11 +362,9 @@ const Statement = (props) => {
                 fullWidth
                 select
               >
-                <MenuItem value='todos'>Todos</MenuItem>
-                <MenuItem value='payed'>Pago</MenuItem>
-                <MenuItem value='analysis'>Em análise</MenuItem>
-                <MenuItem value='notApproved'>Não aprovado</MenuItem>
-                <MenuItem value='cancelled'>Cancelado</MenuItem>
+                <MenuItem value=''>Todos</MenuItem>
+                <MenuItem value='awaiting'>Aguardando</MenuItem>
+                <MenuItem value='paid'>Pago</MenuItem>
               </TextField>
             </Grid>
           </Grid>
