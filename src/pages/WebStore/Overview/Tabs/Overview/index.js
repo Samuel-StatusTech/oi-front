@@ -24,6 +24,9 @@ import DailySellsModal from "../../../../../components/Modals/DailySellsModal"
 import { formatDate, parseUrlDate } from "../../../../../utils/date"
 import Pizza from "../../../../../components/Chart/Pizza"
 import EaseGrid from "../../../../../components/EaseGrid"
+import webstoreOverviewPDF from "../../../../../utils/webstoreOverview"
+
+import Api from "../../../../../api"
 
 const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
@@ -62,6 +65,7 @@ const CardValue = ({ infos, editSingle }) => {
 }
 
 const Overview = (props) => {
+
   const { loadData, event, payment, productsList, histData } = props
 
   const totalRecipe = payment.gross.pix + payment.gross.credit
@@ -69,9 +73,12 @@ const Overview = (props) => {
   const styles = useStyles()
 
   const [loading, setLoading] = useState(false)
+  const [loadingPdf, setLoadingPdf] = useState(false)
   const [selected, onSelectType] = useState(1)
   const [dateIni, setDateIni] = useState(new Date())
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
+
+  const [eventData, setEventData] = useState(null)
 
   const [dailyShow, setDailyModalShow] = useState(false)
   const [dailySells, setDailySells] = useState({
@@ -137,12 +144,6 @@ const Overview = (props) => {
     }
   }, [selected])
 
-  const downloadPdfData = () => {
-    if (!loading) {
-      // ...
-    }
-  }
-
   useEffect(() => {
     setDailySells(ds => ({ ...ds, list: histData }))
   }, [histData])
@@ -199,13 +200,74 @@ const Overview = (props) => {
     ],
   }
 
+  const getDateIni = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateIni)
+      }
+    }
+  }
+
+  const getDateEnd = () => {
+    if (selected === 0) {
+      return "Hoje"
+    } else {
+      if (selected === 1) {
+        return "Todo o período"
+      } else if (selected === 2) {
+        return formatDate(dateEnd)
+      }
+    }
+  }
+
+  const generatePDF = async () => {
+
+    setLoadingPdf(true)
+
+    try {
+
+      await webstoreOverviewPDF({
+        event: eventData,
+        dateIni: getDateIni(),
+        dateEnd: getDateEnd(),
+        mustDownload: true,
+        resume: {
+          pix: payment.gross.pix,
+          credit: payment.gross.credit ?? 0,
+          total: payment.gross.pix + (payment.gross.credit ?? 0)
+        },
+        dailySells: histData,
+        products: []
+      })
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoadingPdf(false)
+    }
+
+
+  }
+
+  useEffect(() => {
+    Api.get(`/event/getSelect?status=todos`).then(({ data }) => {
+      if (data.success) {
+        setEventData(data.events.find((ev) => ev.id === event))
+      } else {
+        alert("Erro ao buscar a lista de eventos")
+      }
+    })
+  }, [])
+
   return (
     <>
       <DailySellsModal
         show={dailyShow}
         closeFn={toggleModal}
         data={dailySells}
-      // date={new Date()}
       />
 
       <Grid
@@ -227,17 +289,18 @@ const Overview = (props) => {
                 onChangeEnd={setDateEnd}
                 selected={selected}
                 onSelectType={onSelectType}
-                onSearch={onSearch}
+                onDownloadClick={generatePDF}
                 size="small"
+                onSearch={onSearch}
               />
             </Grid>
             <Grid item lg={2} md={2} sm={12} xs={12}>
               <Button
                 className={styles.exportDataBtn}
                 style={{ width: "100%" }}
-                onClick={loading ? () => { } : downloadPdfData}
+                onClick={loadingPdf ? () => { } : generatePDF}
               >
-                {loading ? "Carregando..." : "Baixar PDF"}
+                {loadingPdf ? "Carregando..." : "Baixar PDF"}
               </Button>
             </Grid>
           </Grid>
