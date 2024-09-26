@@ -6,8 +6,6 @@ export const logo =
 const content = (data) => {
   const { event, dateIni, dateEnd, resume, dailySells, products } = data
 
-  // const operatorsNames = getNames(users)
-
   const eventAndFilters = getEventAndFilters({
     event,
     dateIni,
