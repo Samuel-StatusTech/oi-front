@@ -6,7 +6,6 @@ import {
   CircularProgress,
   Button,
   TextField,
-  MenuItem
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
@@ -27,11 +26,6 @@ const paymentTypesRelation = {
   pix: "Pix"
 }
 
-const paymentRelation = {
-  paid: "Pago",
-  awaiting: "Aguardando",
-}
-
 // -----
 
 const Statement = (props) => {
@@ -47,7 +41,6 @@ const Statement = (props) => {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
-  const [status, setStatus] = useState("")
 
   const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
@@ -148,18 +141,6 @@ const Statement = (props) => {
       },
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
-      field: "status",
-      render: ({ status }) => {
-
-        return (
-          <td>
-            <span>{paymentRelation[status]}</span>
-          </td>
-        )
-      },
-    },
-    {
       title: <Typography style={{ fontWeight: "bold", textAlign: "center" }}>Opções</Typography>,
       field: "payment",
       render: (sell) => {
@@ -217,9 +198,8 @@ const Statement = (props) => {
         const nameFilter = name ? `&name=${name.trim()}` : ""
         const phoneFilter = phone ? `&fone=${phone.replace(/\D/g, "")}` : ""
         const emailFilter = email ? `&email=${email.trim()}` : ""
-        const statusFilter = status ? `&status=${status.trim()}` : ""
 
-        filters = dateURL + transactionFilter + nameFilter + phoneFilter + emailFilter + statusFilter
+        filters = dateURL + transactionFilter + nameFilter + phoneFilter + emailFilter
 
         loadData(filters)
       }
@@ -229,24 +209,13 @@ const Statement = (props) => {
     }
   }
 
-  const handleUpdate = async (changes) => {
-    const { order_id, status, payment } = changes
-
-    const details = await Api.get(`/${event}/ecommerce/orders/${order_id}`)
-
-    if (details.data) {
-      await Api.put(`/${event}/ecommerce/orders/${order_id}`, {
-        products: details.data.products,
-        status,
-        payments: [
-          {
-            ...details.data.payment[0],
-            payment_type: payment
-          },
-        ]
-      }).then(() => {
-        handleSearch()
-      })
+  const handleValidate = async (qrdata, order_id, opuid) => {
+    try {
+      await Api.get(`/${event}/checkout_ticket/${qrdata}`)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      handleSearch()
     }
   }
 
@@ -286,7 +255,8 @@ const Statement = (props) => {
           show={editModal.status}
           closeFn={() => setEditModal({ status: false, data: null })}
           data={editModal.data}
-          handleUpdate={handleUpdate}
+          handleValidate={handleValidate}
+          eventId={event}
         />
       )}
 
@@ -351,21 +321,6 @@ const Statement = (props) => {
                 size='small'
                 fullWidth
               />
-            </Grid>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
-              <TextField
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                label='Status'
-                variant='outlined'
-                size='small'
-                fullWidth
-                select
-              >
-                <MenuItem value=''>Todos</MenuItem>
-                <MenuItem value='awaiting'>Aguardando</MenuItem>
-                <MenuItem value='paid'>Pago</MenuItem>
-              </TextField>
             </Grid>
           </Grid>
 

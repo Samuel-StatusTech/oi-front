@@ -14,6 +14,7 @@ import { formatDatetime, parseUrlDate } from "../../../../../utils/date"
 
 import { Between } from "../../../../../components/Input/DateTime"
 import EaseGrid from "../../../../../components/EaseGrid"
+import WithdrawalDetailsModal from "../../../../../components/Modals/WithdrawalDetails"
 
 // -----
 
@@ -32,7 +33,7 @@ const Statement = (props) => {
 
   const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
-  // const [editModal, setEditModal] = useState({ status: false, data: null })
+  const [modal, setModal] = useState({ status: false, data: null })
 
   const cancelTokenSource = useRef()
 
@@ -119,6 +120,10 @@ const Statement = (props) => {
     }
   }
 
+  const onSelectRow = (data) => {
+    setModal({ status: true, data: data })
+  }
+
   useEffect(() => {
     if (selected !== 2) {
       onSearch()
@@ -142,14 +147,14 @@ const Statement = (props) => {
 
   return (
     <>
-      {/* {editModal.data && (
-        <SellDetailsModal
-          show={editModal.status}
-          closeFn={() => setEditModal({ status: false, data: null })}
-          data={editModal.data}
-          handleUpdate={handleUpdate}
+      {modal.data && (
+        <WithdrawalDetailsModal
+          show={modal.status}
+          closeFn={() => setModal({ status: false, data: null })}
+          data={modal.data}
+          eventId={event}
         />
-      )} */}
+      )}
 
       <Grid
         container
@@ -235,6 +240,9 @@ const Statement = (props) => {
               data={sells}
               columns={sellsColumns}
               hasSearch={false}
+              onRowClick={(_, info) => {
+                onSelectRow && onSelectRow(sells[info.tableData.id])
+              }}
             />
           </Grid>
         )}

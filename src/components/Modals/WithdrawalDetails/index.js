@@ -14,7 +14,7 @@ import { format } from "currency-formatter"
 import EaseGrid from "../../EaseGrid"
 import Api from "../../../api"
 
-const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
+const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) => {
 
   const columns = [
     {
@@ -44,34 +44,9 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
         </td>
       ),
     },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
-      field: "status",
-      render: ({ status, qr_data, order_id, opuid }) => (
-        <td>
-          {status === null ? (
-            <Button
-              variant="outlined"
-              color="primary"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                update()
-              }}
-            >
-              Validar
-            </Button>
-          ) : (<span>Validado</span>)}
-        </td>
-      ),
-    },
   ]
 
   const [tickets, setTickets] = useState([])
-
-  const update = (qrdata, order_id, opuid) => {
-    handleValidate(qrdata, order_id, opuid)
-    closeModal()
-  }
 
   const closeModal = () => {
     closeFn()
@@ -112,6 +87,7 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
             <Typography style={{ fontWeight: 'bold' }}>Tickets comprados</Typography>
             <Divider />
             <EaseGrid
+              onPickRow={onSelectRow}
               data={tickets}
               columns={columns}
               hasSearch={false}
@@ -146,4 +122,4 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
   )
 }
 
-export default SellDetailsModal
+export default WithdrawalDetailsModal
