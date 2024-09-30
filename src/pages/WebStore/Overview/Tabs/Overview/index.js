@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import {
   Grid,
   Card,
@@ -119,7 +119,7 @@ const Overview = (props) => {
   })
 
   const cancelTokenSource = useRef()
-  const handleSearch = useCallback(async () => {
+  const handleSearch = async () => {
     try {
       setLoading(true)
       if (event) {
@@ -132,7 +132,7 @@ const Overview = (props) => {
         const dateURL =
           selected !== 1
             ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
-            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24))}`
+            : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24)).replace("/", "-")}`
 
         filters = dateURL
         loadData(filters)
@@ -142,7 +142,7 @@ const Overview = (props) => {
     } finally {
       setLoading(false)
     }
-  }, [selected])
+  }
 
   useEffect(() => {
     setDailySells(ds => ({ ...ds, list: histData }))
@@ -154,7 +154,7 @@ const Overview = (props) => {
     }
   }, [event, selected])
 
-  const onSearch = useCallback(() => {
+  const onSearch = () => {
     if (cancelTokenSource && cancelTokenSource.current) {
       cancelTokenSource.current.cancel()
       setTimeout(() => {
@@ -163,7 +163,7 @@ const Overview = (props) => {
     } else {
       handleSearch()
     }
-  }, [])
+  }
 
   const toggleModal = () => {
     setDailyModalShow(!dailyShow)
@@ -372,7 +372,18 @@ const Overview = (props) => {
                     }}
                   >
                     <Area
-                      history={dailySells.list}
+                      history={dailySells.list.length === 1 ? [
+                        {
+                          x: 0,
+                          y: 0,
+                          qnt: 0,
+                          timeLabel: new Date(`${new Date().getFullYear()
+                            }-${String(new Date().getMonth() + 1).padStart(2, '0')
+                            }-${String(new Date().getDate() - 1).padStart(2, '0')
+                            }`).getTime()
+                        },
+                        { ...dailySells.list[0], x: 1 }
+                      ] : dailySells.list}
                       total={1}
                       toggleDailyModal={toggleModal}
                     />

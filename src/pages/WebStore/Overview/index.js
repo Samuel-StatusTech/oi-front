@@ -43,7 +43,6 @@ const WSOverview = ({ event }) => {
   }
 
   const calcCards = (orders) => {
-
     let data = {
       gross: { money: 0, credit: 0, debit: 0, pix: 0 },
       net: { credit: 0, debit: 0, pix: 0 },
@@ -68,42 +67,33 @@ const WSOverview = ({ event }) => {
     setPayment(data)
   }
 
-  const calcProds = (orders) => {
+  const calcProds = (ordersProducts = []) => {
 
-    let data = []
+    try {
 
-    orders.forEach(o => {
-      if (o.products.some(p => p.name === "Centro Meia")) {
-        o.products.forEach(p => {
-          if (p.name.toLowerCase() === "Centro Meia".toLowerCase()) {
-            const idx = data.findIndex(l => l.name === p.name)    // orders key item lower
-            console.log(idx)
+      let prodsObjList = {}
 
-            if (idx < 0) {
-              // const obj = {
-              //   name: p.name,
-              //   batch_name: p.batch_name,
-              //   quantity: p.quantity,
-              //   price_unit: p.price_unit,
-              //   price_total: p.price_total
-              // }
+      const allProducts = ordersProducts.flat()
 
-              // data.push(obj)
-            } else {
-              // data[idx] = { ...data[idx], quantity: data[idx].quantity + p.quantity }
-            }
-          }
+      allProducts.forEach((prodItem) => {
+        if (!prodsObjList[prodItem.id]) prodsObjList[prodItem.id] = { ...prodItem, quantity: 0 }
+      })
+
+
+      if (allProducts.length > 0) {
+        // second loop
+
+        allProducts.forEach((prodItem) => {
+          prodsObjList[prodItem.id].quantity += prodItem.quantity
         })
       }
-    })
 
-    // calc total
+      const list = Object.values(prodsObjList).map(item => ({ ...item, price_total: item.quantity * item.price_unit }))
 
-    // console.log(data)
-
-    data = data.map(prod => ({ ...prod, price_total: prod.quantity * prod.price_unit }))
-
-    setProdList(data)
+      setProdList(list)
+    } catch (error) {
+      console.log("---error---", error)
+    }
   }
 
   const loadHistory = (hist) => {
@@ -146,8 +136,8 @@ const WSOverview = ({ event }) => {
       })
 
       await Promise.all(pms).then(() => {
+        calcProds(ods.map(ord => ord.products))
         calcCards(ods)
-        calcProds(ods)
       })
     }))
 
