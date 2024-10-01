@@ -351,7 +351,7 @@ export const getDailySellsTable = (history) => {
   return block
 }
 
-export const getProductsTable = (history) => {
+export const getProductsTable = (list) => {
 
   const block = [
     {
@@ -407,12 +407,12 @@ export const getProductsTable = (history) => {
                 bold: true,
               },
             ],
-            ...history.map((day) => ([
-              { fontSize: 11, text: day.name },
-              { fontSize: 11, text: day.batch_name },
-              { fontSize: 11, text: day.qnt ?? 0 },
-              { fontSize: 11, text: format(day.price_unit / 100, { code: "BRL" }) },
-              { fontSize: 11, text: format(day.price_total / 100, { code: "BRL" }) },
+            ...list.map((ticket) => ([
+              { fontSize: 11, text: ticket.product_name },
+              { fontSize: 11, text: ticket.batch_name },
+              { fontSize: 11, text: ticket.sold_quantity ?? 0 },
+              { fontSize: 11, text: format(ticket.price_unit / 100, { code: "BRL" }) },
+              { fontSize: 11, text: format(ticket.price_total / 100, { code: "BRL" }) },
             ]))
           ],
         widths: ["*", "*", "*", 100, 100],

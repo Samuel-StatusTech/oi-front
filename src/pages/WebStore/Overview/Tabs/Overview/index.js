@@ -241,7 +241,7 @@ const Overview = (props) => {
           total: payment.gross.pix + (payment.gross.credit ?? 0)
         },
         dailySells: histData,
-        products: []
+        products: productsList
       })
     } catch (error) {
       console.log(error)
@@ -430,10 +430,10 @@ const Overview = (props) => {
               columns={[
                 {
                   title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
-                  field: "name",
-                  render: ({ name }) => (
+                  field: "product_name",
+                  render: ({ product_name }) => (
                     <td>
-                      <span>{name}</span>
+                      <span>{product_name}</span>
                     </td>
                   ),
                 },
@@ -451,12 +451,12 @@ const Overview = (props) => {
                 },
                 {
                   title: <Typography style={{ fontWeight: "bold" }}>QNTE</Typography>,
-                  field: "quantity",
-                  render: ({ quantity }) => {
+                  field: "sold_quantity",
+                  render: ({ sold_quantity }) => {
 
                     return (
                       <td>
-                        <span>{quantity}</span>
+                        <span>{sold_quantity}</span>
                       </td>
                     )
                   },

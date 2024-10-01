@@ -67,28 +67,37 @@ const WSOverview = ({ event }) => {
     setPayment(data)
   }
 
-  const calcProds = (ordersProducts = []) => {
+  const calcProds = (tickets = []) => {
 
     try {
 
       let prodsObjList = {}
 
-      const allProducts = ordersProducts.flat()
-
-      allProducts.forEach((prodItem) => {
-        if (!prodsObjList[prodItem.id]) prodsObjList[prodItem.id] = { ...prodItem, quantity: 0 }
+      tickets.forEach((prodItem) => {
+        if (!prodsObjList[prodItem.eccommerce_product_id]) prodsObjList[prodItem.eccommerce_product_id] = { ...prodItem, sold_quantity: 0 }
       })
 
 
-      if (allProducts.length > 0) {
-        // second loop
-
-        allProducts.forEach((prodItem) => {
-          prodsObjList[prodItem.id].quantity += prodItem.quantity
+      if (tickets.length > 0) {
+        tickets.forEach((prodItem) => {
+          prodsObjList[prodItem.eccommerce_product_id].sold_quantity += prodItem.sold_quantity
         })
       }
 
-      const list = Object.values(prodsObjList).map(item => ({ ...item, price_total: item.quantity * item.price_unit }))
+      /*
+        {
+            "order_id": "cm9IuwEAhm222ztTAAAD",
+            "sell_date": "2024-10-01",
+            "eccommerce_product_id": "0e83fba5-ced2-4e27-8187-544d899c64c0",
+            "product_name": "Lateral",
+            "batch_name": "Meia",
+            "sold_quantity": 19,
+            "price_unit": 1,
+            "price_total": "19"
+        },
+      */
+
+      const list = Object.values(prodsObjList).map(item => ({ ...item, price_total: item.sold_quantity * item.price_unit }))
 
       setProdList(list)
     } catch (error) {
@@ -125,6 +134,10 @@ const WSOverview = ({ event }) => {
       loadHistory(data.sells)
     }))
 
+    dataPromises.push(Api.get(`${event}/ecommerce/sells/tickets${params}`).then(({ data }) => {
+      calcProds(data.tickets)
+    }))
+
     dataPromises.push(Api.get(`${event}/ecommerce/orders${params}`).then(async ({ data }) => {
       let ods = []
 
@@ -136,7 +149,6 @@ const WSOverview = ({ event }) => {
       })
 
       await Promise.all(pms).then(() => {
-        calcProds(ods.map(ord => ord.products))
         calcCards(ods)
       })
     }))

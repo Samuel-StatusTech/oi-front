@@ -27,8 +27,10 @@ const webstoreOverviewPDF = async (data) => {
 
       const pdf = pdfMake.createPdf(docDefs)
 
-      if (mustDownload)
+      if (mustDownload) {
         pdf.download(`Visão Geral - loja virtual ${event.name}, ${filename}.pdf`)
+        resolve(true)
+      }
       else pdf.getBlob((blob) => resolve(blob))
     })
   } catch (error) {
