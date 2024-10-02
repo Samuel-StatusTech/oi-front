@@ -45,6 +45,7 @@ const EaseGrid = ({
   toolbar,
   components,
   loading,
+  loadingMessage,
   paging = false,
   pageSizeOptions = [5, 10, 20, 50, 100],
   pageSize = 10,
@@ -112,7 +113,7 @@ const EaseGrid = ({
           localization={{
             body: {
               editTooltip: 'Editar',
-              emptyDataSourceMessage: 'Sem registro para exibir',
+              emptyDataSourceMessage: loadingMessage ? "Carregando..." : 'Sem registro para exibir',
               filterRow: {
                 filterTooltip: 'Filtro',
               },

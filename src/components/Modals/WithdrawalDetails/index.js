@@ -44,26 +44,62 @@ const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) =
         </td>
       ),
     },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
+      field: "status",
+      render: ({ status }) => (
+        <td>
+          <span>{status === false ? "Não validado" : "Validado"}</span>
+        </td>
+      ),
+    },
   ]
 
   const [tickets, setTickets] = useState([])
+  const [loadingInfo, setLoadingInfo] = useState(true)
 
   const closeModal = () => {
     closeFn()
   }
 
   const getData = useCallback(async () => {
-    try {
-      const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
 
-      if (req.data && req.data.products) {
-        setTickets(req.data.products)
+    if (tickets.length === 0) {
+      setLoadingInfo(true)
+
+      try {
+        const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
+
+        if (req.data && req.data.products) {
+          const orderTickets = req.data.products
+          let list = []
+
+          let pms = []
+
+          orderTickets.forEach(ticket => {
+            pms.push(Api.get(`${eventId}/validate_ticket/${ticket.qr_data}`).then(({ data: ticketInfo }) => {
+              const obj = {
+                ...ticket,
+                status: ticketInfo.status === false // back-end misinformation: status should return reverse (false => true | true => false)
+              }
+
+              list.push(obj)
+            }))
+          })
+
+
+          await Promise.all(pms)
+
+          setTickets(list)
+        }
+      } catch (error) {
+        console.log(error)
+        closeFn()
       }
-    } catch (error) {
-      console.log(error)
-      closeFn()
+
+      setLoadingInfo(false)
     }
-  }, [closeFn, data.order_id, eventId])
+  }, [closeFn, data.order_id, eventId, tickets])
 
 
   useEffect(() => {
@@ -91,6 +127,7 @@ const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) =
               data={tickets}
               columns={columns}
               hasSearch={false}
+              loadingMessage={loadingInfo}
             />
           </Grid>
         </div>

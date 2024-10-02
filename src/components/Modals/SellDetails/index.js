@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { memo, useCallback, useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -67,6 +67,7 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
   ]
 
   const [tickets, setTickets] = useState([])
+  const [loadingInfo, setLoadingInfo] = useState(true)
 
   const update = async (qrdata, order_id, opuid) => {
     const result = await handleValidate(qrdata, order_id, opuid)
@@ -84,36 +85,43 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
   }
 
   const getData = useCallback(async () => {
-    try {
-      const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
 
-      if (req.data && req.data.products) {
-        const orderTickets = req.data.products
-        let list = []
+    if (tickets.length === 0) {
+      setLoadingInfo(true)
 
-        let pms = []
+      try {
+        const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
 
-        orderTickets.forEach(ticket => {
-          pms.push(Api.get(`${eventId}/validate_ticket/${ticket.qr_data}`).then(({ data: ticketInfo }) => {
-            const obj = {
-              ...ticket,
-              status: ticketInfo.status === false // back-end misinformation: status should return reverse (false => true | true => false)
-            }
+        if (req.data && req.data.products) {
+          const orderTickets = req.data.products
+          let list = []
 
-            list.push(obj)
-          }))
-        })
+          let pms = []
+
+          orderTickets.forEach(ticket => {
+            pms.push(Api.get(`${eventId}/validate_ticket/${ticket.qr_data}`).then(({ data: ticketInfo }) => {
+              const obj = {
+                ...ticket,
+                status: ticketInfo.status === false // back-end misinformation: status should return reverse (false => true | true => false)
+              }
+
+              list.push(obj)
+            }))
+          })
 
 
-        await Promise.all(pms)
+          await Promise.all(pms)
 
-        setTickets(list)
+          setTickets(list)
+        }
+      } catch (error) {
+        console.log(error)
+        closeFn()
       }
-    } catch (error) {
-      console.log(error)
-      closeFn()
+
+      setLoadingInfo(false)
     }
-  }, [closeFn, data.order_id, eventId])
+  }, [closeFn, data.order_id, eventId, tickets])
 
 
   useEffect(() => {
@@ -140,6 +148,7 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
               data={tickets}
               columns={columns}
               hasSearch={false}
+              loadingMessage={loadingInfo}
             />
           </Grid>
         </div>
@@ -171,4 +180,4 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
   )
 }
 
-export default SellDetailsModal
+export default memo(SellDetailsModal)

@@ -16,6 +16,9 @@ import Api from '../../../../api';
 import InputMoney from '../../../../components/Input/Money';
 
 const SimpleProduct = ({ event, user }) => {
+
+  const today = new Date()
+
   const history = useHistory();
   const { idProduct } = useParams();
   const { handleSubmit, register } = useForm();
@@ -29,7 +32,9 @@ const SimpleProduct = ({ event, user }) => {
   const [batch_name, setBatchName] = useState('');
   const [batch_qnt, setBatchQnt] = useState('');
   const [priceSell, setPriceSell] = useState('');
-  const [batch_exp, setBatchExp] = useState(new Date());
+  const [batch_exp, setBatchExp] = useState(today);
+
+  const [dateWarned, setDateWarned] = useState(false);
 
   const loadData = async () => {
     try {
@@ -79,6 +84,13 @@ const SimpleProduct = ({ event, user }) => {
   };
 
   const handleSave = async () => {
+
+    const _dToday = new Date(today)
+    const _dSelected = new Date(batch_exp)
+
+    const dToday = new Date(_dToday.getFullYear(), _dToday.getMonth(), _dToday.getDate()).getTime()
+    const dSelected = new Date(_dSelected.getFullYear(), _dSelected.getMonth(), _dSelected.getDate()).getTime()
+
     try {
       setButtonLoading(true);
       if (!batch_name) {
@@ -89,6 +101,10 @@ const SimpleProduct = ({ event, user }) => {
         return false;
       } else if (!batch_exp) {
         alert('Defina uma data de expiração');
+        return false;
+      } else if ((dToday === dSelected) && !dateWarned) {
+        alert('A data de expiração é hoje. Verifique ou clique em salvar novamente para confirmar.');
+        setDateWarned(true)
         return false;
       }
 
@@ -191,7 +207,10 @@ const SimpleProduct = ({ event, user }) => {
                   label='Data de expiração'
                   name='dateexp'
                   value={batch_exp}
-                  onChange={setBatchExp}
+                  onChange={val => {
+                    setBatchExp(val)
+                    setDateWarned(false)
+                  }}
                   inputRef={register}
                   minDate={new Date()}
                   minDateMessage='A data não deve ser menor que a data atual'

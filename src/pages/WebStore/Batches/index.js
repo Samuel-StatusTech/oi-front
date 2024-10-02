@@ -55,8 +55,6 @@ const BatchesPage = ({ event }) => {
       .then(async ({ data }) => {
         const list = data.sort((a, b) => new Date(a.created_at).getTime() > new Date(b.created_at).getTime() ? -1 : 1)
 
-        console.log(list)
-
         setData(list)
       })
   }, [event])

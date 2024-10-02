@@ -4,13 +4,12 @@ import {
   Grid,
   Typography,
   CircularProgress,
-  TextField,
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
 
 import { format } from "currency-formatter"
-import { formatDatetime, parseUrlDate } from "../../../../../utils/date"
+import { formatDate, parseUrlDate } from "../../../../../utils/date"
 
 import { Between } from "../../../../../components/Input/DateTime"
 import EaseGrid from "../../../../../components/EaseGrid"
@@ -27,10 +26,6 @@ const Statement = (props) => {
   const [selected, onSelectType] = useState(1)
 
   // Filters
-  const [transaction, setTransaction] = useState("")
-  const [ticket, setTicket] = useState("")
-  const [batch, setBatch] = useState("")
-
   const [dateIni, setDateIni] = useState(new Date('2020-01-01'))
   const [dateEnd, setDateEnd] = useState(new Date().setHours(new Date().getHours() + 24))
   const [modal, setModal] = useState({ status: false, data: null })
@@ -66,13 +61,13 @@ const Statement = (props) => {
       ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Data/Hora Venda</Typography>,
+      title: <Typography style={{ fontWeight: "bold" }}>Data Venda</Typography>,
       field: "sell_date",
       render: ({ sell_date }) => {
 
         return (
           <td>
-            <span>{formatDatetime(sell_date)}</span>
+            <span>{formatDate(sell_date)}</span>
           </td>
         )
       },
@@ -106,11 +101,7 @@ const Statement = (props) => {
             ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
             : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24)).replace("/", "-")}`
 
-        const transactionFilter = transaction ? `&order=${transaction.trim()}` : ""
-        const orderFilter = ticket ? `&ticket=${ticket.trim()}` : ""
-        const batchFilter = batch ? `&batch=${batch.trim()}` : ""
-
-        filters = dateURL + transactionFilter + orderFilter + batchFilter
+        filters = dateURL
 
         loadData(filters)
       }
@@ -169,38 +160,7 @@ const Statement = (props) => {
 
           {/* Filters */}
           <Grid item container spacing={2}>
-            <Grid item lg={1} md={1} sm={12} xs={12}>
-              <TextField
-                value={transaction}
-                onChange={(e) => setTransaction(e.target.value)}
-                label='Transação'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-            <Grid item lg={1} md={1} sm={12} xs={12}>
-              <TextField
-                value={ticket}
-                onChange={(e) => setTicket(e.target.value)}
-                label='Ingresso'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-            <Grid item lg={1} md={1} sm={12} xs={12}>
-              <TextField
-                value={batch}
-                onChange={(e) => setBatch(e.target.value)}
-                label='Lote'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-
-            <Grid item lg={9} md={9} sm={12} xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}
