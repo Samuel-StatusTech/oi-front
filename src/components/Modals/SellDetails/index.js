@@ -49,13 +49,13 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
       field: "status",
       render: ({ status, qr_data, order_id, opuid }) => (
         <td>
-          {status === null ? (
+          {status === false ? (
             <Button
               variant="outlined"
               color="primary"
               style={{ cursor: "pointer" }}
               onClick={() => {
-                update()
+                update(qr_data, order_id, opuid)
               }}
             >
               Validar
@@ -68,9 +68,15 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
 
   const [tickets, setTickets] = useState([])
 
-  const update = (qrdata, order_id, opuid) => {
-    handleValidate(qrdata, order_id, opuid)
-    closeModal()
+  const update = async (qrdata, order_id, opuid) => {
+    const result = await handleValidate(qrdata, order_id, opuid)
+
+    if (result) {
+      setTickets(ticketsList => ticketsList.map((item) => item.qr_data !== qrdata ? item : ({
+        ...item,
+        status: result
+      })))
+    }
   }
 
   const closeModal = () => {
@@ -82,7 +88,26 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
       const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
 
       if (req.data && req.data.products) {
-        setTickets(req.data.products)
+        const orderTickets = req.data.products
+        let list = []
+
+        let pms = []
+
+        orderTickets.forEach(ticket => {
+          pms.push(Api.get(`${eventId}/validate_ticket/${ticket.qr_data}`).then(({ data: ticketInfo }) => {
+            const obj = {
+              ...ticket,
+              status: ticketInfo.status === false // back-end misinformation: status should return reverse (false => true | true => false)
+            }
+
+            list.push(obj)
+          }))
+        })
+
+
+        await Promise.all(pms)
+
+        setTickets(list)
       }
     } catch (error) {
       console.log(error)

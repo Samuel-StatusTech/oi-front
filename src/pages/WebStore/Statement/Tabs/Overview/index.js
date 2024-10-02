@@ -19,6 +19,7 @@ import SellDetailsModal from "../../../../../components/Modals/SellDetails"
 import SendVoucherModal from "../../../../../components/Modals/SendVoucher"
 import EaseGrid from "../../../../../components/EaseGrid"
 import Api from "../../../../../api"
+import downloadOrderPdf from "../../../../../utils/orderPdf"
 
 const paymentTypesRelation = {
   credit: "Crédito",
@@ -37,8 +38,6 @@ const Statement = (props) => {
   const [selected, onSelectType] = useState(1)
 
   // Filters
-  const [transaction, setTransaction] = useState("")
-  const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
 
@@ -157,7 +156,7 @@ const Statement = (props) => {
               }} onClick={() => handleEdit(sell)}>Editar</Button>
               <Button style={{
                 color: "#3B94FF"
-              }} onClick={() => handleSend(sell)}>Enviar</Button>
+              }} onClick={() => handleSendVoucher(sell)}>Baixar</Button>
             </div>
           </td>
         )
@@ -172,12 +171,12 @@ const Statement = (props) => {
     })
   }, [])
 
-  const handleSend = (sell) => {
-    setVoucherModal({
-      status: true,
-      data: sell
-    })
-  }
+  // const handleSend = (sell) => {
+  //   setVoucherModal({
+  //     status: true,
+  //     data: sell
+  //   })
+  // }
 
   const handleSearch = async () => {
     try {
@@ -194,12 +193,10 @@ const Statement = (props) => {
             ? `?dateStart=${dateIniFormatted}&dateEnd=${dateEndFormatted}`
             : `?dateStart=2020-01-01&dateEnd=${parseUrlDate(new Date().setHours(new Date().getHours() + 24)).replace("/", "-")}`
 
-        const transactionFilter = transaction ? `&order=${transaction.trim()}` : ""
-        const nameFilter = name ? `&name=${name.trim()}` : ""
-        const phoneFilter = phone ? `&fone=${phone.replace(/\D/g, "")}` : ""
+        const phoneFilter = phone ? `&phone=${phone.replace(/\D/g, "")}` : ""
         const emailFilter = email ? `&email=${email.trim()}` : ""
 
-        filters = dateURL + transactionFilter + nameFilter + phoneFilter + emailFilter
+        filters = dateURL + phoneFilter + emailFilter
 
         loadData(filters)
       }
@@ -210,19 +207,75 @@ const Statement = (props) => {
   }
 
   const handleValidate = async (qrdata, order_id, opuid) => {
+    let ok = false
+
     try {
       await Api.get(`/${event}/checkout_ticket/${qrdata}`)
+      ok = true
     } catch (error) {
       console.log(error)
     } finally {
       handleSearch()
     }
+
+    return ok
   }
 
-  const handleSendVoucher = (info) => {
-    const { email } = info
+  const getPdfTickets = async (order_id) => {
+    let returnList = []
 
-    console.log({ email })
+    return new Promise(async (resolve) => {
+
+      try {
+        await Api
+          .get(`/${event}/ecommerce/orders/${order_id}`)
+          .then((res) => returnList = res.data.products)
+          .catch(() => {
+            throw new Error()
+          })
+
+        resolve({
+          ok: true,
+          data: { list: returnList },
+        })
+      } catch (error) {
+        console.log(error)
+        resolve({
+          ok: false,
+          error: "Erro ao listar produtos. Tente novamente mais tarde",
+        })
+      }
+    })
+  }
+
+  const handleSendVoucher = async (info) => {
+    const { order_id } = info
+
+    const getData = (await Api.get(`/event/getData/${event}`, {
+      headers: {
+        "X-event-id": event,
+      }
+    })).data.event
+    const getInfo = (await Api.get(`/ecommerce/getInfo?eventId=${event}`, {
+      headers: {
+        "X-event-id": event,
+      },
+    })).data.info
+
+    const eventData = {
+      ...getInfo,
+      ...getData
+    }
+
+    console.log(eventData)
+
+    const tickets = await getPdfTickets(order_id)
+
+    if (tickets.ok) {
+      await downloadOrderPdf(eventData, tickets.data.list, true)
+    } else {
+      alert(tickets.error)
+    }
 
     // update Api ...
   }
@@ -282,17 +335,7 @@ const Statement = (props) => {
 
           {/* Filters */}
           <Grid item container spacing={2}>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
-              <TextField
-                value={transaction}
-                onChange={(e) => setTransaction(e.target.value)}
-                label='Transação'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
+            {/* <Grid item lg={2} md={2} sm={12} xs={12}>
               <TextField
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -301,8 +344,8 @@ const Statement = (props) => {
                 size='small'
                 fullWidth
               />
-            </Grid>
-            <Grid item lg={3} md={3} sm={12} xs={12}>
+            </Grid> */}
+            <Grid item lg={2} md={2} sm={12} xs={12}>
               <TextField
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
@@ -312,7 +355,7 @@ const Statement = (props) => {
                 fullWidth
               />
             </Grid>
-            <Grid item lg={3} md={3} sm={12} xs={12}>
+            <Grid item lg={2} md={2} sm={12} xs={12}>
               <TextField
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -322,11 +365,8 @@ const Statement = (props) => {
                 fullWidth
               />
             </Grid>
-          </Grid>
 
-          {/* Date */}
-          <Grid container spacing={2}>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
+            <Grid item lg={8} md={8} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}
