@@ -94,7 +94,7 @@ const Home = ({ event, events }) => {
       {
         title: 'Total Receita',
         icon: { src: totalIconCard, alt: 'Ícone total receita' },
-        value: (money + debit + credit + pix) * 100,
+        value: ((money + debit + credit + pix) * 100) + webstore,
       },
       {
         title: 'Vendas Dinheiro',
@@ -119,7 +119,7 @@ const Home = ({ event, events }) => {
       {
         title: 'Loja Virtual',
         icon: { src: virtualIcon, alt: 'Ícone loja virtual' },
-        value: 0,
+        value: webstore,
       },
     ],
   };
@@ -127,6 +127,41 @@ const Home = ({ event, events }) => {
   const getOperatorsData = async () => {
     const info = await Api.get(`/statistical/saleOperations/${event}?type=all`)
     return info.data.list
+  }
+
+
+  const calcTicketsTotal = (tickets = []) => {
+
+    try {
+
+      let prodsObjList = {}
+
+      tickets.forEach((prodItem) => {
+        if (!prodsObjList[prodItem.eccommerce_product_id]) prodsObjList[prodItem.eccommerce_product_id] = { ...prodItem, sold_quantity: 0 }
+      })
+
+
+      if (tickets.length > 0) {
+        tickets.forEach((prodItem) => {
+          prodsObjList[prodItem.eccommerce_product_id].sold_quantity += prodItem.sold_quantity
+        })
+      }
+
+      const total = Object.values(prodsObjList)
+        .map(item => ({ ...item, price_total: item.sold_quantity * item.price_unit }))
+        .reduce((amount, item) => amount + item.price_total, 0)
+
+      return (total)
+    } catch (error) {
+      return 0
+    }
+
+  }
+
+  const calcWebstoreTotal = async () => {
+    return await Api.get(`${event}/ecommerce/sells/tickets`).then(({ data }) => {
+      return calcTicketsTotal(data.tickets)
+    })
   }
 
   useEffect(() => {
@@ -148,6 +183,10 @@ const Home = ({ event, events }) => {
             setCredit(credit, 10);
             setPix(pix, 10);
 
+            const webstoreTotal = await calcWebstoreTotal()
+
+            setWebStore(webstoreTotal)
+
             setBarData({
               total: parseInt(total.total_bar),
               today: 0,
@@ -168,10 +207,11 @@ const Home = ({ event, events }) => {
             });
 
             const receipt =
-              parseInt(total.total_bar) +
-              parseInt(total.total_ticket) +
-              parseInt(total.total_park) +
-              parseInt(total.others);
+              parseInt(total.total_bar ?? 0) +
+              parseInt(total.total_ticket ?? 0) +
+              parseInt(total.total_park ?? 0) +
+              parseInt(total.others ?? 0) +
+              webstoreTotal
 
             setReceipt(receipt / 100);
 

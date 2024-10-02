@@ -84,19 +84,6 @@ const WSOverview = ({ event }) => {
         })
       }
 
-      /*
-        {
-            "order_id": "cm9IuwEAhm222ztTAAAD",
-            "sell_date": "2024-10-01",
-            "eccommerce_product_id": "0e83fba5-ced2-4e27-8187-544d899c64c0",
-            "product_name": "Lateral",
-            "batch_name": "Meia",
-            "sold_quantity": 19,
-            "price_unit": 1,
-            "price_total": "19"
-        },
-      */
-
       const list = Object.values(prodsObjList).map(item => ({ ...item, price_total: item.sold_quantity * item.price_unit }))
 
       setProdList(list)
