@@ -41,7 +41,7 @@ const BatchesPage = ({ event }) => {
 
   const columns = [
     { title: "Nome", field: "batch_name" },
-    { title: "Quantidade", field: "quantity" },
+    { title: "Quantidade disponível", field: "quantity" },
     { title: "Preço", field: "price_sell", render: ({ price_sell }) => format(price_sell / 100, { code: "BRL" }) },
     {
       title: "Data expiração",

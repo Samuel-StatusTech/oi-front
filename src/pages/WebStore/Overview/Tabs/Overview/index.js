@@ -195,7 +195,7 @@ const Overview = (props) => {
       {
         title: "Saldo",
         icon: { src: totalIcon, alt: "Ícone saldo" },
-        value: totalRecipe - (payment.withdraw ?? 0),
+        value: totalRecipe
       },
     ],
   }

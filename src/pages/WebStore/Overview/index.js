@@ -32,6 +32,7 @@ const WSOverview = ({ event }) => {
     },
     withdraw: 0
   })
+  const [withdraw, setWithdraw] = useState(0)
 
   const toggleModal = () => {
     if (showReleaseModal) setShowReleaseModal(false)
@@ -45,8 +46,7 @@ const WSOverview = ({ event }) => {
   const calcCards = (orders) => {
     let data = {
       gross: { money: 0, credit: 0, debit: 0, pix: 0 },
-      net: { credit: 0, debit: 0, pix: 0 },
-      withdraw: 0
+      net: { credit: 0, debit: 0, pix: 0 }
     }
 
     orders.forEach(o => {
@@ -119,6 +119,7 @@ const WSOverview = ({ event }) => {
 
     dataPromises.push(Api.get(`${event}/ecommerce/sells_dash${params}`).then(({ data }) => {
       loadHistory(data.sells)
+      setWithdraw(data.validated_ticket_cash ?? 0)
     }))
 
     dataPromises.push(Api.get(`${event}/ecommerce/sells/tickets${params}`).then(({ data }) => {
@@ -155,7 +156,10 @@ const WSOverview = ({ event }) => {
         eventData={eventData}
         toggleModal={toggleModal}
         editSingle={editSingle}
-        payment={payment}
+        payment={{
+          ...payment,
+          withdraw
+        }}
         productsList={prodList}
         histData={histData}
         loadData={loadData}

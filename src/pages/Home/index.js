@@ -251,7 +251,7 @@ const Home = ({ event, events }) => {
         <RecipeCard receipt={receipt} loading={loading} />
       </Grid>
       <Grid item lg={4} md={12} sm={12} xs={12}>
-        <PaymentCard money={money} debit={debit} credit={credit} pix={pix} webstore={webstore} loading={loading} />
+        <PaymentCard money={money} debit={debit} credit={credit} pix={pix} webstore={webstore / 100} loading={loading} />
       </Grid>
       <Grid item lg={12} md={12} xs={12} sm={12}>
         <Grid container spacing={2}>

@@ -14,6 +14,7 @@ import { connect } from "react-redux"
 
 import Api from '../../../../api';
 import InputMoney from '../../../../components/Input/Money';
+import BatchExpDateModal from '../../../../components/Modals/BatchExpDate';
 
 const SimpleProduct = ({ event, user }) => {
 
@@ -35,6 +36,7 @@ const SimpleProduct = ({ event, user }) => {
   const [batch_exp, setBatchExp] = useState(today);
 
   const [dateWarned, setDateWarned] = useState(false);
+  const [dateModal, setDateModal] = useState(false);
 
   const loadData = async () => {
     try {
@@ -103,7 +105,7 @@ const SimpleProduct = ({ event, user }) => {
         alert('Defina uma data de expiração');
         return false;
       } else if ((dToday === dSelected) && !dateWarned) {
-        alert('A data de expiração é hoje. Verifique ou clique em salvar novamente para confirmar.');
+        setDateModal(true)
         setDateWarned(true)
         return false;
       }
@@ -180,6 +182,11 @@ const SimpleProduct = ({ event, user }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <BatchExpDateModal
+        show={dateModal}
+        closeFn={() => setDateModal(false)}
+        save={handleSave}
+      />
 
       <Card>
         <CardContent>
