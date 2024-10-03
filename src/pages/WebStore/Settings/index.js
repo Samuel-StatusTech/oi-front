@@ -20,6 +20,7 @@ import Api from "../../../api"
 import { GreenSwitch, StatusSwitch } from '../../../components/Switch'
 import ImagePicker from '../../../components/ImagePicker'
 import ReactQuill from 'react-quill'
+import './styles.css'
 
 const Manager = ({ events, event, user }) => {
 
@@ -352,113 +353,117 @@ const Manager = ({ events, event, user }) => {
               <Divider />
             </Grid>
 
-            <Grid item container spacing={2} direction='row-reverse'>
+            <Grid item xs={12}>
 
-              {/* right side */}
-              <Grid item xl={6} lg={6} md={12} sm={12} xs={12} style={{ height: "100%" }}>
+              <Grid container spacing={2} className='descriptionImageContainer'>
+                {/* right side */}
+                <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ minHeight: "100%" }}>
 
-                <Grid container spacing={2} direction='column' style={{ height: "100%" }}>
+                  <Grid container spacing={2} direction='column' className='descriptionWrapper'>
 
-                  <Grid item xl={12} lg={12} xs={12} style={{ flex: "unset" }}>
-                    <Typography style={{ fontWeight: 'bold' }}>Descrição</Typography>
-                  </Grid>
-
-                  <Grid item xl={12} lg={12} xs={12} style={{ flex: 1 }}>
-                    <ReactQuill
-                      theme="snow"
-                      value={description2}
-                      onChange={setDescription2}
-                      style={{
-                        borderRadius: 6,
-                        height: "100%",
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </Grid>
-
-              {/* left side */}
-              <Grid item xl={6} lg={6} md={12} sm={12} xs={12}>
-                <Grid container spacing={2} direction='column'>
-
-                  <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
-                    <Typography style={{ fontWeight: 'bold' }}>Informações gerais</Typography>
-                  </Grid>
-
-                  <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
-                    <Grid container spacing={2}>
-                      <Grid item xl={12} lg={12} xs={12}>
-                        <TextField
-                          label='Endereço'
-                          name='address'
-                          value={address}
-                          onChange={(e) => {
-                            const value = e.target.value.slice(0, 80);
-                            setAddress(value);
-                          }}
-                          error={Boolean(errorsVerify?.address)}
-                          helperText={errorsVerify?.address}
-                          variant='outlined'
-                          size='small'
-                          fullWidth
-                        />
-                      </Grid>
+                    <Grid item xl={12} lg={12} xs={12} style={{ flex: "unset" }}>
+                      <Typography style={{ fontWeight: 'bold' }}>Descrição</Typography>
                     </Grid>
-                    <Grid item>
-                      <FormControlLabel
-                        label='Possui classificação etária'
-                        name='target'
-                        value={target}
-                        control={
-                          <GreenSwitch
-                            checked={target}
-                            onChange={(e) => setTarget(e.target.checked)}
-                          />
-                        }
+
+                    <Grid item xl={12} lg={12} xs={12} style={{ flex: 1 }}>
+                      <ReactQuill
+                        theme="snow"
+                        value={description2}
+                        onChange={setDescription2}
+                        style={{
+                          borderRadius: 6,
+                          height: "100%",
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
                       />
                     </Grid>
-                    {target && (
+                  </Grid>
+                </Grid>
+
+                {/* left side */}
+                <Grid item xl={6} lg={6} md={6} sm={12} xs={12}>
+
+                  {/* wrapper 3 */}
+                  <Grid item container spacing={2} direction='column'>
+
+                    <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
+                      <Typography style={{ fontWeight: 'bold' }}>Informações gerais</Typography>
+                    </Grid>
+
+                    <Grid item xl={12} lg={12} md={12} sm={12} xs={12}>
+                      <Grid container spacing={2}>
+                        <Grid item xl={12} lg={12} xs={12}>
+                          <TextField
+                            label='Endereço'
+                            name='address'
+                            value={address}
+                            onChange={(e) => {
+                              const value = e.target.value.slice(0, 80);
+                              setAddress(value);
+                            }}
+                            error={Boolean(errorsVerify?.address)}
+                            helperText={errorsVerify?.address}
+                            variant='outlined'
+                            size='small'
+                            fullWidth
+                          />
+                        </Grid>
+                      </Grid>
                       <Grid item>
-                        <TextField
-                          label='Idade'
-                          name='targetAge'
-                          value={targetAge}
-                          onChange={(e) => {
-                            const value = e.target.value.slice(0, 80);
-                            setTargetAge(value);
-                          }}
-                          error={Boolean(errorsVerify?.targetAge)}
-                          helperText={errorsVerify?.targetAge}
-                          variant='outlined'
-                          size='small'
-                          fullWidth
+                        <FormControlLabel
+                          label='Possui classificação etária'
+                          name='target'
+                          value={target}
+                          control={
+                            <GreenSwitch
+                              checked={target}
+                              onChange={(e) => setTarget(e.target.checked)}
+                            />
+                          }
                         />
                       </Grid>
-                    )}
-                  </Grid>
+                      {target && (
+                        <Grid item>
+                          <TextField
+                            label='Idade'
+                            name='targetAge'
+                            value={targetAge}
+                            onChange={(e) => {
+                              const value = e.target.value.slice(0, 80);
+                              setTargetAge(value);
+                            }}
+                            error={Boolean(errorsVerify?.targetAge)}
+                            helperText={errorsVerify?.targetAge}
+                            variant='outlined'
+                            size='small'
+                            fullWidth
+                          />
+                        </Grid>
+                      )}
+                    </Grid>
 
-                  {/* Fotos */}
-                  <Grid item container xl={12} lg={12} md={6} sm={12} xs={12} style={{ marginBottom: 12 }}>
-                    <Grid item container direction="row" spacing={2}>
-                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ textAlign: "center" }}>
+                    {/* Fotos */}
+                    <Grid item container spacing={2} xl={12} lg={12} md={12} sm={12} xs={12} className='imagesContainer'>
+                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} spacing={2} className={'imagePickerWrapper'}>
                         <ImagePicker
                           label="Imagem do Evento"
                           name="image"
                           image={image}
                           setImage={handleImage}
-                          style={{ maxHeight: 80 }}
+                          style={{ maxHeight: 80, flex: 1 }}
+                          className={"imagePicker"}
                         />
                         <small>Tamanho: 262×100 (png)</small>
                       </Grid>
-                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} style={{ textAlign: "center" }}>
+                      <Grid item xl={6} lg={6} md={6} sm={12} xs={12} spacing={2} className={'imagePickerWrapper'}>
                         <ImagePicker
                           label="Imagem do Layout/Mapa do Evento"
                           name="layout"
                           image={eventLayout}
                           setImage={handleImageLayout}
-                          style={{ maxHeight: 80 }}
+                          style={{ maxHeight: 80, flex: 1 }}
+                          className={"imagePicker"}
                         />
                         <small>Tamanho: 262×100 (png)</small>
                       </Grid>

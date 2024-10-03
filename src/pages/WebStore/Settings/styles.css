@@ -1,0 +1,36 @@
+.descriptionImageContainer {
+  flex-direction: row-reverse;
+}
+
+.imagePickerWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.imagePickerWrapper > div {
+  width: 100%;
+}
+
+.imagesContainer {
+  flex-direction: row;
+  margin-bottom: 12px;
+}
+
+.descriptionWrapper {
+  height: 100%;
+}
+
+@media (max-width: 960px) {
+  .descriptionWrapper {
+    height: unset;
+  }
+}
+
+@media (max-width: 720px) {
+  .descriptionImageContainer {
+  }
+
+  .imagePickerWrapper > div {
+  }
+}

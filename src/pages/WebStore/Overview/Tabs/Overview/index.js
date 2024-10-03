@@ -50,7 +50,7 @@ const CardValue = ({ infos, editSingle }) => {
           direction="row"
         >
           <Grid item direction="column" lg={12} md={12} sm={12} xs={12}>
-            <Grid item xs={12} style={{ marginTop: -24 }}>
+            <Grid item xs={12} style={{ marginTop: -8 }}>
               <Typography className={styles.h2}>Total de vendas</Typography>
               <Typography className={styles.moneyLabelBlue}>
                 {" "}
@@ -319,15 +319,8 @@ const Overview = (props) => {
             <CircularProgress />
           </div>
         ) : (
-          <Grid
-            item
-            container
-            style={{
-              gap: 24,
-            }}
-            spacing={2}
-          >
-            <Grid container spacing={2}>
+          <Grid item container style={{ gap: 24 }} spacing={2}>
+            <Grid item container spacing={2} style={{ height: "fit-content" }}>
               {/* total receita */}
               <Grid item xl={2} lg={2} md={12} sm={12} xs={12}>
                 <CardValue infos={{ totalRecipe }} />
@@ -347,7 +340,6 @@ const Overview = (props) => {
                     <Grid item xl={3} lg={3} md={6} sm={6} xs={12} key={index}>
                       <CardData
                         title={item.title}
-                        smallLabel={item.smallLabel}
                         value={format(item.value / 100, { code: "BRL" })}
                         styleLabel={{
                           fontSize: 14,
