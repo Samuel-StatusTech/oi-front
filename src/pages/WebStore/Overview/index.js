@@ -18,6 +18,8 @@ const WSOverview = ({ event }) => {
   const [histData, setHistData] = useState([])
 
   const [prodList, setProdList] = useState([])
+  const [soldTickets, setSoldTickets] = useState([])
+
   const [payment, setPayment] = useState({
     gross: {
       money: 0,
@@ -80,6 +82,7 @@ const WSOverview = ({ event }) => {
 
       if (tickets.length > 0) {
         tickets.forEach((prodItem) => {
+          console.log("prodItem", prodItem)
           prodsObjList[prodItem.eccommerce_product_id].sold_quantity += prodItem.sold_quantity
         })
       }
@@ -92,12 +95,46 @@ const WSOverview = ({ event }) => {
     }
   }
 
+  const calcSoldTickets = (tickets = []) => {
+
+    try {
+
+      let prodsObjList = {}
+
+      tickets.forEach((prodItem) => {
+        if (!prodsObjList[prodItem.sell_date]) {
+          let obj = {}
+          obj[prodItem.eccommerce_product_id] = { ...prodItem, sold_quantity: 0 }
+          prodsObjList[prodItem.sell_date] = obj
+
+        } else {
+          prodsObjList[prodItem.sell_date][prodItem.eccommerce_product_id] = { ...prodItem, sold_quantity: 0 }
+        }
+      })
+
+
+      if (tickets.length > 0) {
+        tickets.forEach((prodItem) => {
+          prodsObjList[prodItem.sell_date][prodItem.eccommerce_product_id].sold_quantity += prodItem.sold_quantity
+        })
+      }
+
+      // const list = Object.values(prodsObjList).map(day => Object.values(day).map(item => ({ ...item, price_total: item.sold_quantity * item.price_unit })))
+      const list = prodsObjList
+
+      setSoldTickets(list)
+    } catch (error) {
+      console.log("---error---", error)
+    }
+  }
+
   const loadHistory = (hist) => {
     const history = hist.map((d, k) => ({
       x: k,
       y: +d.price,
       qnt: d.qtde,
-      timeLabel: new Date(d.dt).getTime()
+      timeLabel: new Date(d.dt).getTime(),
+      timeString: d.dt
     }))
 
     setHistData(history)
@@ -124,6 +161,7 @@ const WSOverview = ({ event }) => {
 
     dataPromises.push(Api.get(`${event}/ecommerce/sells/tickets${params}`).then(({ data }) => {
       calcProds(data.tickets)
+      calcSoldTickets(data.tickets)
     }))
 
     dataPromises.push(Api.get(`${event}/ecommerce/orders${params}`).then(async ({ data }) => {
@@ -161,6 +199,7 @@ const WSOverview = ({ event }) => {
           withdraw
         }}
         productsList={prodList}
+        soldTickets={soldTickets}
         histData={histData}
         loadData={loadData}
       />

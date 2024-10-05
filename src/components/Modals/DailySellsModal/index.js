@@ -1,24 +1,42 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from "react"
+import React, { forwardRef, memo, useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   Button,
   DialogActions,
+  Typography
 } from "@material-ui/core"
 import EaseGrid from "../../../components/EaseGrid"
 import { setSizeOptions } from '../../../utils/tablerows'
 
+
+// Table
 import useStyles from "../../../global/styles"
 import { formatDate } from "../../../utils/date"
 
-const DailySellsModal = ({ show, closeFn, data, date }) => {
+// ---
+
+const DailySellsModal = ({ show, closeFn, data, date, soldTickets }) => {
+
+  const [tickets, setTickets] = useState([])
+
   const styles = useStyles()
 
   const closeModal = () => {
     closeFn()
   }
+
+  const getDayTickets = (date) => {
+    const list = Object.values(soldTickets[date]) ?? []
+
+    return list
+  }
+
+  useEffect(() => {
+    console.log("In props", soldTickets)
+  }, [soldTickets])
 
   return (
     <Dialog open={show} onClose={closeModal} fullWidth maxWidth="lg">
@@ -41,6 +59,44 @@ const DailySellsModal = ({ show, closeFn, data, date }) => {
             pageSizeOptions={setSizeOptions(data.list.length)}
             paging={true}
             hasSearch={false}
+            detailPanel={rowData => {
+
+              const list = getDayTickets(rowData.timeString)
+              
+              return (
+                <div style={{ padding: '20px', fontSize: '14px' }}>
+                  <EaseGrid
+                    className={styles.paddingT30}
+                    title={"Detalhes"}
+                    data={list}
+                    columns={[
+                      {
+                        title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
+                        field: "product_name",
+                        render: ({ product_name }) => (
+                          <td>
+                            <span style={{ fontSize: "0.9rem" }}>{product_name}</span>
+                          </td>
+                        ),
+                      },
+                      {
+                        title: <Typography style={{ fontWeight: "bold" }}>Quantidade</Typography>,
+                        field: "sold_quantity",
+                        render: ({ sold_quantity }) => (
+                          <td>
+                            <span style={{ fontSize: "0.9rem" }}>{sold_quantity}</span>
+                          </td>
+                        ),
+                      }
+                    ]}
+                    pageSize={list.length}
+                    pageSizeOptions={setSizeOptions(list.length)}
+                    paging={false}
+                    hasSearch={false}
+                  />
+                </div>
+              )
+            }}
           />
         </div>
       </DialogContent>

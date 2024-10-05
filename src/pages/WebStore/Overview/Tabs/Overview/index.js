@@ -28,6 +28,9 @@ import webstoreOverviewPDF from "../../../../../utils/webstoreOverview"
 
 import Api from "../../../../../api"
 
+
+// ---
+
 const CardValue = ({ infos, editSingle }) => {
   const styles = useStyles()
 
@@ -64,9 +67,12 @@ const CardValue = ({ infos, editSingle }) => {
   )
 }
 
+
+// ---
+
 const Overview = (props) => {
 
-  const { loadData, event, payment, productsList, histData } = props
+  const { loadData, event, payment, productsList, histData, soldTickets } = props
 
   const totalRecipe = payment.gross.pix + payment.gross.credit
 
@@ -81,6 +87,7 @@ const Overview = (props) => {
   const [eventData, setEventData] = useState(null)
 
   const [dailyShow, setDailyModalShow] = useState(false)
+
   const [dailySells, setDailySells] = useState({
     columns: [
       {
@@ -267,6 +274,7 @@ const Overview = (props) => {
         show={dailyShow}
         closeFn={toggleModal}
         data={dailySells}
+        soldTickets={props.soldTickets}
       />
 
       <Grid
