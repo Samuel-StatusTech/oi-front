@@ -163,8 +163,8 @@ export const Between = memo(
             style={{ backgroundColor: "#fff" }}
           />
         </Grid>
-        <Grid item container direction="row" spacing={2} xl={2} lg={2} md={isForDivgs ? 2 : 4} sm={isForDivgs ? 3 : 6} xs={12}>
-          <Grid lg={withdrawals ? 6 : 12}>
+        <Grid item container direction="row" spacing={2} xl={2} lg={2} md={isForDivgs ? 2 : 4} sm={isForDivgs ? 3 : withdrawals ? 12 : 6} xs={12} style={{ gap: 18, flexWrap: "nowrap", marginLeft: 0, paddingTop: 8 }}>
+          <Grid lg={withdrawals ? 6 : 12} md={12} sm={12} xs={12}>
             <Button
               variant="outlined"
               color="default"
@@ -181,14 +181,13 @@ export const Between = memo(
             </Button>
           </Grid>
           {withdrawals && (
-            <Grid lg={6}>
+            <Grid lg={6} md={12} sm={12} xs={12}>
               <Button
                 variant="outlined"
                 color="default"
                 onClick={buttonAction}
                 fullWidth
-                className={styles.exportDataBtn}
-                style={{ padding: "8px", fontSize: 13, backgroundColor: "white", border: '1px solid #3B94FF', marginLeft: 8 }}>
+                style={{ padding: "8px", fontSize: 13, backgroundColor: "white", border: '1px solid #3B94FF', color: "#3B94FF" }}>
                 {"Adicionar"}
               </Button>
             </Grid>
