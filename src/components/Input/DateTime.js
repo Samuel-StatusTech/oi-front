@@ -16,6 +16,7 @@ export const Between = memo(
     onSearch,
     isForDivgs = false,
     withdrawals = false,
+    buttonAction,
     ...props
   }) => {
     const styles = useStyles()
@@ -162,21 +163,36 @@ export const Between = memo(
             style={{ backgroundColor: "#fff" }}
           />
         </Grid>
-        <Grid item xl={2} lg={2} md={isForDivgs ? 2 : 4} sm={isForDivgs ? 3 : 6} xs={12}>
-          <Button
-            variant="outlined"
-            color="default"
-            onClick={onSearch}
-            fullWidth
-            className={`${isForDivgs ? styles.exportDataBtn : ""}`}
-            style={
-              !isForDivgs
-                ? { padding: "8px", fontSize: 13, backgroundColor: "white" }
-                : {}
-            }
-          >
-            {isForDivgs ? "Importar dados" : "Pesquisar"}
-          </Button>
+        <Grid item container direction="row" spacing={2} xl={2} lg={2} md={isForDivgs ? 2 : 4} sm={isForDivgs ? 3 : 6} xs={12}>
+          <Grid lg={withdrawals ? 6 : 12}>
+            <Button
+              variant="outlined"
+              color="default"
+              onClick={onSearch}
+              fullWidth
+              className={`${isForDivgs ? styles.exportDataBtn : ""}`}
+              style={
+                !isForDivgs
+                  ? { padding: "8px", fontSize: 13, backgroundColor: "white" }
+                  : {}
+              }
+            >
+              {isForDivgs ? "Importar dados" : "Pesquisar"}
+            </Button>
+          </Grid>
+          {withdrawals && (
+            <Grid lg={6}>
+              <Button
+                variant="outlined"
+                color="default"
+                onClick={buttonAction}
+                fullWidth
+                className={styles.exportDataBtn}
+                style={{ padding: "8px", fontSize: 13, backgroundColor: "white", border: '1px solid #3B94FF', marginLeft: 8 }}>
+                {"Adicionar"}
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     )

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -6,110 +6,38 @@ import {
   Button,
   DialogActions,
   Grid,
-  Typography,
-  Divider,
+  TextField,
 } from "@material-ui/core"
 
-import { format } from "currency-formatter"
-import EaseGrid from "../../EaseGrid"
-import Api from "../../../api"
+import InputMoney from "../../Input/Money"
+import { KeyboardDatePicker } from "@material-ui/pickers"
 
-const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) => {
+const WithdrawalDetailsModal = ({ show, closeFn, data, onSave }) => {
 
-  const columns = [
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
-      field: "name",
-      render: ({ name }) => (
-        <td>
-          <span>{name}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Lote</Typography>,
-      field: "batch_name",
-      render: ({ batch_name }) => (
-        <td>
-          <span>{batch_name}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Preço</Typography>,
-      field: "price_unit",
-      render: ({ price_unit }) => (
-        <td>
-          <span>{format(price_unit / 100, { code: "BRL" })}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
-      field: "status",
-      render: ({ status }) => (
-        <td>
-          <span>{status === false ? "Não validado" : "Validado"}</span>
-        </td>
-      ),
-    },
-  ]
+  const [info, setInfo] = useState()
 
-  const [tickets, setTickets] = useState([])
-  const [loadingInfo, setLoadingInfo] = useState(true)
 
   const closeModal = () => {
     closeFn()
   }
 
-  const getData = useCallback(async () => {
+  const handleSave = () => {
+    onSave && onSave(info)
+    closeFn()
+  }
 
-    if (tickets.length === 0) {
-      setLoadingInfo(true)
-
-      try {
-        const req = await Api.get(`${eventId}/ecommerce/orders/${data?.order_id}`)
-
-        if (req.data && req.data.products) {
-          const orderTickets = req.data.products
-          let list = []
-
-          let pms = []
-
-          orderTickets.forEach(ticket => {
-            pms.push(Api.get(`${eventId}/validate_ticket/${ticket.qr_data}`).then(({ data: ticketInfo }) => {
-              const obj = {
-                ...ticket,
-                status: ticketInfo.status === false // back-end misinformation: status should return reverse (false => true | true => false)
-              }
-
-              list.push(obj)
-            }))
-          })
-
-
-          await Promise.all(pms)
-
-          setTickets(list)
-        }
-      } catch (error) {
-        console.log(error)
-        closeFn()
-      }
-
-      setLoadingInfo(false)
-    }
-  }, [closeFn, data.order_id, eventId, tickets])
-
+  const handleField = (field, value) => {
+    setInfo(i => ({ ...i, [field]: value }))
+  }
 
   useEffect(() => {
-    if (show) getData()
-  }, [show, getData])
+    setInfo(data)
+  }, [data])
 
   return (
-    <Dialog open={show} onClose={closeModal} fullWidth maxWidth="lg">
-      <DialogTitle>Venda online - {data.order_id}</DialogTitle>
-      <DialogContent>
+    <Dialog open={show} onClose={closeModal} fullWidth maxWidth="sm">
+      <DialogTitle>Editar redirada {data.id && ` - ${data.id}`}</DialogTitle>
+      <DialogContent style={{ overflow: "visible" }}>
         <div
           style={{
             display: "flex",
@@ -119,16 +47,47 @@ const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) =
           }}
         >
 
-          <Grid item lg={12} md={12} sm={12} xs={12}>
-            <Typography style={{ fontWeight: 'bold' }}>Tickets comprados</Typography>
-            <Divider />
-            <EaseGrid
-              onPickRow={onSelectRow}
-              data={tickets}
-              columns={columns}
-              hasSearch={false}
-              loadingMessage={loadingInfo}
-            />
+          <Grid item container direction="column" spacing={2} lg={12} md={12} sm={12} xs={12}>
+            <Grid item container spacing={2} lg={12} md={12} sm={12} xs={12}>
+              <Grid item lg={6}>
+                <KeyboardDatePicker
+                  autoOk
+                  label='Data'
+                  value={info?.date}
+                  onChange={val => handleField("date", val)}
+                  inputVariant='outlined'
+                  variant='inline'
+                  format='DD/MM/YYYY'
+                  fullWidth
+                  size='small'
+                  style={{ backgroundColor: '#fff' }}
+                />
+              </Grid>
+              <Grid item lg={6}>
+                <InputMoney
+                  name='priceSell'
+                  value={info?.value}
+                  onChange={({ value }) => handleField("value", value)}
+                  label='Preço de venda'
+                  variant='outlined'
+                  size='small'
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+            <Grid item container spacing={2} lg={12} md={12} sm={12} xs={12}>
+              <Grid item lg={12} md={12} sm={12} xs={12}>
+                <TextField
+                  label='Observação'
+                  name='observation'
+                  value={info?.observation}
+                  onChange={(e) => handleField("observation", e.target.value)}
+                  variant='outlined'
+                  size='small'
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
           </Grid>
         </div>
       </DialogContent>
@@ -145,14 +104,14 @@ const WithdrawalDetailsModal = ({ show, closeFn, data, eventId, onSelectRow }) =
         >
           <Button
             variant="outlined"
+            color="primary"
+            style={{ cursor: "pointer" }}
+            onClick={handleSave}>Salvar</Button>
+          <Button
+            variant="outlined"
             color="secondary"
             style={{ cursor: "pointer" }}
-            onClick={() => {
-              closeModal()
-            }}
-          >
-            Fechar
-          </Button>
+            onClick={closeModal}>Fechar</Button>
         </div>
       </DialogActions>
     </Dialog>

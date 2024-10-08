@@ -4,6 +4,7 @@ import {
   Grid,
   Typography,
   CircularProgress,
+  Button,
 } from "@material-ui/core"
 
 import useStyles from "../../../../../global/styles"
@@ -33,58 +34,89 @@ const Statement = (props) => {
   const cancelTokenSource = useRef()
 
   const sellsColumns = [
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Transação</Typography>,
-      field: "order_id",
-      render: ({ order_id }) => (
-        <td>
-          <span>{order_id}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Lote</Typography>,
-      field: "batch_name",
-      render: ({ batch_name }) => (
-        <td>
-          <span>{batch_name}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
-      field: "product_name",
-      render: ({ product_name }) => (
-        <td>
-          <span>{product_name}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Data Venda</Typography>,
-      field: "sell_date",
-      render: ({ sell_date }) => {
+    ...[
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Data Venda</Typography>,
+        field: "sell_date",
+        render: ({ sell_date }) => {
 
-        return (
-          <td>
-            <span>{formatDate(sell_date)}</span>
-          </td>
-        )
+          return (
+            <td>
+              <span>{formatDate(sell_date)}</span>
+            </td>
+          )
+        },
       },
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Total</Typography>,
-      field: "price_total",
-      render: ({ price_total }) => {
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Valor R$</Typography>,
+        field: "value",
+        render: ({ value }) => {
 
-        return (
-          <td>
-            <span>{format(+price_total / 100, { code: "BRL" })}</span>
-          </td>
-        )
+          return (
+            <td>
+              <span>{format(+(value ?? 0) / 100, { code: "BRL" })}</span>
+            </td>
+          )
+        },
       },
-    },
+      {
+        title: <Typography style={{ fontWeight: "bold" }}>Observação</Typography>,
+        field: "observation",
+        render: ({ observation }) => (
+          <td>
+            <span>{observation ?? ""}</span>
+          </td>
+        ),
+      },
+    ],
+    ...((props.user.role === "master" || props.user.role === "admin") ? [
+      {
+        title: <Typography style={{ width: '100%', fontWeight: "bold", textAlign: "center" }}>Ações</Typography>,
+        render: (row) => (
+          <Grid container spacing={2}>
+            <Grid item>
+              <Button
+                variant="outlined"
+                size="small"
+                style={{ color: "#FEC87D", border: "1px solid #FEC87D" }}
+                onClick={() => handleEdit(row.id)}
+              >
+                Editar
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button
+                variant="outlined"
+                size="small"
+                style={{ color: "#E7345B", border: "1px solid #E7345B" }}
+                onClick={() => handleDelete(row.id)}
+              >
+                Excluir
+              </Button>
+            </Grid>
+          </Grid>
+        ),
+      }
+    ] : [])
   ]
+
+  const handleNew = async (data) => {
+    console.log(data)
+  }
+
+  const handleEdit = (withdrawalId) => {
+    console.log(withdrawalId)
+  }
+
+  const handleUpdate = (updateInfo) => {
+    // const { date, value, observation } = updateInfo
+
+    // ...
+  }
+
+  const handleDelete = (withdrawalId) => {
+    console.log(withdrawalId)
+  }
 
   const handleSearch = async () => {
     try {
@@ -112,7 +144,7 @@ const Statement = (props) => {
   }
 
   const onSelectRow = (data) => {
-    setModal({ status: true, data: data })
+    setModal({ status: true, data: data, saveAction: handleUpdate })
   }
 
   useEffect(() => {
@@ -136,6 +168,12 @@ const Statement = (props) => {
     }
   }
 
+  const handleNewWithdrawal = () => {
+    const dt = { date: new Date(), value: 0, observation: "" }
+
+    setModal({ status: true, data: dt, saveAction: handleNew })
+  }
+
   return (
     <>
       {modal.data && (
@@ -143,7 +181,7 @@ const Statement = (props) => {
           show={modal.status}
           closeFn={() => setModal({ status: false, data: null })}
           data={modal.data}
-          eventId={event}
+          onSave={modal.saveAction}
         />
       )}
 
@@ -171,6 +209,7 @@ const Statement = (props) => {
                 onSearch={onSearch}
                 size="small"
                 withdrawals={true}
+                buttonAction={handleNewWithdrawal}
               />
             </Grid>
           </Grid>
