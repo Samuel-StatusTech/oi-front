@@ -20,11 +20,18 @@ import SendVoucherModal from "../../../../../components/Modals/SendVoucher"
 import EaseGrid from "../../../../../components/EaseGrid"
 import Api from "../../../../../api"
 import downloadOrderPdf from "../../../../../utils/orderPdf"
+import { formatCPF } from "../../../../../utils/toolbox/formatCPF"
 
 const paymentTypesRelation = {
   credit: "Crédito",
   debit: "Débito",
   pix: "Pix"
+}
+
+const statusRelation = {
+  paid: "Pago",
+  cancelled: "Cancelada",
+  notapproved: "Não aprovada"
 }
 
 // -----
@@ -37,7 +44,12 @@ const Statement = (props) => {
   const [loading, setLoading] = useState(false)
   const [selected, onSelectType] = useState(1)
 
+  // Event
+  const [isNominal, setIsNominal] = useState(false)
+
   // Filters
+  const [transaction, setTransaction] = useState("")
+  const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
 
@@ -66,6 +78,18 @@ const Statement = (props) => {
           <span>{name}</span>
         </td>
       ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>CPF</Typography>,
+      field: "cpf",
+      render: ({ cpf }) => {
+
+        return (
+          <td>
+            <span>{cpf ? formatCPF(cpf ?? "") : "Não definido"}</span>
+          </td>
+        )
+      },
     },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Telefone</Typography>,
@@ -104,6 +128,18 @@ const Statement = (props) => {
       },
     },
     {
+      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
+      field: "status",
+      render: ({ status }) => {
+
+        return (
+          <td>
+            <span>{statusRelation[status] ?? "Aguardando"}</span>
+          </td>
+        )
+      },
+    },
+    {
       title: <Typography style={{ fontWeight: "bold" }}>Pgto</Typography>,
       field: "payment",
       render: ({ payment }) => {
@@ -134,7 +170,7 @@ const Statement = (props) => {
 
         return (
           <td>
-            <span>{`${String(((tax ?? 0) / 100).toFixed(2)).replace(".", ",")}%`}</span>
+            <span>{format(tax / 100, { code: "BRL" })}</span>
           </td>
         )
       },
@@ -171,12 +207,9 @@ const Statement = (props) => {
     })
   }, [])
 
-  // const handleSend = (sell) => {
-  //   setVoucherModal({
-  //     status: true,
-  //     data: sell
-  //   })
-  // }
+  const handleUpdate = (sell) => {
+    // ...
+  }
 
   const handleSearch = async () => {
     try {
@@ -203,6 +236,15 @@ const Statement = (props) => {
       setLoading(false)
     } catch (error) {
       setLoading(false)
+    }
+  }
+
+  const getEventNominal = async () => {
+    try {
+      const req = await Api.get(`/event/getData/${event}`)
+      setIsNominal(Boolean(req.data.event.nominal ?? 0))
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -267,8 +309,6 @@ const Statement = (props) => {
       ...getData
     }
 
-    console.log(eventData)
-
     const tickets = await getPdfTickets(order_id)
 
     if (tickets.ok) {
@@ -288,6 +328,7 @@ const Statement = (props) => {
 
   useEffect(() => {
     onSearch()
+    getEventNominal()
   }, [])
 
   const onSearch = () => {
@@ -305,11 +346,13 @@ const Statement = (props) => {
     <>
       {editModal.data && (
         <SellDetailsModal
+          isNominal={isNominal}
           show={editModal.status}
           closeFn={() => setEditModal({ status: false, data: null })}
           data={editModal.data}
           handleValidate={handleValidate}
           eventId={event}
+          handleSave={handleUpdate}
         />
       )}
 
@@ -335,7 +378,17 @@ const Statement = (props) => {
 
           {/* Filters */}
           <Grid item container spacing={2}>
-            {/* <Grid item lg={2} md={2} sm={12} xs={12}>
+            <Grid item lg={13} md={3} sm={12} xs={12}>
+              <TextField
+                value={transaction}
+                onChange={(e) => setTransaction(e.target.value)}
+                label='Transação'
+                variant='outlined'
+                size='small'
+                fullWidth
+              />
+            </Grid>
+            <Grid item lg={3} md={3} sm={12} xs={12}>
               <TextField
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -344,8 +397,8 @@ const Statement = (props) => {
                 size='small'
                 fullWidth
               />
-            </Grid> */}
-            <Grid item lg={2} md={2} sm={12} xs={12}>
+            </Grid>
+            <Grid item lg={3} md={3} sm={12} xs={12}>
               <TextField
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
@@ -355,7 +408,7 @@ const Statement = (props) => {
                 fullWidth
               />
             </Grid>
-            <Grid item lg={2} md={2} sm={12} xs={12}>
+            <Grid item lg={3} md={3} sm={12} xs={12}>
               <TextField
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -365,8 +418,10 @@ const Statement = (props) => {
                 fullWidth
               />
             </Grid>
+          </Grid>
 
-            <Grid item lg={8} md={8} sm={12} xs={12}>
+          <Grid item container spacing={2}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
               <Between
                 iniValue={dateIni}
                 endValue={dateEnd}

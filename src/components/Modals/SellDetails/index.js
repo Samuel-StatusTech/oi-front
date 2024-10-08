@@ -8,15 +8,168 @@ import {
   Grid,
   Typography,
   Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
 } from "@material-ui/core"
 
 import { format } from "currency-formatter"
 import EaseGrid from "../../EaseGrid"
 import Api from "../../../api"
+import { formatDate } from "../../../utils/date"
+import styles from "../../../global/styles"
+import { setSizeOptions } from '../../../utils/tablerows'
 
-const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
+const NominalItem = ({ rowData, updateUserName }) => {
+
+  const list = [{
+    name: rowData.name,
+    opuid: rowData.opuid,
+    username: rowData.username ?? "Não definido",
+  }]
+
+  const [userName, setUsername] = useState(list[0].username)
+
+  return (
+    <div style={{ padding: '20px', fontSize: '14px' }}>
+      <EaseGrid
+        className={styles.paddingT30}
+        title={"Detalhes"}
+        data={list}
+        columns={[
+          {
+            title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
+            field: "name",
+            render: ({ name }) => (
+              <td>
+                <span style={{ fontSize: "0.9rem" }}>{name}</span>
+              </td>
+            ),
+          },
+          {
+            title: <Typography style={{ fontWeight: "bold" }}>Opuid</Typography>,
+            field: "opuid",
+            render: ({ opuid }) => (
+              <td>
+                <span style={{ fontSize: "0.9rem" }}>{opuid}</span>
+              </td>
+            ),
+          },
+          {
+            title: <Typography style={{ fontWeight: "bold" }}>Nome</Typography>,
+            field: "username",
+            render: () => (
+              <td>
+                <TextField
+                  name='userName'
+                  value={userName}
+                  onChange={(e) => setUsername(e.target.value)}
+                  variant='outlined'
+                  size='small'
+                  style={{ minWidth: 100 }}
+                  fullWidth
+                />
+              </td>
+            ),
+          },
+          {
+            title: <Typography style={{ fontWeight: "bold" }}></Typography>,
+            field: "actions",
+            render: userName !== list[0].username ? () => (
+              <td>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  style={{ cursor: "pointer" }}
+                  onClick={updateUserName}>Salvar</Button>
+              </td>
+            ) : null,
+          }
+        ]}
+        paging={false}
+        pageSize={list.length}
+        pageSizeOptions={setSizeOptions(list.length)}
+        hasSearch={false}
+      />
+    </div>
+  )
+}
+
+const SellDetailsModal = ({ isNominal, show, closeFn, data, handleValidate, eventId, handleSave }) => {
 
   const columns = [
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Data/Hora</Typography>,
+      field: "data",
+      render: ({ date }) => {
+
+        const split = date.split("-")
+
+        const d = new Date(split[0], split[1], split[2])
+
+        return (
+          <td>
+            <span>{formatDate(d)}</span>
+          </td>
+        )
+      },
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Nº transação</Typography>,
+      field: "oid",
+      render: ({ oid }) => (
+        <td>
+          <span>{oid ?? ""}</span>
+        </td>
+      ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Nº trans. Operadora</Typography>,
+      field: "mp_oid",
+      render: ({ mp_oid }) => (
+        <td>
+          <span>{mp_oid ?? ""}</span>
+        </td>
+      ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Gateway</Typography>,
+      field: "gateway",
+      render: ({ gateway }) => (
+        <td>
+          <span>{gateway}</span>
+        </td>
+      ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Forma de pagamento</Typography>,
+      field: "payment",
+      render: ({ payment }) => (
+        <td>
+          <span>{payment}</span>
+        </td>
+      ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Valor total</Typography>,
+      field: "price_total",
+      render: ({ price_total }) => (
+        <td>
+          <span>{format(price_total / 100, { code: "BRL" })}</span>
+        </td>
+      ),
+    },
+    {
+      title: <Typography style={{ fontWeight: "bold" }}>Valor taxa</Typography>,
+      field: "price_tax",
+      render: ({ price_tax }) => (
+        <td>
+          <span>{format(price_tax / 100, { code: "BRL" })}</span>
+        </td>
+      ),
+    },
     {
       title: <Typography style={{ fontWeight: "bold" }}>Ingresso</Typography>,
       field: "name",
@@ -36,20 +189,11 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
       ),
     },
     {
-      title: <Typography style={{ fontWeight: "bold" }}>Preço</Typography>,
-      field: "price_unit",
-      render: ({ price_unit }) => (
-        <td>
-          <span>{format(price_unit / 100, { code: "BRL" })}</span>
-        </td>
-      ),
-    },
-    {
-      title: <Typography style={{ fontWeight: "bold" }}>Status</Typography>,
+      title: <Typography style={{ fontWeight: "bold" }}>Validado</Typography>,
       field: "status",
       render: ({ status, qr_data, order_id, opuid }) => (
         <td>
-          {status === false ? (
+          {/* {status === false ? (
             <Button
               variant="outlined"
               color="primary"
@@ -60,28 +204,35 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
             >
               Validar
             </Button>
-          ) : (<span>Validado</span>)}
+          ) : (<span>Validado</span>)} */}
+          <span>{status ? "Validado" : "Não validado"}</span>
         </td>
       ),
     },
   ]
 
+  const [status, setStatus] = useState('notpaid')
+
   const [tickets, setTickets] = useState([])
   const [loadingInfo, setLoadingInfo] = useState(true)
 
-  const update = async (qrdata, order_id, opuid) => {
-    const result = await handleValidate(qrdata, order_id, opuid)
+  // const update = async (qrdata, order_id, opuid) => {
+  //   const result = await handleValidate(qrdata, order_id, opuid)
 
-    if (result) {
-      setTickets(ticketsList => ticketsList.map((item) => item.qr_data !== qrdata ? item : ({
-        ...item,
-        status: result
-      })))
-    }
-  }
+  //   if (result) {
+  //     setTickets(ticketsList => ticketsList.map((item) => item.qr_data !== qrdata ? item : ({
+  //       ...item,
+  //       status: result
+  //     })))
+  //   }
+  // }
 
   const closeModal = () => {
     closeFn()
+  }
+
+  const updateUserName = () => {
+    // ...
   }
 
   const getData = useCallback(async () => {
@@ -129,7 +280,7 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
   }, [show, getData])
 
   return (
-    <Dialog open={show} onClose={closeModal} fullWidth maxWidth="lg">
+    <Dialog open={show} onClose={closeModal} fullWidth maxWidth="xl">
       <DialogTitle>Venda online - {data.order_id}</DialogTitle>
       <DialogContent>
         <div
@@ -149,7 +300,28 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
               columns={columns}
               hasSearch={false}
               loadingMessage={loadingInfo}
+              detailPanel={rowData => <NominalItem rowData={rowData} updateUserName={updateUserName} />}
+              pageSize={tickets.length}
+              pageSizeOptions={setSizeOptions(tickets.length)}
             />
+          </Grid>
+
+          <Grid item xl={2} lg={2} md={2} sm={6} xs={12}>
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={status}
+                onChange={setStatus}
+                label="Status"
+                variant="outlined"
+                fullWidth
+              >
+                <MenuItem value="paid">Pago</MenuItem>
+                <MenuItem value="notpaid">Não pago</MenuItem>
+                <MenuItem value="cancelled">Cancelado</MenuItem>
+                <MenuItem value="analysis">Em análise</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
         </div>
       </DialogContent>
@@ -164,6 +336,11 @@ const SellDetailsModal = ({ show, closeFn, data, handleValidate, eventId }) => {
             gap: 12
           }}
         >
+          <Button
+            variant="outlined"
+            color="primary"
+            style={{ cursor: "pointer" }}
+            onClick={handleSave}>Salvar</Button>
           <Button
             variant="outlined"
             color="secondary"

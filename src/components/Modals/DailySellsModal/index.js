@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { forwardRef, memo, useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,6 @@ import { formatDate } from "../../../utils/date"
 // ---
 
 const DailySellsModal = ({ show, closeFn, data, date, soldTickets }) => {
-
-  const [tickets, setTickets] = useState([])
 
   const styles = useStyles()
 
@@ -62,7 +60,7 @@ const DailySellsModal = ({ show, closeFn, data, date, soldTickets }) => {
             detailPanel={rowData => {
 
               const list = getDayTickets(rowData.timeString)
-              
+
               return (
                 <div style={{ padding: '20px', fontSize: '14px' }}>
                   <EaseGrid
