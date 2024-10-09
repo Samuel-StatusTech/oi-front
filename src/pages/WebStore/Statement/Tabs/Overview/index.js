@@ -134,7 +134,7 @@ const Statement = (props) => {
 
         return (
           <td>
-            <span>{statusRelation[status] ?? "Aguardando"}</span>
+            <span>{statusRelation[status] ?? "Pago"}</span>
           </td>
         )
       },
@@ -203,7 +203,7 @@ const Statement = (props) => {
   const handleEdit = useCallback((sell) => {
     setEditModal({
       status: true,
-      data: sell
+      data: { ...sell, username: "" }
     })
   }, [])
 
@@ -242,6 +242,7 @@ const Statement = (props) => {
   const getEventNominal = async () => {
     try {
       const req = await Api.get(`/event/getData/${event}`)
+
       setIsNominal(Boolean(req.data.event.nominal ?? 0))
     } catch (error) {
       console.log(error)
@@ -327,8 +328,9 @@ const Statement = (props) => {
   }, [event, selected])
 
   useEffect(() => {
-    onSearch()
-    getEventNominal()
+    getEventNominal().then(() => {
+      onSearch()
+    })
   }, [])
 
   const onSearch = () => {
@@ -353,6 +355,7 @@ const Statement = (props) => {
           handleValidate={handleValidate}
           eventId={event}
           handleSave={handleUpdate}
+          taxControl={props.taxControl}
         />
       )}
 
@@ -390,16 +393,6 @@ const Statement = (props) => {
             </Grid>
             <Grid item lg={3} md={3} sm={12} xs={12}>
               <TextField
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                label='Nome'
-                variant='outlined'
-                size='small'
-                fullWidth
-              />
-            </Grid>
-            <Grid item lg={3} md={3} sm={12} xs={12}>
-              <TextField
                 value={phone}
                 onChange={(e) => setPhone(formatPhone(e.target.value))}
                 label='Telefone'
@@ -416,6 +409,17 @@ const Statement = (props) => {
                 variant='outlined'
                 size='small'
                 fullWidth
+              />
+            </Grid>
+            <Grid item lg={3} md={3} sm={12} xs={12}>
+              <TextField
+                value={name}
+                // onChange={(e) => setName(e.target.value)}
+                label='Nome - em desenvolvimento'
+                variant='outlined'
+                size='small'
+                fullWidth
+                disabled={true}
               />
             </Grid>
           </Grid>
@@ -457,7 +461,11 @@ const Statement = (props) => {
                   <Typography className={styles.h2}>Produtos vendidos</Typography>
                 </div>
               }
-              data={sells}
+              data={
+                sells
+                  .filter(i => !transaction ? true : i.order_id.toLowerCase().includes(transaction.toLowerCase()))
+                  .filter(i => !name ? true : i.order_id.toLowerCase().includes(name.toLowerCase()))
+              }
               columns={sellsColumns}
               hasSearch={false}
             />

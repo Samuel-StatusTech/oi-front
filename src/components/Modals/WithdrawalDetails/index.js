@@ -68,7 +68,7 @@ const WithdrawalDetailsModal = ({ show, closeFn, data, onSave }) => {
                   name='priceSell'
                   value={info?.value}
                   onChange={({ value }) => handleField("value", value)}
-                  label='Preço de venda'
+                  label='Valor de retirada'
                   variant='outlined'
                   size='small'
                   fullWidth
